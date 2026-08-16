@@ -1,0 +1,43 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap");
+
+@import "tailwindcss";
+
+/* Tailwind already resets margins and padding. Keep only the box model rule
+   so Tailwind's spacing utilities such as p-6, p-7, and gap-8 can work. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  font-family:"Inter",sans-serif;
+  color:#1F2937;
+
+  background:
+  linear-gradient(
+  180deg,
+  #FFFEEF,
+  #EFF8FF,
+  #DDEFFF,
+  #A8D6FF);
+
+  min-height:100vh;
+}
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-12px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}

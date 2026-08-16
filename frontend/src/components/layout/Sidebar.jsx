@@ -1,0 +1,270 @@
+import { NavLink, useNavigate } from "react-router-dom";
+import {
+  CalendarDays,
+  CheckSquare,
+  History,
+  Bell,
+  Home,
+  KeyRound,
+  LogOut,
+  Map,
+  Menu,
+  Settings,
+  Users,
+  Wallet,
+  X,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  getNotifications,
+  markAllNotificationsRead,
+} from "../../api/authApi";
+
+function Sidebar() {
+  const navigate = useNavigate();
+
+const [isOpen, setIsOpen] = useState(false);
+const [notifications, setNotifications] = useState([]);
+const [showNotifications, setShowNotifications] = useState(false);
+
+useEffect(() => {
+  const loadNotifications = async () => {
+    try {
+      const token = localStorage.getItem("campusTripToken");
+
+      if (!token) return;
+
+      const data = await getNotifications(token);
+
+      setNotifications(data.notifications || []);
+    } catch (error) {
+      console.error("Unable to load notifications:", error);
+    }
+  };
+
+  // Load notifications immediately
+  loadNotifications();
+
+  // Check for new notifications every 5 seconds
+  const interval = setInterval(() => {
+    loadNotifications();
+  }, 5000);
+
+  // Stop checking when Sidebar is removed
+  return () => {
+    clearInterval(interval);
+  };
+}, []);
+
+  const navItems = [
+  { to: "/dashboard", label: "Dashboard", icon: Home },
+  { to: "/trips", label: "My Trips", icon: Map },
+  { to: "/trip-history", label: "Trip History", icon: History },
+  { to: "/join-trip", label: "Join Trip", icon: KeyRound },
+  { to: "/schedule", label: "Schedule", icon: CalendarDays },
+  { to: "/budget", label: "Budget", icon: Wallet },
+  { to: "/checklist", label: "Checklist", icon: CheckSquare },
+  { to: "/members", label: "Members", icon: Users },
+  { to: "/settings", label: "Settings", icon: Settings },
+];
+
+  const handleLogout = () => {
+    localStorage.removeItem("campusTripToken");
+    localStorage.removeItem("campusTripCurrentUser");
+
+    setIsOpen(false);
+
+    navigate("/login");
+  };
+
+  const unreadCount = notifications.filter(
+  (notification) => !notification.read
+).length;
+
+  return (
+    <>
+      {/* Mobile Menu Button */}
+      <button
+        type="button"
+        aria-label="Open navigation menu"
+        onClick={() => setIsOpen(true)}
+        className="fixed left-4 top-4 z-40 rounded-xl bg-white p-3 text-[#1E3A8A] shadow-lg md:hidden"
+      >
+        <Menu size={22} />
+      </button>
+
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <button
+          type="button"
+          aria-label="Close navigation menu"
+          onClick={() => setIsOpen(false)}
+          className="fixed inset-0 z-40 bg-slate-900/40 md:hidden"
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col overflow-y-auto bg-white p-6 shadow-xl transition-transform duration-300 md:static md:min-h-screen md:translate-x-0 md:shadow-sm ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Logo */}
+        <div className="mb-8 flex items-center justify-between">
+          <h2 className="text-3xl font-bold text-[#1E3A8A]">
+            CampusTrip
+          </h2>
+
+          <button
+            type="button"
+            aria-label="Close navigation menu"
+            onClick={() => setIsOpen(false)}
+            className="rounded-lg p-2 text-gray-600 hover:bg-blue-50 md:hidden"
+          >
+            <X size={21} />
+          </button>
+        </div>
+
+        {/* Notifications */}
+<div className="relative mb-4">
+  <button
+    type="button"
+   onClick={() => {
+  setShowNotifications(
+    (current) => !current
+  );
+}}
+    className="relative flex w-full items-center gap-3 rounded-xl p-3 text-gray-700 transition hover:bg-blue-50 hover:text-[#1E3A8A]"
+  >
+    <Bell size={20} />
+
+    <span>Notifications</span>
+
+    {unreadCount > 0 && (
+      <span className="ml-auto flex h-6 min-w-6 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white">
+        {unreadCount > 99 ? "99+" : unreadCount}
+      </span>
+    )}
+  </button>
+
+  {showNotifications && (
+    <div className="absolute left-0 top-full z-[100] mt-2 w-full rounded-2xl border bg-white p-3 shadow-xl">
+      <div className="flex items-center justify-between px-2 py-2">
+        <h3 className="font-bold text-[#1E3A8A]">
+          Notifications
+        </h3>
+
+        {unreadCount > 0 && (
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                const token =
+                  localStorage.getItem("campusTripToken");
+
+                if (!token) return;
+
+                await markAllNotificationsRead(token);
+
+                setNotifications((current) =>
+                  current.map((notification) => ({
+                    ...notification,
+                    read: true,
+                  }))
+                );
+              } catch (error) {
+                console.error(error);
+              }
+            }}
+            className="text-xs font-semibold text-blue-600 hover:underline"
+          >
+            Mark all read
+          </button>
+        )}
+      </div>
+
+      {notifications.length === 0 ? (
+        <p className="px-2 py-4 text-center text-sm text-gray-500">
+          No notifications yet.
+        </p>
+      ) : (
+        <div className="max-h-72 space-y-2 overflow-y-auto">
+          {notifications.map((notification) => (
+            <div
+              key={notification._id}
+              className={`rounded-xl p-3 ${
+                notification.read
+                  ? "bg-gray-50"
+                  : "bg-blue-50"
+              }`}
+            >
+              <p className="text-sm font-semibold text-gray-800">
+                {notification.title}
+              </p>
+
+              <p className="mt-1 text-xs text-gray-600">
+                {notification.message}
+              </p>
+
+              {!notification.read && (
+                <span className="mt-2 inline-block text-xs font-semibold text-blue-600">
+                  New
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )}
+</div>
+
+        {/* Home Button */}
+        <button
+          type="button"
+          onClick={() => {
+            setIsOpen(false);
+            navigate("/");
+          }}
+          className="mb-6 flex items-center gap-3 rounded-xl bg-blue-50 p-3 font-semibold text-[#1E3A8A] transition hover:bg-blue-100"
+        >
+          <Home size={20} />
+          Home
+        </button>
+
+        {/* Navigation */}
+        <nav className="flex-1 space-y-3">
+          {navItems.map(({ to, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              onClick={() => setIsOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-xl p-3 transition ${
+                  isActive
+                    ? "bg-blue-50 font-semibold text-[#1E3A8A]"
+                    : "text-gray-700 hover:bg-blue-50 hover:text-[#1E3A8A]"
+                }`
+              }
+            >
+              <Icon size={20} />
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* Logout */}
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="mt-8 flex items-center gap-3 rounded-xl bg-red-50 p-3 font-semibold text-red-600 transition hover:bg-red-100"
+        >
+          <LogOut size={20} />
+          Logout
+        </button>
+      </aside>
+    </>
+  );
+}
+
+export default Sidebar;
