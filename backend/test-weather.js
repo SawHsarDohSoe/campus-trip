@@ -1,5 +1,7 @@
+const BASE_URL = process.env.BASE_URL
+
 const loginResponse = await fetch(
-  "http://localhost:5000/api/auth/login",
+  `${BASE_URL}/api/auth/login`,
   {
     method: "POST",
     headers: {
@@ -22,7 +24,7 @@ if (!loginResponse.ok) {
 console.log("Login successful.");
 
 const weatherResponse = await fetch(
-  "http://localhost:5000/api/weather?city=Bangkok",
+  `${BASE_URL}/api/weather?city=Bangkok`,
   {
     headers: {
       Authorization: `Bearer ${loginData.token}`,

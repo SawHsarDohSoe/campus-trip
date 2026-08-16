@@ -1,4 +1,7 @@
-const loginResponse = await fetch("http://localhost:5000/api/auth/login", {
+const BASE_URL = process.env.BASE_URL
+
+//http://localhost:5000/api/auth/login
+const loginResponse = await fetch(`${BASE_URL}/api/auth/login`, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
@@ -21,7 +24,8 @@ const token = loginData.token;
 console.log("Login successful.");
 
 // Get the user's trips
-const tripsResponse = await fetch("http://localhost:5000/api/trips", {
+//http://localhost:5000/api/trips
+const tripsResponse = await fetch(`${BASE_URL}/api/trips`, {
   headers: {
     Authorization: `Bearer ${token}`,
   },
@@ -48,7 +52,7 @@ console.log("Trip ID:", trip._id);
 
 // Create schedule item
 const scheduleResponse = await fetch(
-  `http://localhost:5000/api/schedules/${trip._id}`,
+  `${BASE_URL}/api/schedules/${trip._id}`,
   {
     method: "POST",
     headers: {

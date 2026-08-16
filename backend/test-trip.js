@@ -1,4 +1,7 @@
-const loginResponse = await fetch("http://localhost:5000/api/auth/login", {
+const BASE_URL = process.env.BASE_URL
+http://localhost:5000/api/auth/login
+
+const loginResponse = await fetch(`${BASE_URL}/api/auth/login`, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
@@ -20,7 +23,7 @@ const token = loginData.token;
 
 console.log("Login successful.");
 
-const tripResponse = await fetch("http://localhost:5000/api/trips", {
+const tripResponse = await fetch(`${BASE_URL}/api/trips`, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
