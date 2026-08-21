@@ -704,7 +704,7 @@ setSchedules(schedulesData.schedules);
                 </div>
 
               </div>
-
+              </section>
             {/* ───────── Weather Details ───────── */}
             {weather && (
               <section className="rounded-3xl bg-[#E5F6FD] p-6 shadow-lg md:p-7">
