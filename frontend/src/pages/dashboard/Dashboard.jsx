@@ -323,6 +323,90 @@ setSchedules(schedulesData.schedules);
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar />
 
+      {/* MOBILE ONLY */}
+      <main className="md:hidden h-[100dvh] overflow-hidden pt-20">
+  <div className="flex h-full flex-col px-4 pb-4">
+    <div className="shrink-0 pt-2">
+      <p className="text-sm font-semibold text-blue-700">CampusTrip</p>
+      <div className="mt-1 flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <h1 className="truncate text-[28px] font-bold leading-tight tracking-tight text-[#1E3A8A]">
+            Welcome back{user?.name ? `, ${user.name.split(" ")[0]}` : ""}! 👋
+          </h1>
+          <p className="mt-1 truncate text-sm text-gray-500">Your trip at a glance</p>
+        </div>
+        <Link to="/trips/create" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#1E3A8A] text-white shadow-md">
+          <Plus size={22} />
+        </Link>
+      </div>
+    </div>
+
+    <section className="mt-3 shrink-0 rounded-[24px] bg-[#1E3A8A] p-4 text-white shadow-lg">
+      <div className="flex items-center justify-between gap-2">
+        <span className="rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold">{upcomingTrip.status}</span>
+        <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] text-blue-100">
+          {daysUntilTrip === 0 ? "Today" : `${daysUntilTrip} days to go`}
+        </span>
+      </div>
+      <h2 className="mt-3 truncate text-[27px] font-bold leading-tight">{upcomingTrip.title}</h2>
+      <div className="mt-2 space-y-1 text-sm text-blue-100">
+        <p className="flex min-w-0 items-center gap-2"><MapPin size={15} className="shrink-0" /><span className="truncate">{upcomingTrip.destination}</span></p>
+        <p className="flex items-center gap-2"><CalendarDays size={15} className="shrink-0" /><span className="truncate">{formatDate(upcomingTrip.startDate)} – {formatDate(upcomingTrip.endDate)}</span></p>
+      </div>
+      <Link to={`/trips/${upcomingTrip._id}`} className="mt-3 flex h-11 items-center justify-center gap-2 rounded-xl bg-white font-semibold text-[#1E3A8A]">
+        View Trip <ArrowRight size={17} />
+      </Link>
+    </section>
+
+    <section className="mt-3 grid min-h-0 flex-1 grid-cols-2 grid-rows-2 gap-3">
+      <Link to="/budget" className="min-w-0 overflow-hidden rounded-[22px] bg-white p-3.5 shadow-md">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#E5F6FD] text-[#1E3A8A]"><Wallet size={18} /></div>
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Budget</span>
+        </div>
+        <p className="mt-2 text-xs text-gray-500">Left</p>
+        <p className={`mt-0.5 truncate text-[19px] font-bold tracking-tight ${remainingBudget >= 0 ? "text-[#1E3A8A]" : "text-red-600"}`}>{currency.format(remainingBudget)}</p>
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-100"><div className="h-full rounded-full bg-[#1E3A8A]" style={{ width: `${budgetPercentage}%` }} /></div>
+        <p className="mt-1 text-[10px] text-gray-400">{budgetPercentage}% used</p>
+      </Link>
+
+      <Link to="/checklist" className="min-w-0 overflow-hidden rounded-[22px] bg-white p-3.5 shadow-md">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#E5F6FD] text-[#1E3A8A]"><CheckCircle2 size={18} /></div>
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Packing</span>
+        </div>
+        <p className="mt-2 text-xs text-gray-500">Ready</p>
+        <p className="mt-0.5 text-[23px] font-bold text-[#1E3A8A]">{checklistProgress}%</p>
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-gray-100"><div className="h-full rounded-full bg-[#1E3A8A]" style={{ width: `${checklistProgress}%` }} /></div>
+        <p className="mt-1 truncate text-[10px] text-gray-400">{completedItems} of {checklist.length} items</p>
+      </Link>
+
+      <div className="min-w-0 overflow-hidden rounded-[22px] bg-[#E5F6FD] p-3.5 shadow-md">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-blue-700">Weather</span>
+          <div className="text-[#1E3A8A]">{weather ? getWeatherIcon(weather.description, 20) : <Cloud size={20} />}</div>
+        </div>
+        {weather ? <><p className="mt-2 truncate text-xs text-gray-600">{weather.city}, {weather.country}</p><p className="mt-0.5 text-[25px] font-bold text-[#1E3A8A]">{Math.round(weather.temperature)}°C</p><p className="truncate text-[10px] capitalize text-gray-500">{weather.description}</p></> : <p className="mt-4 text-xs text-gray-400">{weatherLoading ? "Loading..." : "Unavailable"}</p>}
+      </div>
+
+      <Link to="/schedule" className="min-w-0 overflow-hidden rounded-[22px] bg-white p-3.5 shadow-md">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#E5F6FD] text-[#1E3A8A]"><Clock3 size={18} /></div>
+          <span className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">Next</span>
+        </div>
+        {nextActivity ? <><p className="mt-2 truncate text-sm font-bold text-[#1E3A8A]">{nextActivity.activity}</p><p className="mt-1 truncate text-[10px] text-gray-500">{formatDate(nextActivity.date)} · {nextActivity.time}</p></> : <><p className="mt-2 text-sm font-bold text-gray-700">No activity</p><p className="mt-1 text-[10px] text-gray-400">Add one in Schedule</p></>}
+      </Link>
+    </section>
+
+    <div className="mt-3 flex shrink-0 items-center justify-between rounded-2xl bg-white px-4 py-2.5 text-xs shadow-sm">
+      <span className="flex items-center gap-1.5 text-gray-500"><Users size={14} />{members.length}/{upcomingTrip.members}</span>
+      <span className="text-gray-500">{weather ? `${weather.humidity}% humidity` : "Weather"}</span>
+      <Link to="/trips" className="font-semibold text-[#1E3A8A]">Trips →</Link>
+    </div>
+  </div>
+</main>
+      
+      {/* DESKTOP ONLY */}
       <main className="flex flex-1 flex-col gap-7 p-5 pt-20 md:p-8">
 
         {/* ───────── Header ───────── */}
