@@ -827,7 +827,7 @@ setSchedules(schedulesData.schedules);
                     to={`/trips/${trip._id}`}
                     className="flex flex-col gap-3 py-5 transition hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between sm:px-3"
                   >
-
+                   )}
                     <div className="flex items-center gap-4">
 
                       <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#E5F6FD] text-[#1E3A8A]">
@@ -872,7 +872,7 @@ setSchedules(schedulesData.schedules);
             </section>
 
           </>
-        )}
+       
 
       </main>
     </div>
