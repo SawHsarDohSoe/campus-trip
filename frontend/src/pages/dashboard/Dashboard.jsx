@@ -322,8 +322,7 @@ setSchedules(schedulesData.schedules);
   return (
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar />
-      
-      {/* DESKTOP ONLY */}
+
       <main className="flex flex-1 flex-col gap-7 p-5 pt-20 md:p-8">
 
         {/* ───────── Header ───────── */}
@@ -558,6 +557,107 @@ setSchedules(schedulesData.schedules);
                 </p>
 
               </div>
+
+              {/* Checklist */}
+              <div className="rounded-3xl bg-white p-6 shadow-lg">
+
+                <div className="flex items-center justify-between">
+
+                  <div className="rounded-2xl bg-[#E5F6FD] p-3 text-[#1E3A8A]">
+                    <CheckCircle2 size={23} />
+                  </div>
+
+                  <span className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                    Checklist
+                  </span>
+
+                </div>
+
+                <p className="mt-5 text-sm text-gray-500">
+                  Packing progress
+                </p>
+
+                <p className="mt-1 text-2xl font-bold text-[#1E3A8A]">
+                  {checklistProgress}%
+                </p>
+
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-gray-100">
+                  <div
+                    className="h-full rounded-full bg-[#1E3A8A]"
+                    style={{
+                      width: `${checklistProgress}%`,
+                    }}
+                  />
+                </div>
+
+                <p className="mt-2 text-xs text-gray-400">
+                  {completedItems} of{" "}
+                  {checklist.length} items ready
+                </p>
+
+              </div>
+
+              {/* Weather */}
+              <div className="rounded-3xl bg-white p-6 shadow-lg">
+
+                <div className="flex items-center justify-between">
+
+                  <div className="rounded-2xl bg-[#E5F6FD] p-3 text-[#1E3A8A]">
+                    <Cloud size={23} />
+                  </div>
+
+                  <span className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                    Weather
+                  </span>
+
+                </div>
+
+                {weatherLoading ? (
+                  <div className="mt-6">
+                    <p className="text-sm text-gray-400">
+                      Loading weather...
+                    </p>
+                  </div>
+                ) : weather ? (
+                  <>
+                    <div className="mt-4 flex items-center justify-between">
+
+                      <div>
+                        <p className="text-sm text-gray-500">
+                          {weather.city},{" "}
+                          {weather.country}
+                        </p>
+
+                        <p className="mt-1 text-3xl font-bold text-[#1E3A8A]">
+                          {Math.round(
+                            weather.temperature
+                          )}
+                          °C
+                        </p>
+                      </div>
+
+                      <div className="text-[#1E3A8A]">
+                        {getWeatherIcon(
+                          weather.description
+                        )}
+                      </div>
+
+                    </div>
+
+                    <p className="mt-2 text-sm capitalize text-gray-600">
+                      {weather.description}
+                    </p>
+                  </>
+                ) : (
+                  <div className="mt-6">
+                    <p className="text-sm text-gray-400">
+                      Weather unavailable
+                    </p>
+                  </div>
+                )}
+
+              </div>
+
             </section>
 
             {/* ───────── Two Main Panels ───────── */}
@@ -705,80 +805,182 @@ setSchedules(schedulesData.schedules);
 
               </div>
 
+              {/* Budget */}
+              <div className="rounded-3xl bg-white p-6 shadow-lg md:p-7">
+
+                <div className="flex items-start justify-between">
+
+                  <div>
+                    <h2 className="text-xl font-bold text-[#1E3A8A]">
+                      Budget Overview
+                    </h2>
+
+                    <p className="mt-1 text-sm text-gray-500">
+                      Keep your trip spending under control.
+                    </p>
+                  </div>
+
+                  <Link
+                    to="/budget"
+                    className="text-sm font-semibold text-blue-700 hover:underline"
+                  >
+                    View budget
+                  </Link>
+
+                </div>
+
+                <div className="mt-7 grid grid-cols-3 gap-3">
+
+                  <div className="rounded-2xl bg-[#E5F6FD] p-4">
+
+                    <p className="text-xs text-gray-500">
+                      Budget
+                    </p>
+
+                    <p className="mt-2 text-lg font-bold text-[#1E3A8A]">
+                      {currency.format(
+                        totalBudget
+                      )}
+                    </p>
+
+                  </div>
+
+                  <div className="rounded-2xl bg-gray-50 p-4">
+
+                    <p className="text-xs text-gray-500">
+                      Spent
+                    </p>
+
+                    <p className="mt-2 text-lg font-bold text-gray-800">
+                      {currency.format(spent)}
+                    </p>
+
+                  </div>
+
+                  <div className="rounded-2xl bg-green-50 p-4">
+
+                    <p className="text-xs text-gray-500">
+                      Left
+                    </p>
+
+                    <p className="mt-2 text-lg font-bold text-green-700">
+                      {currency.format(
+                        remainingBudget
+                      )}
+                    </p>
+
+                  </div>
+
+                </div>
+
+                <div className="mt-6 h-3 overflow-hidden rounded-full bg-gray-100">
+                  <div
+                    className={`h-full rounded-full ${
+                      budgetPercentage >= 90
+                        ? "bg-red-500"
+                        : "bg-[#1E3A8A]"
+                    }`}
+                    style={{
+                      width: `${budgetPercentage}%`,
+                    }}
+                  />
+                </div>
+
+                <p className="mt-2 text-xs text-gray-400">
+                  {budgetPercentage}% of your trip budget has been used.
+                </p>
+
+              </div>
+
+            </section>
+
             {/* ───────── Weather Details ───────── */}
             {weather && (
-              <section className="rounded-3xl bg-[#E5F6FD] p-6 shadow-lg md:p-7 lg:col-start-2">
-            
+              <section className="rounded-3xl bg-[#E5F6FD] p-6 shadow-lg md:p-7">
+
                 <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-            
+
                   <div>
                     <p className="text-sm font-semibold text-blue-700">
                       DESTINATION WEATHER
                     </p>
-            
+
                     <h2 className="mt-1 text-2xl font-bold text-[#1E3A8A]">
                       {weather.city}, {weather.country}
                     </h2>
-            
+
                     <p className="mt-2 capitalize text-gray-600">
                       {weather.description}
                     </p>
                   </div>
-            
+
                   <div className="flex items-center gap-6">
-            
+
                     <div className="text-[#1E3A8A]">
-                      {getWeatherIcon(weather.description)}
+                      {getWeatherIcon(
+                        weather.description
+                      )}
                     </div>
-            
+
                     <div>
                       <p className="text-4xl font-bold text-[#1E3A8A]">
-                        {Math.round(weather.temperature)}°C
+                        {Math.round(
+                          weather.temperature
+                        )}
+                        °C
                       </p>
-            
+
                       <p className="text-sm text-gray-500">
-                        Feels like {Math.round(weather.feelsLike)}°C
+                        Feels like{" "}
+                        {Math.round(
+                          weather.feelsLike
+                        )}
+                        °C
                       </p>
                     </div>
-            
+
                   </div>
-            
+
                   <div className="flex gap-3">
-            
+
                     <div className="rounded-2xl bg-white px-4 py-3">
+
                       <Droplets
                         size={18}
                         className="text-[#1E3A8A]"
                       />
-            
+
                       <p className="mt-1 text-xs text-gray-500">
                         Humidity
                       </p>
-            
+
                       <p className="font-bold text-gray-800">
                         {weather.humidity}%
                       </p>
+
                     </div>
-            
+
                     <div className="rounded-2xl bg-white px-4 py-3">
+
                       <Wind
                         size={18}
                         className="text-[#1E3A8A]"
                       />
-            
+
                       <p className="mt-1 text-xs text-gray-500">
                         Wind
                       </p>
-            
+
                       <p className="font-bold text-gray-800">
                         {weather.windSpeed} m/s
                       </p>
+
                     </div>
-            
+
                   </div>
-            
+
                 </div>
-            
+
               </section>
             )}
 
@@ -814,7 +1016,7 @@ setSchedules(schedulesData.schedules);
                     to={`/trips/${trip._id}`}
                     className="flex flex-col gap-3 py-5 transition hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between sm:px-3"
                   >
-                
+
                     <div className="flex items-center gap-4">
 
                       <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#E5F6FD] text-[#1E3A8A]">
@@ -859,7 +1061,7 @@ setSchedules(schedulesData.schedules);
             </section>
 
           </>
-       
+        )}
 
       </main>
     </div>
