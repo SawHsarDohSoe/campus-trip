@@ -558,84 +558,82 @@ setSchedules(schedulesData.schedules);
 
               </div>
 
-             
-
             </section>
 
             {/* ───────── Two Main Panels ───────── */}
             <section className="grid gap-6 lg:grid-cols-2">
             
             {/* ───────── Next Activity ───────── */}
-<section className="rounded-3xl bg-white p-6 shadow-lg md:p-7">
-
-  <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-
-    <div className="flex items-start gap-4">
-
-      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#E5F6FD] text-[#1E3A8A]">
-        <Clock3 size={23} />
-      </div>
-
-      <div>
-
-        <p className="text-sm font-semibold text-blue-700">
-          NEXT ACTIVITY
-        </p>
-
-        {nextActivity ? (
-          <>
-            <h2 className="mt-1 text-2xl font-bold text-[#1E3A8A]">
-              {nextActivity.activity}
-            </h2>
-
-            <div className="mt-2 flex flex-col gap-2 text-sm text-gray-500 sm:flex-row sm:gap-5">
-
-              <span className="flex items-center gap-2">
-                <CalendarDays size={15} />
-                {formatDate(nextActivity.date)}
-              </span>
-
-              <span className="flex items-center gap-2">
-                <Clock3 size={15} />
-                {nextActivity.time}
-              </span>
-
-              {nextActivity.location && (
-                <span className="flex items-center gap-2">
-                  <MapPin size={15} />
-                  {nextActivity.location}
-                </span>
-              )}
-
-            </div>
-          </>
-        ) : (
-          <>
-            <h2 className="mt-1 text-xl font-bold text-gray-700">
-              No upcoming activities
-            </h2>
-
-            <p className="mt-1 text-sm text-gray-500">
-              Add activities to your trip schedule.
-            </p>
-          </>
-        )}
-
-      </div>
-
-    </div>
-
-    <Link
-      to="/schedule"
-      className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-[#1E3A8A] px-4 py-3 text-sm font-semibold text-[#1E3A8A] transition hover:bg-[#E5F6FD]"
-    >
-      View Schedule
-      <ArrowRight size={16} />
-    </Link>
-
-  </div>
-
-</section>
+              <section className="rounded-3xl bg-white p-6 shadow-lg md:p-7">
+              
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+              
+                  <div className="flex items-start gap-4">
+              
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#E5F6FD] text-[#1E3A8A]">
+                      <Clock3 size={23} />
+                    </div>
+              
+                    <div>
+              
+                      <p className="text-sm font-semibold text-blue-700">
+                        NEXT ACTIVITY
+                      </p>
+              
+                      {nextActivity ? (
+                        <>
+                          <h2 className="mt-1 text-2xl font-bold text-[#1E3A8A]">
+                            {nextActivity.activity}
+                          </h2>
+              
+                          <div className="mt-2 flex flex-col gap-2 text-sm text-gray-500 sm:flex-row sm:gap-5">
+              
+                            <span className="flex items-center gap-2">
+                              <CalendarDays size={15} />
+                              {formatDate(nextActivity.date)}
+                            </span>
+              
+                            <span className="flex items-center gap-2">
+                              <Clock3 size={15} />
+                              {nextActivity.time}
+                            </span>
+              
+                            {nextActivity.location && (
+                              <span className="flex items-center gap-2">
+                                <MapPin size={15} />
+                                {nextActivity.location}
+                              </span>
+                            )}
+              
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <h2 className="mt-1 text-xl font-bold text-gray-700">
+                            No upcoming activities
+                          </h2>
+              
+                          <p className="mt-1 text-sm text-gray-500">
+                            Add activities to your trip schedule.
+                          </p>
+                        </>
+                      )}
+              
+                    </div>
+              
+                  </div>
+              
+                  <Link
+                    to="/schedule"
+                    className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-[#1E3A8A] px-4 py-3 text-sm font-semibold text-[#1E3A8A] transition hover:bg-[#E5F6FD]"
+                  >
+                    View Schedule
+                    <ArrowRight size={16} />
+                  </Link>
+              
+                </div>
+              
+              </section>
 
               {/* Checklist */}
               <div className="rounded-3xl bg-white p-6 shadow-lg md:p-7">
