@@ -707,91 +707,78 @@ setSchedules(schedulesData.schedules);
 
             {/* ───────── Weather Details ───────── */}
             {weather && (
-              <section className="rounded-3xl bg-[#E5F6FD] p-6 shadow-lg md:p-7">
-
+              <section className="rounded-3xl bg-[#E5F6FD] p-6 shadow-lg md:p-7 lg:col-start-2">
+            
                 <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-
+            
                   <div>
                     <p className="text-sm font-semibold text-blue-700">
                       DESTINATION WEATHER
                     </p>
-
+            
                     <h2 className="mt-1 text-2xl font-bold text-[#1E3A8A]">
                       {weather.city}, {weather.country}
                     </h2>
-
+            
                     <p className="mt-2 capitalize text-gray-600">
                       {weather.description}
                     </p>
                   </div>
-
+            
                   <div className="flex items-center gap-6">
-
+            
                     <div className="text-[#1E3A8A]">
-                      {getWeatherIcon(
-                        weather.description
-                      )}
+                      {getWeatherIcon(weather.description)}
                     </div>
-
+            
                     <div>
                       <p className="text-4xl font-bold text-[#1E3A8A]">
-                        {Math.round(
-                          weather.temperature
-                        )}
-                        °C
+                        {Math.round(weather.temperature)}°C
                       </p>
-
+            
                       <p className="text-sm text-gray-500">
-                        Feels like{" "}
-                        {Math.round(
-                          weather.feelsLike
-                        )}
-                        °C
+                        Feels like {Math.round(weather.feelsLike)}°C
                       </p>
                     </div>
-
+            
                   </div>
-
+            
                   <div className="flex gap-3">
-
+            
                     <div className="rounded-2xl bg-white px-4 py-3">
-
                       <Droplets
                         size={18}
                         className="text-[#1E3A8A]"
                       />
-
+            
                       <p className="mt-1 text-xs text-gray-500">
                         Humidity
                       </p>
-
+            
                       <p className="font-bold text-gray-800">
                         {weather.humidity}%
                       </p>
-
                     </div>
-
+            
                     <div className="rounded-2xl bg-white px-4 py-3">
-
                       <Wind
                         size={18}
                         className="text-[#1E3A8A]"
                       />
-
+            
                       <p className="mt-1 text-xs text-gray-500">
                         Wind
                       </p>
-
+            
                       <p className="font-bold text-gray-800">
                         {weather.windSpeed} m/s
                       </p>
-
                     </div>
-
+            
                   </div>
-
+            
                 </div>
-
+            
               </section>
             )}
 
@@ -827,7 +814,7 @@ setSchedules(schedulesData.schedules);
                     to={`/trips/${trip._id}`}
                     className="flex flex-col gap-3 py-5 transition hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between sm:px-3"
                   >
-                   )}
+                
                     <div className="flex items-center gap-4">
 
                       <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#E5F6FD] text-[#1E3A8A]">
