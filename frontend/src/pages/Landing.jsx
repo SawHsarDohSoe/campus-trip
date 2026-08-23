@@ -12,6 +12,10 @@ import { useNavigate } from "react-router-dom";
 function Landing() {
   const navigate = useNavigate();
 
+  const isAuthenticated = Boolean(
+  localStorage.getItem("campusTripToken")
+);
+
   return (
     <div className="min-h-screen w-full overflow-x-hidden bg-gradient-to-b from-[#fffeef] via-[#eff8ff] to-[#ddefff]">
       <BackgroundShapes />
@@ -57,7 +61,15 @@ function Landing() {
 
             <div className="mt-8 flex w-full flex-col gap-3 sm:mt-10 sm:w-auto sm:flex-row sm:gap-4">
 
-              <Button onClick={() => navigate("/register")}>
+              <Button
+                onClick={() =>
+                  navigate(
+                    isAuthenticated
+                      ? "/dashboard"
+                      : "/register"
+                  )
+                }
+              >
                 🚀 Get Started
               </Button>
 
