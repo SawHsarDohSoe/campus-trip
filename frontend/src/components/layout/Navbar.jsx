@@ -75,44 +75,44 @@ function Navbar() {
 
         </div>
 
-        {/* Right Side */}
-        <div className="flex items-center gap-3">
-
-          {!isAuthenticated ? (
-            <>
-              <Link
-                to="/login"
-                className="px-4 py-2 rounded-xl text-[#1E3A8A] font-medium hover:bg-blue-50 transition"
-              >
-                Login
-              </Link>
-
-              <Link
-                to="/register"
-                className="px-5 py-2.5 rounded-xl bg-[#1E3A8A] text-white font-medium shadow-lg hover:bg-blue-700 transition"
-              >
-                Register
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link
-                to="/dashboard"
-                className="px-4 py-2 rounded-xl text-[#1E3A8A] font-medium hover:bg-blue-50 transition"
-              >
-                Dashboard
-              </Link>
-
-              <button
-                onClick={handleLogout}
-                className="px-5 py-2.5 rounded-xl bg-[#1E3A8A] text-white font-medium shadow-lg hover:bg-blue-700 transition"
-              >
-                Logout
-              </button>
-            </>
-          )}
-
-        </div>
+            {/* Right Side */}
+      <div className="hidden sm:flex items-center gap-3">
+      
+        {!isAuthenticated ? (
+          <>
+            <Link
+              to="/login"
+              className="px-4 py-2 rounded-xl text-[#1E3A8A] font-medium hover:bg-blue-50 transition"
+            >
+              Login
+            </Link>
+      
+            <Link
+              to="/register"
+              className="px-5 py-2.5 rounded-xl bg-[#1E3A8A] text-white font-medium shadow-lg hover:bg-blue-700 transition"
+            >
+              Register
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link
+              to="/dashboard"
+              className="px-4 py-2 rounded-xl text-[#1E3A8A] font-medium hover:bg-blue-50 transition"
+            >
+              Dashboard
+            </Link>
+      
+            <button
+              onClick={handleLogout}
+              className="px-5 py-2.5 rounded-xl bg-[#1E3A8A] text-white font-medium shadow-lg hover:bg-blue-700 transition"
+            >
+              Logout
+            </button>
+          </>
+        )}
+      
+      </div>
 
       </nav>
 
