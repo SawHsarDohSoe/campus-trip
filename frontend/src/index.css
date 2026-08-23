@@ -2,35 +2,67 @@
 
 @import "tailwindcss";
 
-/* Tailwind already resets margins and padding. Keep only the box model rule
-   so Tailwind's spacing utilities such as p-6, p-7, and gap-8 can work. */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-html{
-  scroll-behavior:smooth;
+html {
+  scroll-behavior: smooth;
+  width: 100%;
+  overflow-x: hidden;
 }
 
-body{
-  font-family:"Inter",sans-serif;
-  color:#1F2937;
+body {
+  margin: 0;
+  width: 100%;
+  min-width: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+
+  font-family: "Inter", sans-serif;
+  color: #1f2937;
 
   background:
-  linear-gradient(
-  180deg,
-  #FFFEEF,
-  #EFF8FF,
-  #DDEFFF,
-  #A8D6FF);
-
-  min-height:100vh;
+    linear-gradient(
+      180deg,
+      #fffef0,
+      #eff8ff,
+      #ddefff,
+      #a8d6ff
+    );
 }
+
+#root {
+  width: 100%;
+  min-width: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
 @keyframes float {
   0% {
-    transform: translateY(0px);
+    transform: translateY(0);
   }
 
   50% {
@@ -38,6 +70,54 @@ body{
   }
 
   100% {
-    transform: translateY(0px);
+    transform: translateY(0);
+  }
+}
+
+/* =========================================================
+   GLOBAL MOBILE SAFETY
+   ========================================================= */
+
+@media (max-width: 767px) {
+  body {
+    font-size: 15px;
+  }
+
+  main {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  section,
+  article,
+  div {
+    min-width: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  p,
+  span,
+  a {
+    overflow-wrap: break-word;
+  }
+
+  input,
+  textarea,
+  select {
+    max-width: 100%;
+  }
+}
+
+/* =========================================================
+   VERY SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 380px) {
+  body {
+    font-size: 14px;
   }
 }
