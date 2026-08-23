@@ -138,8 +138,9 @@ function Sidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col overflow-y-auto bg-white p-6 shadow-xl transition-transform duration-300 md:static md:min-h-screen md:translate-x-0 md:shadow-sm ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
+       className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col overflow-y-auto bg-white p-5 shadow-xl transition-transform duration-300 md:static md:min-h-screen md:w-64 md:max-w-none md:translate-x-0 md:shadow-sm ${
+        isOpen ? "translate-x-0" : "-translate-x-full"
+}`}
         }`}
       >
         {/* Logo */}
