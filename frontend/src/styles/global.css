@@ -1,32 +1,245 @@
-.heading{
-
-font-family:"Poppins",sans-serif;
-
-font-weight:700;
-
+.heading {
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
 }
 
-.card{
-
-background:white;
-
-border-radius:22px;
-
-box-shadow:
-0 8px 30px rgba(0,0,0,.08);
-
-backdrop-filter:blur(10px);
-
+.card {
+  background: white;
+  border-radius: 22px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(10px);
 }
 
-.section{
-
-padding:40px;
-
+.section {
+  padding: 40px;
 }
 
-.shadow-soft{
+.shadow-soft {
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+}
 
-box-shadow:0 15px 40px rgba(0,0,0,.08);
+/* =========================================================
+   MOBILE GLOBAL LAYOUT
+   ========================================================= */
 
+@media (max-width: 767px) {
+  .section {
+    padding: 20px 16px;
+  }
+
+  .card {
+    border-radius: 20px;
+  }
+
+  .heading {
+    line-height: 1.15;
+  }
+}
+
+/* =========================================================
+   DASHBOARD MOBILE
+   ========================================================= */
+
+@media (max-width: 767px) {
+  /* Dashboard main area */
+  main {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+    padding-top: 76px !important;
+    padding-bottom: 24px !important;
+    gap: 18px !important;
+  }
+
+  /* Dashboard header */
+  main > section:first-of-type {
+    gap: 16px !important;
+  }
+
+  main > section:first-of-type h1 {
+    font-size: 34px !important;
+    line-height: 1.08 !important;
+    letter-spacing: -0.03em;
+  }
+
+  main > section:first-of-type p {
+    line-height: 1.5;
+  }
+
+  main > section:first-of-type a {
+    width: 100%;
+    min-height: 56px;
+  }
+
+  /* Upcoming trip card */
+  main section.rounded-3xl {
+    max-width: 100%;
+  }
+
+  main section.rounded-3xl > div {
+    max-width: 100%;
+  }
+
+  /* Trip hero */
+  main section.bg-\[\#1E3A8A\] {
+    border-radius: 26px !important;
+  }
+
+  main section.bg-\[\#1E3A8A\] > div {
+    padding: 22px !important;
+  }
+
+  main section.bg-\[\#1E3A8A\] h2 {
+    font-size: 32px !important;
+    line-height: 1.1 !important;
+    overflow-wrap: anywhere;
+  }
+
+  /* Trip information */
+  main section.bg-\[\#1E3A8A\] p {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  /* View trip button */
+  main section.bg-\[\#1E3A8A\] a {
+    width: 100%;
+    min-height: 52px;
+  }
+
+  /* Dashboard grid */
+  main .grid {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  /* All dashboard cards */
+  main .rounded-3xl.bg-white {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  /* Card padding */
+  main .rounded-3xl.bg-white.p-6 {
+    padding: 20px !important;
+  }
+
+  /* Budget / Members cards */
+  main .rounded-3xl.bg-white p.text-2xl {
+    font-size: 28px !important;
+    line-height: 1.15;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  /* Card headings */
+  main .rounded-3xl.bg-white h2 {
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  /* =====================================================
+     CHECKLIST
+     ===================================================== */
+
+  main .rounded-3xl.bg-white .flex.items-center.gap-6 {
+    gap: 16px !important;
+  }
+
+  /* Make checklist content fit */
+  main .rounded-3xl.bg-white .h-28.w-28 {
+    width: 88px !important;
+    height: 88px !important;
+    border-width: 8px !important;
+  }
+
+  main .rounded-3xl.bg-white .h-28.w-28 span {
+    font-size: 17px !important;
+  }
+
+  /* =====================================================
+     WEATHER
+     ===================================================== */
+
+  main section.bg-\[\#E5F6FD\] {
+    padding: 20px !important;
+    border-radius: 26px !important;
+    overflow: hidden;
+  }
+
+  main section.bg-\[\#E5F6FD\] h2 {
+    font-size: 28px !important;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+  }
+
+  main section.bg-\[\#E5F6FD\] .text-4xl {
+    font-size: 40px !important;
+  }
+
+  main section.bg-\[\#E5F6FD\] .flex.gap-3 {
+    width: 100%;
+  }
+
+  main section.bg-\[\#E5F6FD\] .flex.gap-3 > div {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* =====================================================
+     TRIPS LIST
+     ===================================================== */
+
+  main .divide-y > a {
+    min-width: 0;
+  }
+
+  /* =====================================================
+     BUTTONS
+     ===================================================== */
+
+  main a,
+  main button {
+    max-width: 100%;
+  }
+
+  /* =====================================================
+     LONG TEXT
+     ===================================================== */
+
+  main .text-3xl,
+  main .text-4xl {
+    overflow-wrap: anywhere;
+  }
+}
+
+/* =========================================================
+   SMALL PHONES
+   ========================================================= */
+
+@media (max-width: 380px) {
+  main {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  main > section:first-of-type h1 {
+    font-size: 30px !important;
+  }
+
+  main section.bg-\[\#1E3A8A\] h2 {
+    font-size: 28px !important;
+  }
+
+  main .rounded-3xl.bg-white.p-6 {
+    padding: 17px !important;
+  }
+
+  main .rounded-3xl.bg-white p.text-2xl {
+    font-size: 25px !important;
+  }
+
+  main section.bg-\[\#E5F6FD\] h2 {
+    font-size: 25px !important;
+  }
 }
