@@ -11,35 +11,36 @@ import { useNavigate } from "react-router-dom";
 
 function Landing() {
   const navigate = useNavigate();
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#fffeef] via-[#eff8ff] to-[#ddefff]">
+    <div className="min-h-screen w-full overflow-x-hidden bg-gradient-to-b from-[#fffeef] via-[#eff8ff] to-[#ddefff]">
       <BackgroundShapes />
 
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-6 lg:px-10">
+      <main className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10">
 
         {/* ================= HERO ================= */}
 
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-24 items-center min-h-[80vh] py-12 lg:py-16">
+        <section className="grid w-full grid-cols-1 items-center gap-10 py-10 sm:gap-14 sm:py-12 lg:grid-cols-2 lg:gap-24 lg:py-16">
 
           {/* Left */}
 
-          <div>
+          <div className="min-w-0">
 
-            <p className="uppercase tracking-[0.3em] font-semibold text-blue-600 mb-5">
+            <p className="mb-5 text-sm font-semibold uppercase tracking-[0.2em] text-blue-600 sm:text-base sm:tracking-[0.3em]">
               PLAN SMARTER. TRAVEL TOGETHER.
             </p>
 
-            <div className="hidden lg:inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow border border-blue-100 mb-6">
-              <span className="w-2 h-2 rounded-full bg-green-500"></span>
+            <div className="mb-6 hidden items-center gap-2 rounded-full border border-blue-100 bg-white px-4 py-2 shadow lg:inline-flex">
+              <span className="h-2 w-2 rounded-full bg-green-500"></span>
 
               <span className="text-sm font-medium text-gray-700">
                 Trusted by Student Organizations
               </span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl xl:text-7xl font-bold leading-tight text-[#1E3A8A]">
+            <h1 className="text-4xl font-bold leading-tight text-[#1E3A8A] sm:text-5xl xl:text-7xl">
               Plan Your
               <br />
               Campus Trip
@@ -47,14 +48,14 @@ function Landing() {
               With Ease.
             </h1>
 
-            <p className="mt-6 text-lg text-gray-600 leading-8 max-w-lg lg:max-w-xl">
+            <p className="mt-6 max-w-xl text-base leading-7 text-gray-600 sm:text-lg sm:leading-8">
               CampusTrip helps students organize campus trips with
               schedules, weather forecasts, expense tracking,
               packing checklists, and real-time collaboration —
               all in one modern platform.
             </p>
 
-            <div className="mt-10 flex flex-col sm:flex-row gap-4 items-start">
+            <div className="mt-8 flex w-full flex-col gap-3 sm:mt-10 sm:w-auto sm:flex-row sm:gap-4">
 
               <Button onClick={() => navigate("/register")}>
                 🚀 Get Started
@@ -73,7 +74,7 @@ function Landing() {
 
             </div>
 
-            <div className="flex flex-wrap gap-6 mt-8 text-sm text-gray-600">
+            <div className="mt-8 flex flex-wrap gap-x-5 gap-y-3 text-sm text-gray-600 sm:gap-6">
 
               <span>✅ Free for Students</span>
 
@@ -87,59 +88,78 @@ function Landing() {
 
           {/* Right */}
 
-          <div className="flex justify-center">
-            <DashboardPreview />
+          <div className="flex w-full min-w-0 justify-center overflow-hidden">
+
+            <div className="w-full min-w-0 max-w-[520px]">
+
+              <DashboardPreview />
+
+            </div>
+
           </div>
 
         </section>
 
-        {/* ================= SPACER ================= */}
-
-        
 
         {/* ================= STATS ================= */}
 
-        <section id="stats" className="py-16">
+        <section
+          id="stats"
+          className="w-full py-12 sm:py-16"
+        >
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid w-full grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-4">
 
-            <StatsCard number="500+" label="Students" />
+            <StatsCard
+              number="500+"
+              label="Students"
+            />
 
-            <StatsCard number="120" label="Trips Created" />
+            <StatsCard
+              number="120"
+              label="Trips Created"
+            />
 
-            <StatsCard number="98%" label="Trip Success" />
+            <StatsCard
+              number="98%"
+              label="Trip Success"
+            />
 
-            <StatsCard number="15" label="Universities" />
+            <StatsCard
+              number="15"
+              label="Universities"
+            />
 
           </div>
 
         </section>
 
-        {/* ================= SPACER ================= */}
-
-        
 
         {/* ================= FEATURES ================= */}
 
-        <section id="features" className="py-20">
+        <section
+          id="features"
+          className="w-full py-14 sm:py-20"
+        >
 
-          <div className="text-center mb-16">
+          <div className="mb-12 text-center sm:mb-16">
 
-            <p className="uppercase tracking-[0.3em] text-blue-600 font-semibold">
+            <p className="font-semibold uppercase tracking-[0.2em] text-blue-600 sm:tracking-[0.3em]">
               FEATURES
             </p>
 
-            <h2 className="text-2xl lg:text-4xl font-bold text-[#1E3A8A] mt-4">
+            <h2 className="mt-4 text-2xl font-bold leading-tight text-[#1E3A8A] sm:text-3xl lg:text-4xl">
               Everything you need for your trip
             </h2>
 
-            <p className="text-gray-600 mt-6 max-w-2xl mx-auto">
-              CampusTrip helps students organize, manage and enjoy every trip together.
+            <p className="mx-auto mt-6 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
+              CampusTrip helps students organize, manage and enjoy
+              every trip together.
             </p>
 
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
 
             <FeatureCard
               icon="🌤"
@@ -169,32 +189,32 @@ function Landing() {
 
         </section>
 
-        {/* ================= SPACER ================= */}
-
-        
 
         {/* ================= WHY CHOOSE US ================= */}
 
-        <section id="about" className="py-20">
+        <section
+          id="about"
+          className="w-full py-14 sm:py-20"
+        >
 
-          <div className="text-center mb-16">
+          <div className="mb-12 text-center sm:mb-16">
 
-            <p className="uppercase tracking-[0.3em] text-blue-600 font-semibold">
+            <p className="font-semibold uppercase tracking-[0.2em] text-blue-600 sm:tracking-[0.3em]">
               WHY CHOOSE US
             </p>
 
-            <h2 className="text-2xl lg:text-4xl font-bold text-[#1E3A8A] mt-4">
+            <h2 className="mt-4 text-2xl font-bold leading-tight text-[#1E3A8A] sm:text-3xl lg:text-4xl">
               Everything Students Need
             </h2>
 
-            <p className="mt-5 text-gray-600 max-w-2xl mx-auto">
-              CampusTrip keeps your entire trip organized from planning
-              to arriving back home.
+            <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
+              CampusTrip keeps your entire trip organized from
+              planning to arriving back home.
             </p>
 
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
 
             <InfoCard
               icon="🚌"
@@ -236,27 +256,27 @@ function Landing() {
 
         </section>
 
-        {/* ================= SPACER ================= */}
-
-        
 
         {/* ================= HOW IT WORKS ================= */}
 
-        <section id="how-it-works" className="pt-16 pb-6">
+        <section
+          id="how-it-works"
+          className="w-full pt-12 pb-6 sm:pt-16"
+        >
 
-          <div className="text-center mb-16">
+          <div className="mb-12 text-center sm:mb-16">
 
-            <p className="uppercase tracking-[0.3em] text-blue-600 font-semibold">
+            <p className="font-semibold uppercase tracking-[0.2em] text-blue-600 sm:tracking-[0.3em]">
               HOW IT WORKS
             </p>
 
-            <h2 className="text-2xl lg:text-4xl font-bold text-[#1E3A8A] mt-4">
+            <h2 className="mt-4 text-2xl font-bold leading-tight text-[#1E3A8A] sm:text-3xl lg:text-4xl">
               Plan Your Trip in 3 Easy Steps
             </h2>
 
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-3 sm:gap-8">
 
             <StepCard
               number="1"
@@ -280,9 +300,8 @@ function Landing() {
 
         </section>
 
-        {/* ================= SPACER ================= */}
 
-        
+        {/* ================= FOOTER ================= */}
 
         <Footer />
 
@@ -293,4 +312,3 @@ function Landing() {
 }
 
 export default Landing;
-
