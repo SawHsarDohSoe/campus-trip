@@ -23,50 +23,83 @@ import {
 function Sidebar() {
   const navigate = useNavigate();
 
-const [isOpen, setIsOpen] = useState(false);
-const [notifications, setNotifications] = useState([]);
-const [showNotifications, setShowNotifications] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
 
-useEffect(() => {
-  const loadNotifications = async () => {
-    try {
-      const token = localStorage.getItem("campusTripToken");
+  useEffect(() => {
+    const loadNotifications = async () => {
+      try {
+        const token = localStorage.getItem("campusTripToken");
 
-      if (!token) return;
+        if (!token) return;
 
-      const data = await getNotifications(token);
+        const data = await getNotifications(token);
 
-      setNotifications(data.notifications || []);
-    } catch (error) {
-      console.error("Unable to load notifications:", error);
-    }
-  };
+        setNotifications(data.notifications || []);
+      } catch (error) {
+        console.error("Unable to load notifications:", error);
+      }
+    };
 
-  // Load notifications immediately
-  loadNotifications();
-
-  // Check for new notifications every 5 seconds
-  const interval = setInterval(() => {
     loadNotifications();
-  }, 5000);
 
-  // Stop checking when Sidebar is removed
-  return () => {
-    clearInterval(interval);
-  };
-}, []);
+    const interval = setInterval(() => {
+      loadNotifications();
+    }, 5000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
 
   const navItems = [
-  { to: "/dashboard", label: "Dashboard", icon: Home },
-  { to: "/trips", label: "My Trips", icon: Map },
-  { to: "/trip-history", label: "Trip History", icon: History },
-  { to: "/join-trip", label: "Join Trip", icon: KeyRound },
-  { to: "/schedule", label: "Schedule", icon: CalendarDays },
-  { to: "/budget", label: "Budget", icon: Wallet },
-  { to: "/checklist", label: "Checklist", icon: CheckSquare },
-  { to: "/members", label: "Members", icon: Users },
-  { to: "/settings", label: "Settings", icon: Settings },
-];
+    {
+      to: "/dashboard",
+      label: "Dashboard",
+      icon: Home,
+    },
+    {
+      to: "/trips",
+      label: "My Trips",
+      icon: Map,
+    },
+    {
+      to: "/trip-history",
+      label: "Trip History",
+      icon: History,
+    },
+    {
+      to: "/join-trip",
+      label: "Join Trip",
+      icon: KeyRound,
+    },
+    {
+      to: "/schedule",
+      label: "Schedule",
+      icon: CalendarDays,
+    },
+    {
+      to: "/budget",
+      label: "Budget",
+      icon: Wallet,
+    },
+    {
+      to: "/checklist",
+      label: "Checklist",
+      icon: CheckSquare,
+    },
+    {
+      to: "/members",
+      label: "Members",
+      icon: Users,
+    },
+    {
+      to: "/settings",
+      label: "Settings",
+      icon: Settings,
+    },
+  ];
 
   const handleLogout = () => {
     localStorage.removeItem("campusTripToken");
@@ -78,8 +111,8 @@ useEffect(() => {
   };
 
   const unreadCount = notifications.filter(
-  (notification) => !notification.read
-).length;
+    (notification) => !notification.read
+  ).length;
 
   return (
     <>
@@ -126,107 +159,105 @@ useEffect(() => {
         </div>
 
         {/* Notifications */}
-<div className="relative mb-4">
-  <button
-    type="button"
-   onClick={() => {
-  setShowNotifications(
-    (current) => !current
-  );
-}}
-    className="relative flex w-full items-center gap-3 rounded-xl p-3 text-gray-700 transition hover:bg-blue-50 hover:text-[#1E3A8A]"
-  >
-    <Bell size={20} />
-
-    <span>Notifications</span>
-
-    {unreadCount > 0 && (
-      <span className="ml-auto flex h-6 min-w-6 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white">
-        {unreadCount > 99 ? "99+" : unreadCount}
-      </span>
-    )}
-  </button>
-
-  {showNotifications && (
-    <div className="absolute left-0 top-full z-[100] mt-2 w-full rounded-2xl border bg-white p-3 shadow-xl">
-      <div className="flex items-center justify-between px-2 py-2">
-        <h3 className="font-bold text-[#1E3A8A]">
-          Notifications
-        </h3>
-
-        {unreadCount > 0 && (
+        <div className="relative mb-4">
           <button
             type="button"
-            onClick={async () => {
-              try {
-                const token =
-                  localStorage.getItem("campusTripToken");
-
-                if (!token) return;
-
-                await markAllNotificationsRead(token);
-
-                setNotifications((current) =>
-                  current.map((notification) => ({
-                    ...notification,
-                    read: true,
-                  }))
-                );
-              } catch (error) {
-                console.error(error);
-              }
+            onClick={() => {
+              setShowNotifications((current) => !current);
             }}
-            className="text-xs font-semibold text-blue-600 hover:underline"
+            className="relative flex w-full items-center gap-3 rounded-xl p-3 text-gray-700 transition hover:bg-blue-50 hover:text-[#1E3A8A]"
           >
-            Mark all read
+            <Bell size={20} />
+
+            <span>Notifications</span>
+
+            {unreadCount > 0 && (
+              <span className="ml-auto flex h-6 min-w-6 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
           </button>
-        )}
-      </div>
 
-      {notifications.length === 0 ? (
-        <p className="px-2 py-4 text-center text-sm text-gray-500">
-          No notifications yet.
-        </p>
-      ) : (
-        <div className="max-h-72 space-y-2 overflow-y-auto">
-          {notifications.map((notification) => (
-            <div
-              key={notification._id}
-              className={`rounded-xl p-3 ${
-                notification.read
-                  ? "bg-gray-50"
-                  : "bg-blue-50"
-              }`}
-            >
-              <p className="text-sm font-semibold text-gray-800">
-                {notification.title}
-              </p>
+          {showNotifications && (
+            <div className="absolute left-0 top-full z-[100] mt-2 w-full rounded-2xl border bg-white p-3 shadow-xl">
+              <div className="flex items-center justify-between px-2 py-2">
+                <h3 className="font-bold text-[#1E3A8A]">
+                  Notifications
+                </h3>
 
-              <p className="mt-1 text-xs text-gray-600">
-                {notification.message}
-              </p>
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const token =
+                          localStorage.getItem("campusTripToken");
 
-              {!notification.read && (
-                <span className="mt-2 inline-block text-xs font-semibold text-blue-600">
-                  New
-                </span>
+                        if (!token) return;
+
+                        await markAllNotificationsRead(token);
+
+                        setNotifications((current) =>
+                          current.map((notification) => ({
+                            ...notification,
+                            read: true,
+                          }))
+                        );
+                      } catch (error) {
+                        console.error(error);
+                      }
+                    }}
+                    className="text-xs font-semibold text-blue-600 hover:underline"
+                  >
+                    Mark all read
+                  </button>
+                )}
+              </div>
+
+              {notifications.length === 0 ? (
+                <p className="px-2 py-4 text-center text-sm text-gray-500">
+                  No notifications yet.
+                </p>
+              ) : (
+                <div className="max-h-72 space-y-2 overflow-y-auto">
+                  {notifications.map((notification) => (
+                    <div
+                      key={notification._id}
+                      className={`rounded-xl p-3 ${
+                        notification.read
+                          ? "bg-gray-50"
+                          : "bg-blue-50"
+                      }`}
+                    >
+                      <p className="text-sm font-semibold text-gray-800">
+                        {notification.title}
+                      </p>
+
+                      <p className="mt-1 text-xs text-gray-600">
+                        {notification.message}
+                      </p>
+
+                      {!notification.read && (
+                        <span className="mt-2 inline-block text-xs font-semibold text-blue-600">
+                          New
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
-          ))}
+          )}
         </div>
-      )}
-    </div>
-  )}
-</div>
 
-        {/* Home Button */}
+        {/* Home Button - Desktop Only */}
         <button
           type="button"
           onClick={() => {
             setIsOpen(false);
             navigate("/");
           }}
-          className="mb-6 flex items-center gap-3 rounded-xl bg-blue-50 p-3 font-semibold text-[#1E3A8A] transition hover:bg-blue-100"
+          className="mb-6 hidden items-center gap-3 rounded-xl bg-blue-50 p-3 font-semibold text-[#1E3A8A] transition hover:bg-blue-100 md:flex"
         >
           <Home size={20} />
           Home
