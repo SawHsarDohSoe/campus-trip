@@ -579,7 +579,7 @@ try {
 }
 
 const isTripOwner =
-  String(trip.owner) === String(currentUserId);
+  String(trip.owner?._id || trip.owner) === String(currentUserId);
 
   return (
     <div className="flex min-h-screen bg-slate-50">
