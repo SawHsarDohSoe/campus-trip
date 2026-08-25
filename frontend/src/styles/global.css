@@ -23,162 +23,215 @@
    ========================================================= */
 
 @media (max-width: 767px) {
+
   .section {
-    padding: 20px 16px;
+    padding: 16px 14px;
   }
 
   .card {
-    border-radius: 20px;
+    border-radius: 18px;
   }
 
   .heading {
     line-height: 1.15;
   }
-}
 
-/* =========================================================
-   DASHBOARD MOBILE
-   ========================================================= */
-
-@media (max-width: 767px) {
-  /* Dashboard main area */
-  main {
-    padding-left: 16px !important;
-    padding-right: 16px !important;
-    padding-top: 76px !important;
-    padding-bottom: 24px !important;
-    gap: 18px !important;
+  /* Prevent horizontal overflow */
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
-  /* Dashboard header */
+  * {
+    box-sizing: border-box;
+  }
+
+  /* =======================================================
+     DASHBOARD MAIN AREA
+     ======================================================= */
+
+  main {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    padding-top: 70px !important;
+    padding-bottom: 20px !important;
+    gap: 14px !important;
+  }
+
+  /* =======================================================
+     DASHBOARD WELCOME SECTION
+     ======================================================= */
+
   main > section:first-of-type {
-    gap: 16px !important;
+    gap: 12px !important;
   }
 
   main > section:first-of-type h1 {
-    font-size: 34px !important;
+    font-size: 36px !important;
     line-height: 1.08 !important;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.025em;
   }
 
   main > section:first-of-type p {
-    line-height: 1.5;
+    font-size: 17px !important;
+    line-height: 1.45 !important;
   }
 
   main > section:first-of-type a {
     width: 100%;
-    min-height: 56px;
+    min-height: 52px;
+    font-size: 17px !important;
   }
 
-  /* Upcoming trip card */
-  main section.rounded-3xl {
+  /* =======================================================
+     ALL DASHBOARD CARDS
+     ======================================================= */
+
+  main .rounded-3xl.bg-white {
+    width: 100%;
     max-width: 100%;
+    overflow: hidden;
+    border-radius: 22px !important;
   }
 
-  main section.rounded-3xl > div {
+  main .rounded-3xl.bg-white.p-6 {
+    padding: 18px !important;
+  }
+
+  /* Reduce card spacing */
+  main .grid {
+    min-width: 0;
     max-width: 100%;
+    gap: 14px !important;
   }
 
-  /* Trip hero */
+  /* =======================================================
+     CARD HEADINGS
+     ======================================================= */
+
+  main .rounded-3xl.bg-white h2 {
+    font-size: 23px !important;
+    line-height: 1.2 !important;
+    overflow-wrap: anywhere;
+  }
+
+  main .rounded-3xl.bg-white h3 {
+    font-size: 21px !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Normal card text */
+  main .rounded-3xl.bg-white p {
+    font-size: 16px;
+    line-height: 1.45;
+  }
+
+  /* =======================================================
+     LARGE CARD NUMBERS
+     ======================================================= */
+
+  main .rounded-3xl.bg-white p.text-2xl {
+    font-size: 27px !important;
+    line-height: 1.15 !important;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  main .rounded-3xl.bg-white .text-3xl {
+    font-size: 30px !important;
+  }
+
+  main .rounded-3xl.bg-white .text-4xl {
+    font-size: 36px !important;
+  }
+
+  /* =======================================================
+     UPCOMING TRIP CARD
+     ======================================================= */
+
   main section.bg-\[\#1E3A8A\] {
-    border-radius: 26px !important;
+    border-radius: 24px !important;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
   }
 
   main section.bg-\[\#1E3A8A\] > div {
-    padding: 22px !important;
+    padding: 20px !important;
   }
 
+  /* Trip title */
   main section.bg-\[\#1E3A8A\] h2 {
-    font-size: 32px !important;
-    line-height: 1.1 !important;
+    font-size: 34px !important;
+    line-height: 1.08 !important;
     overflow-wrap: anywhere;
   }
 
   /* Trip information */
   main section.bg-\[\#1E3A8A\] p {
+    font-size: 17px !important;
+    line-height: 1.4 !important;
     max-width: 100%;
     overflow-wrap: anywhere;
+  }
+
+  /* Status badges */
+  main section.bg-\[\#1E3A8A\] span {
+    font-size: 15px !important;
   }
 
   /* View trip button */
   main section.bg-\[\#1E3A8A\] a {
     width: 100%;
-    min-height: 52px;
-  }
-
-  /* Dashboard grid */
-  main .grid {
-    min-width: 0;
-    max-width: 100%;
-  }
-
-  /* All dashboard cards */
-  main .rounded-3xl.bg-white {
-    width: 100%;
-    max-width: 100%;
-    overflow: hidden;
-  }
-
-  /* Card padding */
-  main .rounded-3xl.bg-white.p-6 {
-    padding: 20px !important;
-  }
-
-  /* Budget / Members cards */
-  main .rounded-3xl.bg-white p.text-2xl {
-    font-size: 28px !important;
-    line-height: 1.15;
-    white-space: normal;
-    overflow-wrap: anywhere;
-  }
-
-  /* Card headings */
-  main .rounded-3xl.bg-white h2 {
-    line-height: 1.2;
-    overflow-wrap: anywhere;
-  }
-
-  /* =====================================================
-     CHECKLIST
-     ===================================================== */
-
-  main .rounded-3xl.bg-white .flex.items-center.gap-6 {
-    gap: 16px !important;
-  }
-
-  /* Make checklist content fit */
-  main .rounded-3xl.bg-white .h-28.w-28 {
-    width: 88px !important;
-    height: 88px !important;
-    border-width: 8px !important;
-  }
-
-  main .rounded-3xl.bg-white .h-28.w-28 span {
+    min-height: 50px;
     font-size: 17px !important;
   }
 
-  /* =====================================================
+  /* =======================================================
+     CHECKLIST
+     ======================================================= */
+
+  main .rounded-3xl.bg-white .flex.items-center.gap-6 {
+    gap: 14px !important;
+  }
+
+  main .rounded-3xl.bg-white .h-28.w-28 {
+    width: 76px !important;
+    height: 76px !important;
+    border-width: 7px !important;
+    flex-shrink: 0;
+  }
+
+  main .rounded-3xl.bg-white .h-28.w-28 span {
+    font-size: 15px !important;
+  }
+
+  /* =======================================================
      WEATHER
-     ===================================================== */
+     ======================================================= */
 
   main section.bg-\[\#E5F6FD\] {
-    padding: 20px !important;
-    border-radius: 26px !important;
+    padding: 18px !important;
+    border-radius: 24px !important;
     overflow: hidden;
   }
 
   main section.bg-\[\#E5F6FD\] h2 {
-    font-size: 28px !important;
-    line-height: 1.15;
+    font-size: 25px !important;
+    line-height: 1.15 !important;
     overflow-wrap: anywhere;
   }
 
   main section.bg-\[\#E5F6FD\] .text-4xl {
-    font-size: 40px !important;
+    font-size: 38px !important;
   }
 
   main section.bg-\[\#E5F6FD\] .flex.gap-3 {
     width: 100%;
+    gap: 10px !important;
   }
 
   main section.bg-\[\#E5F6FD\] .flex.gap-3 > div {
@@ -186,30 +239,35 @@
     min-width: 0;
   }
 
-  /* =====================================================
-     TRIPS LIST
-     ===================================================== */
-
-  main .divide-y > a {
-    min-width: 0;
-  }
-
-  /* =====================================================
+  /* =======================================================
      BUTTONS
-     ===================================================== */
+     ======================================================= */
 
   main a,
   main button {
     max-width: 100%;
   }
 
-  /* =====================================================
+  main button {
+    font-size: 16px;
+  }
+
+  /* =======================================================
      LONG TEXT
-     ===================================================== */
+     ======================================================= */
 
   main .text-3xl,
   main .text-4xl {
     overflow-wrap: anywhere;
+  }
+
+  /* =======================================================
+     ICONS
+     ======================================================= */
+
+  main svg {
+    max-width: 32px;
+    max-height: 32px;
   }
 }
 
@@ -218,28 +276,45 @@
    ========================================================= */
 
 @media (max-width: 380px) {
+
   main {
     padding-left: 12px !important;
     padding-right: 12px !important;
   }
 
   main > section:first-of-type h1 {
-    font-size: 30px !important;
+    font-size: 32px !important;
+  }
+
+  main > section:first-of-type p {
+    font-size: 16px !important;
   }
 
   main section.bg-\[\#1E3A8A\] h2 {
-    font-size: 28px !important;
+    font-size: 30px !important;
+  }
+
+  main section.bg-\[\#1E3A8A\] > div {
+    padding: 18px !important;
   }
 
   main .rounded-3xl.bg-white.p-6 {
-    padding: 17px !important;
+    padding: 16px !important;
   }
 
   main .rounded-3xl.bg-white p.text-2xl {
-    font-size: 25px !important;
+    font-size: 24px !important;
+  }
+
+  main .rounded-3xl.bg-white h2 {
+    font-size: 21px !important;
   }
 
   main section.bg-\[\#E5F6FD\] h2 {
-    font-size: 25px !important;
+    font-size: 23px !important;
+  }
+
+  main section.bg-\[\#E5F6FD\] .text-4xl {
+    font-size: 34px !important;
   }
 }
