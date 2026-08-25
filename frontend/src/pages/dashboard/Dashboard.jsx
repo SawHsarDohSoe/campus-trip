@@ -268,29 +268,14 @@ setSchedules(schedulesData.schedules);
   const now = new Date();
 
   const upcoming = [...schedules]
-    .map((schedule) => {
-      const date = parseDate(schedule.date);
-
-      if (!date || Number.isNaN(date.getTime())) {
-        return null;
-      }
-
-      const [hours = 0, minutes = 0] =
-        String(schedule.time || "00:00")
-          .split(":")
-          .map(Number);
-
-      date.setHours(hours, minutes, 0, 0);
-
-      return {
-        ...schedule,
-        dateTime: date,
-      };
-    })
+    .map((schedule) => ({
+      ...schedule,
+      dateTime: new Date(
+        `${schedule.date}T${schedule.time}`
+      ),
+    }))
     .filter(
-      (schedule) =>
-        schedule &&
-        schedule.dateTime >= now
+      (schedule) => schedule.dateTime >= now
     )
     .sort(
       (a, b) =>
@@ -323,7 +308,7 @@ setSchedules(schedulesData.schedules);
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar />
 
-      <main className="flex flex-1 flex-col gap-7 p-5 pt-20 md:p-8">
+      <main className="flex flex-1 flex-col gap-5 p-3 pt-20 sm:p-5 md:gap-7 md:p-8">
 
         {/* ───────── Header ───────── */}
         <section className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
@@ -333,7 +318,7 @@ setSchedules(schedulesData.schedules);
               CampusTrip
             </p>
 
-            <h1 className="mt-1 text-3xl font-bold tracking-tight text-[#1E3A8A] md:text-4xl">
+            <h1 className="mt-1 text-2xl font-bold tracking-tight text-[#1E3A8A] sm:text-3xl md:text-4xl">
               Welcome back
               {user?.name
                 ? `, ${user.name.split(" ")[0]}`
@@ -347,7 +332,7 @@ setSchedules(schedulesData.schedules);
           </div>
 
           <Link
-            to="/trips/create"
+            to="/trips/new"
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white shadow-lg transition hover:bg-blue-700"
           >
             <Plus size={19} />
@@ -380,7 +365,7 @@ setSchedules(schedulesData.schedules);
             </p>
 
             <Link
-              to="/trips/create"
+              to="/trips/new"
               className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#1E3A8A] px-6 py-3 font-semibold text-white hover:bg-blue-700"
             >
               <Plus size={19} />
@@ -415,7 +400,7 @@ setSchedules(schedulesData.schedules);
 
                     </div>
 
-                    <h2 className="mt-4 text-3xl font-bold md:text-4xl">
+                    <h2 className="mt-4 text-2xl font-bold sm:text-3xl md:text-4xl">
                       {upcomingTrip.title}
                     </h2>
 
@@ -459,60 +444,10 @@ setSchedules(schedulesData.schedules);
             </section>
 
             {/* ───────── Main Stats ───────── */}
-            <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-
-              {/* Budget */}
-              <div className="rounded-3xl bg-white p-6 shadow-lg">
-
-                <div className="flex items-center justify-between">
-
-                  <div className="rounded-2xl bg-[#E5F6FD] p-3 text-[#1E3A8A]">
-                    <Wallet size={23} />
-                  </div>
-
-                  <span className="text-xs font-medium uppercase tracking-wide text-gray-400">
-                    Budget
-                  </span>
-
-                </div>
-
-                <p className="mt-5 text-sm text-gray-500">
-                  Remaining
-                </p>
-
-                <p
-                  className={`mt-1 text-2xl font-bold ${
-                    remainingBudget >= 0
-                      ? "text-[#1E3A8A]"
-                      : "text-red-600"
-                  }`}
-                >
-                  {currency.format(
-                    remainingBudget
-                  )}
-                </p>
-
-                <div className="mt-4 h-2 overflow-hidden rounded-full bg-gray-100">
-                  <div
-                    className={`h-full rounded-full ${
-                      budgetPercentage >= 90
-                        ? "bg-red-500"
-                        : "bg-[#1E3A8A]"
-                    }`}
-                    style={{
-                      width: `${budgetPercentage}%`,
-                    }}
-                  />
-                </div>
-
-                <p className="mt-2 text-xs text-gray-400">
-                  {budgetPercentage}% of budget used
-                </p>
-
-              </div>
+            <section className="grid gap-4 sm:grid-cols-2">
 
               {/* Members */}
-              <div className="rounded-3xl bg-white p-6 shadow-lg">
+              <div className="rounded-3xl bg-white p-4 shadow-lg sm:p-6">
 
                 <div className="flex items-center justify-between">
 
@@ -530,7 +465,7 @@ setSchedules(schedulesData.schedules);
                   Trip participants
                 </p>
 
-                <p className="mt-1 text-2xl font-bold text-[#1E3A8A]">
+                <p className="mt-1 text-xl font-bold text-[#1E3A8A] sm:text-2xl">
                   {members.length}
                   <span className="text-base font-medium text-gray-400">
                     {" "}
@@ -558,85 +493,124 @@ setSchedules(schedulesData.schedules);
 
               </div>
 
+              {/* Checklist */}
+              <div className="rounded-3xl bg-white p-4 shadow-lg sm:p-6">
+
+                <div className="flex items-center justify-between">
+
+                  <div className="rounded-2xl bg-[#E5F6FD] p-3 text-[#1E3A8A]">
+                    <CheckCircle2 size={23} />
+                  </div>
+
+                  <span className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                    Checklist
+                  </span>
+
+                </div>
+
+                <p className="mt-5 text-sm text-gray-500">
+                  Packing progress
+                </p>
+
+                <p className="mt-1 text-xl font-bold text-[#1E3A8A] sm:text-2xl">
+                  {checklistProgress}%
+                </p>
+
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-gray-100">
+                  <div
+                    className="h-full rounded-full bg-[#1E3A8A]"
+                    style={{
+                      width: `${checklistProgress}%`,
+                    }}
+                  />
+                </div>
+
+                <p className="mt-2 text-xs text-gray-400">
+                  {completedItems} of{" "}
+                  {checklist.length} items ready
+                </p>
+
+              </div>
+
             </section>
 
             {/* ───────── Two Main Panels ───────── */}
             <section className="grid gap-6 lg:grid-cols-2">
             
             {/* ───────── Next Activity ───────── */}
-              <section className="rounded-3xl bg-white p-6 shadow-lg md:p-7">
-              
-                <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-              
-                  <div className="flex items-start gap-4">
-              
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#E5F6FD] text-[#1E3A8A]">
-                      <Clock3 size={23} />
-                    </div>
-              
-                    <div>
-              
-                      <p className="text-sm font-semibold text-blue-700">
-                        NEXT ACTIVITY
-                      </p>
-              
-                      {nextActivity ? (
-                        <>
-                          <h2 className="mt-1 text-2xl font-bold text-[#1E3A8A]">
-                            {nextActivity.activity}
-                          </h2>
-              
-                          <div className="mt-2 flex flex-col gap-2 text-sm text-gray-500 sm:flex-row sm:gap-5">
-              
-                            <span className="flex items-center gap-2">
-                              <CalendarDays size={15} />
-                              {formatDate(nextActivity.date)}
-                            </span>
-              
-                            <span className="flex items-center gap-2">
-                              <Clock3 size={15} />
-                              {nextActivity.time}
-                            </span>
-              
-                            {nextActivity.location && (
-                              <span className="flex items-center gap-2">
-                                <MapPin size={15} />
-                                {nextActivity.location}
-                              </span>
-                            )}
-              
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <h2 className="mt-1 text-xl font-bold text-gray-700">
-                            No upcoming activities
-                          </h2>
-              
-                          <p className="mt-1 text-sm text-gray-500">
-                            Add activities to your trip schedule.
-                          </p>
-                        </>
-                      )}
-              
-                    </div>
-              
-                  </div>
-              
-                  <Link
-                    to="/schedule"
-                    className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-[#1E3A8A] px-4 py-3 text-sm font-semibold text-[#1E3A8A] transition hover:bg-[#E5F6FD]"
-                  >
-                    View Schedule
-                    <ArrowRight size={16} />
-                  </Link>
-              
-                </div>
-              
-              </section>
+<section className="rounded-3xl bg-white p-4 shadow-lg sm:p-6 md:p-7">
+
+  <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+
+    <div className="flex items-start gap-4">
+
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#E5F6FD] text-[#1E3A8A]">
+        <Clock3 size={23} />
+      </div>
+
+      <div>
+
+        <p className="text-sm font-semibold text-blue-700">
+          NEXT ACTIVITY
+        </p>
+
+        {nextActivity ? (
+          <>
+            <h2 className="mt-1 text-xl font-bold text-[#1E3A8A] sm:text-2xl">
+              {nextActivity.activity}
+            </h2>
+
+            <div className="mt-2 flex flex-col gap-2 text-sm text-gray-500 sm:flex-row sm:gap-5">
+
+              <span className="flex items-center gap-2">
+                <CalendarDays size={15} />
+                {formatDate(nextActivity.date)}
+              </span>
+
+              <span className="flex items-center gap-2">
+                <Clock3 size={15} />
+                {nextActivity.time}
+              </span>
+
+              {nextActivity.location && (
+                <span className="flex items-center gap-2">
+                  <MapPin size={15} />
+                  {nextActivity.location}
+                </span>
+              )}
+
+            </div>
+          </>
+        ) : (
+          <>
+            <h2 className="mt-1 text-xl font-bold text-gray-700">
+              No upcoming activities
+            </h2>
+
+            <p className="mt-1 text-sm text-gray-500">
+              Add activities to your trip schedule.
+            </p>
+          </>
+        )}
+
+      </div>
+
+    </div>
+
+    <Link
+      to="/schedule"
+      className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-[#1E3A8A] px-4 py-3 text-sm font-semibold text-[#1E3A8A] transition hover:bg-[#E5F6FD]"
+    >
+      View Schedule
+      <ArrowRight size={16} />
+    </Link>
+
+  </div>
+
+</section>
 
               {/* Checklist */}
-              <div className="rounded-3xl bg-white p-6 shadow-lg md:p-7">
+              <div className="rounded-3xl bg-white p-4 shadow-lg sm:p-6 md:p-7">
 
                 <div className="flex items-start justify-between">
 
@@ -704,7 +678,96 @@ setSchedules(schedulesData.schedules);
                 </div>
 
               </div>
-              </section>
+
+              {/* Budget */}
+              <div className="rounded-3xl bg-white p-4 shadow-lg sm:p-6 md:p-7">
+
+                <div className="flex items-start justify-between">
+
+                  <div>
+                    <h2 className="text-xl font-bold text-[#1E3A8A]">
+                      Budget Overview
+                    </h2>
+
+                    <p className="mt-1 text-sm text-gray-500">
+                      Keep your trip spending under control.
+                    </p>
+                  </div>
+
+                  <Link
+                    to="/budget"
+                    className="text-sm font-semibold text-blue-700 hover:underline"
+                  >
+                    View budget
+                  </Link>
+
+                </div>
+
+                <div className="mt-7 grid grid-cols-3 gap-3">
+
+                  <div className="rounded-2xl bg-[#E5F6FD] p-4">
+
+                    <p className="text-xs text-gray-500">
+                      Budget
+                    </p>
+
+                    <p className="mt-2 text-lg font-bold text-[#1E3A8A]">
+                      {currency.format(
+                        totalBudget
+                      )}
+                    </p>
+
+                  </div>
+
+                  <div className="rounded-2xl bg-gray-50 p-4">
+
+                    <p className="text-xs text-gray-500">
+                      Spent
+                    </p>
+
+                    <p className="mt-2 text-lg font-bold text-gray-800">
+                      {currency.format(spent)}
+                    </p>
+
+                  </div>
+
+                  <div className="rounded-2xl bg-green-50 p-4">
+
+                    <p className="text-xs text-gray-500">
+                      Left
+                    </p>
+
+                    <p className="mt-2 text-lg font-bold text-green-700">
+                      {currency.format(
+                        remainingBudget
+                      )}
+                    </p>
+
+                  </div>
+
+                </div>
+
+                <div className="mt-6 h-3 overflow-hidden rounded-full bg-gray-100">
+                  <div
+                    className={`h-full rounded-full ${
+                      budgetPercentage >= 90
+                        ? "bg-red-500"
+                        : "bg-[#1E3A8A]"
+                    }`}
+                    style={{
+                      width: `${budgetPercentage}%`,
+                    }}
+                  />
+                </div>
+
+                <p className="mt-2 text-xs text-gray-400">
+                  {budgetPercentage}% of your trip budget has been used.
+                </p>
+
+              </div>
+
+            </section>
+
             {/* ───────── Weather Details ───────── */}
             {weather && (
               <section className="rounded-3xl bg-[#E5F6FD] p-6 shadow-lg md:p-7">
@@ -716,7 +779,7 @@ setSchedules(schedulesData.schedules);
                       DESTINATION WEATHER
                     </p>
 
-                    <h2 className="mt-1 text-2xl font-bold text-[#1E3A8A]">
+                    <h2 className="mt-1 text-xl font-bold text-[#1E3A8A] sm:text-2xl">
                       {weather.city}, {weather.country}
                     </h2>
 
@@ -734,7 +797,7 @@ setSchedules(schedulesData.schedules);
                     </div>
 
                     <div>
-                      <p className="text-4xl font-bold text-[#1E3A8A]">
+                      <p className="text-3xl font-bold text-[#1E3A8A] sm:text-4xl">
                         {Math.round(
                           weather.temperature
                         )}
@@ -796,7 +859,7 @@ setSchedules(schedulesData.schedules);
             )}
 
             {/* ───────── Recent Trips ───────── */}
-            <section className="rounded-3xl bg-white p-6 shadow-lg md:p-7">
+            <section className="rounded-3xl bg-white p-4 shadow-lg sm:p-6 md:p-7">
 
               <div className="flex items-center justify-between">
 
