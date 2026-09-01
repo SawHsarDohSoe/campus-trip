@@ -552,6 +552,7 @@ const handleDeleteMessage = async (messageId) => {
 
           <Link
             to="/trips"
+            replace
             className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white hover:bg-blue-700"
           >
             <ArrowLeft size={18} />
@@ -590,6 +591,7 @@ const isTripOwner =
         {/* Back */}
         <Link
           to="/trips"
+          replace
           className="inline-flex items-center gap-2 font-medium text-blue-700 hover:underline"
         >
           <ArrowLeft size={18} />

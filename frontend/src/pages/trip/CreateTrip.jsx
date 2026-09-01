@@ -76,6 +76,7 @@ function CreateTrip() {
         <div>
           <Link
             to="/trips"
+            replace
             className="text-sm font-medium text-blue-700 hover:underline"
           >
             ← Back to My Trips

@@ -130,6 +130,7 @@ function Sidebar() {
       {/* Compact brand mark visible on every mobile app page. */}
       <NavLink
         to="/dashboard"
+        replace
         aria-label="CampusTrip dashboard"
         className="fixed left-20 top-5 z-40 inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-bold text-[#1E3A8A] shadow-lg md:hidden"
       >
@@ -284,6 +285,7 @@ function Sidebar() {
             <NavLink
               key={to}
               to={to}
+              replace
               onClick={() => setIsOpen(false)}
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-xl p-3 transition ${
