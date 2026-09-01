@@ -10,7 +10,6 @@ import {
   MapPin,
   Plus,
   Users,
-  Wallet,
   Wind,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -109,7 +108,7 @@ const [weather, setWeather] = useState(null);
 const [schedules, setSchedules] = useState([]);
 
   const [loading, setLoading] = useState(true);
-  const [weatherLoading, setWeatherLoading] = useState(false);
+  const [, setWeatherLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
