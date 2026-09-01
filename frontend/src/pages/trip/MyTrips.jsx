@@ -144,7 +144,7 @@ function MyTrips() {
         {/* Search and Filter */}
         <div className="flex flex-col gap-4 md:flex-row">
 
-          <label className="relative flex-1">
+          <label className="my-trips-search relative flex-1">
 
             <Search
               className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
@@ -191,11 +191,11 @@ function MyTrips() {
 
               <article
                 key={trip._id}
-                className="overflow-hidden rounded-3xl bg-white shadow-lg"
+                className="my-trip-card overflow-hidden rounded-3xl bg-white shadow-lg"
               >
 
                 {/* Image placeholder */}
-                <div className="flex h-40 items-center justify-center bg-[#E5F6FD] text-5xl">
+                <div className="my-trip-card-image flex h-40 items-center justify-center bg-[#E5F6FD] text-5xl">
                   🚌
                 </div>
 

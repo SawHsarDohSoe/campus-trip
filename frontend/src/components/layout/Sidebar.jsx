@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   CalendarDays,
   CheckSquare,
+  Compass,
   History,
   Bell,
   Home,
@@ -126,6 +127,18 @@ function Sidebar() {
         <Menu size={22} />
       </button>
 
+      {/* Compact brand mark visible on every mobile app page. */}
+      <NavLink
+        to="/dashboard"
+        aria-label="CampusTrip dashboard"
+        className="fixed left-20 top-5 z-40 inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-bold text-[#1E3A8A] shadow-lg md:hidden"
+      >
+        <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#1E3A8A] text-white">
+          <Compass size={15} />
+        </span>
+        CampusTrip
+      </NavLink>
+
       {/* Mobile Overlay */}
       {isOpen && (
         <button
@@ -143,9 +156,12 @@ function Sidebar() {
 }`} >
         {/* Logo */}
         <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-3xl font-bold text-[#1E3A8A]">
+          <NavLink to="/dashboard" className="flex items-center gap-2 text-2xl font-bold text-[#1E3A8A]">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#1E3A8A] text-white">
+              <Compass size={21} />
+            </span>
             CampusTrip
-          </h2>
+          </NavLink>
 
           <button
             type="button"

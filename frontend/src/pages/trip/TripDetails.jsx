@@ -585,7 +585,7 @@ const isTripOwner =
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar />
 
-      <main className="flex flex-1 flex-col gap-8 p-6 pt-20 md:p-8">
+      <main className="trip-details-page flex flex-1 flex-col gap-8 p-6 pt-20 md:p-8">
 
         {/* Back */}
         <Link
@@ -597,9 +597,9 @@ const isTripOwner =
         </Link>
 
         {/* Trip Header */}
-        <section className="overflow-hidden rounded-3xl bg-white shadow-lg">
+        <section className="trip-details-header overflow-hidden rounded-3xl bg-white shadow-lg">
 
-          <div className="flex h-52 items-center justify-center bg-[#E5F6FD] text-7xl">
+          <div className="trip-details-cover flex h-52 items-center justify-center bg-[#E5F6FD] text-7xl">
             🚌
           </div>
 
@@ -664,7 +664,7 @@ const isTripOwner =
         </section>
 
         {/* Trip Information */}
-        <section className="grid gap-6 md:grid-cols-3">
+        <section className="trip-info-grid grid gap-6 md:grid-cols-3">
 
           <div className="rounded-3xl bg-white p-6 shadow-lg">
             <Bus className="text-[#1E3A8A]" size={25} />

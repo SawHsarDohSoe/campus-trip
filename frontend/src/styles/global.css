@@ -344,6 +344,77 @@
     letter-spacing: 0.32em !important;
   }
 
+  /* My Trips: keep the search icon outside the typed text and shorten each trip card. */
+  main .my-trips-search input {
+    padding-left: 2.75rem !important;
+  }
+
+  main .my-trips-search svg {
+    left: 0.75rem !important;
+    width: 18px;
+    height: 18px;
+  }
+
+  main .my-trip-card-image {
+    height: 112px !important;
+    font-size: 38px !important;
+  }
+
+  main .my-trip-card > div:last-child {
+    padding: 14px !important;
+  }
+
+  main .my-trip-card > div:last-child > div.mt-6 {
+    margin-top: 14px !important;
+  }
+
+  /* Trip Details: compact the header and place its three short facts in two rows. */
+  main.trip-details-page {
+    gap: 14px !important;
+  }
+
+  main .trip-details-cover {
+    height: 112px !important;
+    font-size: 42px !important;
+  }
+
+  main .trip-details-header > div:last-child {
+    padding: 14px !important;
+  }
+
+  main .trip-details-header h1 {
+    margin-top: 10px !important;
+    font-size: 25px !important;
+  }
+
+  main .trip-details-header .mt-4 {
+    margin-top: 10px !important;
+  }
+
+  main .trip-details-header a {
+    min-height: 42px;
+    padding: 0.625rem 0.875rem !important;
+    font-size: 14px !important;
+  }
+
+  main .trip-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  main .trip-info-grid > div {
+    min-width: 0;
+    padding: 14px !important;
+  }
+
+  main .trip-info-grid > div:last-child {
+    grid-column: span 2;
+  }
+
+  main .trip-info-grid p.mt-5 {
+    margin-top: 10px !important;
+  }
+
   /* =======================================================
      LONG TEXT
      ======================================================= */
