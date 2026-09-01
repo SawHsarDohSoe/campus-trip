@@ -105,7 +105,7 @@ function JoinTrip() {
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar />
 
-      <main className="flex flex-1 items-center justify-center p-6 pt-20 md:p-10">
+      <main className="join-trip-page flex flex-1 items-start justify-center p-6 pt-20 md:items-center md:p-10">
 
         <section className="w-full max-w-lg">
 
@@ -131,7 +131,7 @@ function JoinTrip() {
           </div>
 
           {/* Card */}
-          <div className="mt-8 rounded-3xl bg-white p-7 shadow-xl md:p-9">
+          <div className="join-trip-card mt-8 rounded-3xl bg-white p-7 shadow-xl md:p-9">
 
             {!success ? (
               <form onSubmit={handleSubmit}>

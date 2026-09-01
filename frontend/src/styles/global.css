@@ -56,9 +56,29 @@
     max-width: 100%;
     padding-left: 14px !important;
     padding-right: 14px !important;
-    padding-top: 70px !important;
+    padding-top: 64px !important;
     padding-bottom: 20px !important;
     gap: 14px !important;
+  }
+
+  /* Page headers outside the dashboard also need the compact phone scale. */
+  main h1 {
+    font-size: 26px !important;
+    line-height: 1.15 !important;
+    letter-spacing: -0.02em;
+  }
+
+  main > div > p,
+  main section > div > p.text-gray-500 {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+  }
+
+  main input,
+  main select {
+    min-height: 44px;
+    padding: 0.625rem 0.75rem !important;
+    font-size: 14px !important;
   }
 
   /* =======================================================
@@ -102,6 +122,13 @@
     padding: 14px !important;
   }
 
+  main .rounded-3xl.p-7,
+  main .rounded-3xl.p-8,
+  main .rounded-3xl.p-9,
+  main .rounded-3xl.p-10 {
+    padding: 14px !important;
+  }
+
   /* Reduce card spacing */
   main .grid {
     min-width: 0;
@@ -128,6 +155,47 @@
   main .rounded-3xl.bg-white p {
     font-size: 14px;
     line-height: 1.4;
+  }
+
+  /* Short totals are useful side-by-side; detailed cards and forms stay stacked. */
+  main .mobile-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  main .mobile-summary-grid > * {
+    min-width: 0;
+    padding: 14px !important;
+  }
+
+  main .mobile-summary-grid .text-4xl {
+    font-size: 25px !important;
+  }
+
+  main .mobile-summary-grid svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* The three dashboard budget totals become two cards, then one full-width card. */
+  main .dashboard-budget-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    margin-top: 14px !important;
+  }
+
+  main .dashboard-budget-stats > div {
+    min-width: 0;
+    padding: 10px !important;
+  }
+
+  main .dashboard-budget-stats > div:last-child {
+    grid-column: span 2;
+  }
+
+  main .dashboard-budget-stats p.text-lg {
+    font-size: 15px !important;
+    overflow-wrap: anywhere;
   }
 
   /* =======================================================
@@ -250,6 +318,30 @@
 
   main button {
     font-size: 14px;
+  }
+
+  main .trip-history-header {
+    margin-bottom: 18px !important;
+  }
+
+  main .trip-history-empty {
+    padding-top: 28px !important;
+    padding-bottom: 28px !important;
+  }
+
+  main.join-trip-page {
+    padding-top: 64px !important;
+  }
+
+  main .join-trip-card {
+    margin-top: 20px !important;
+  }
+
+  main.join-trip-page input#joinCode {
+    min-height: 68px;
+    padding: 0.75rem !important;
+    font-size: 25px !important;
+    letter-spacing: 0.32em !important;
   }
 
   /* =======================================================

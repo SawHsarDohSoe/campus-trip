@@ -287,7 +287,7 @@ function Members() {
         )}
 
         {/* Summary */}
-        <section className="grid gap-6 lg:grid-cols-3">
+        <section className="mobile-summary-grid grid grid-cols-2 gap-6 lg:grid-cols-3">
 
           <div className="rounded-3xl bg-[#E5F6FD] p-7 shadow-lg lg:col-span-2">
 

@@ -47,7 +47,7 @@ function TripHistory() {
 
       <main className="flex-1 p-6 pt-20 md:p-10">
         <section className="mx-auto max-w-5xl">
-          <div className="mb-8">
+          <div className="trip-history-header mb-8">
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-[#1E3A8A]">
                 <History size={25} />
@@ -70,7 +70,7 @@ function TripHistory() {
           </div>
 
           {loading && (
-            <div className="rounded-3xl bg-white p-10 text-center shadow-lg">
+            <div className="trip-history-empty rounded-3xl bg-white p-10 text-center shadow-lg">
               Loading trip history...
             </div>
           )}
@@ -82,7 +82,7 @@ function TripHistory() {
           )}
 
           {!loading && !error && trips.length === 0 && (
-            <div className="rounded-3xl bg-white p-10 text-center shadow-lg">
+            <div className="trip-history-empty rounded-3xl bg-white p-10 text-center shadow-lg">
               <History
                 size={45}
                 className="mx-auto text-gray-300"

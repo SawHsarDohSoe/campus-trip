@@ -443,7 +443,7 @@ setSchedules(schedulesData.schedules);
             </section>
 
             {/* ───────── Main Stats ───────── */}
-            <section className="grid gap-4 sm:grid-cols-2">
+            <section className="mobile-summary-grid grid grid-cols-2 gap-4 sm:grid-cols-2">
 
               {/* Members */}
               <div className="rounded-3xl bg-white p-4 shadow-lg sm:p-6">
@@ -702,7 +702,7 @@ setSchedules(schedulesData.schedules);
 
                 </div>
 
-                <div className="mt-7 grid grid-cols-3 gap-3">
+                <div className="dashboard-budget-stats mt-7 grid grid-cols-3 gap-3">
 
                   <div className="rounded-2xl bg-[#E5F6FD] p-4">
 
