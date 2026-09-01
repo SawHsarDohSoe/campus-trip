@@ -331,7 +331,7 @@ setSchedules(schedulesData.schedules);
           </div>
 
           <Link
-            to="/trips/new"
+            to="/trips/create"
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white shadow-lg transition hover:bg-blue-700"
           >
             <Plus size={19} />
