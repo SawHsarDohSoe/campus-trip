@@ -127,17 +127,14 @@ function Sidebar() {
         <Menu size={22} />
       </button>
 
-      {/* Compact brand mark visible on every mobile app page. */}
+      {/* One-tap, logo-only Home control for every mobile app page. */}
       <NavLink
         to="/dashboard"
         replace
         aria-label="CampusTrip dashboard"
-        className="fixed left-20 top-5 z-40 inline-flex items-center gap-2 rounded-xl bg-white px-3 py-2 text-sm font-bold text-[#1E3A8A] shadow-lg md:hidden"
+        className="fixed left-20 top-4 z-40 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-[#1E3A8A] shadow-sm ring-1 ring-blue-100 transition hover:bg-blue-100 md:hidden"
       >
-        <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#1E3A8A] text-white">
-          <Compass size={15} />
-        </span>
-        CampusTrip
+        <Compass size={22} />
       </NavLink>
 
       {/* Mobile Overlay */}

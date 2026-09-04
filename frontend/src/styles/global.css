@@ -415,6 +415,14 @@
     margin-top: 10px !important;
   }
 
+  /* Do not apply the small icon limit to a scannable QR code. */
+  main .trip-join-qr svg {
+    width: 180px !important;
+    height: 180px !important;
+    max-width: none !important;
+    max-height: none !important;
+  }
+
   /* Dashboard home: a compact app-style header and quick-action grid. */
   main.dashboard-home .dashboard-welcome {
     padding: 16px !important;

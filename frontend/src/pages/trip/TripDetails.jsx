@@ -759,10 +759,10 @@ const isTripOwner =
 
     <div className="flex justify-center">
       {trip.joinCode ? (
-        <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+        <div className="trip-join-qr rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
           <QRCodeSVG
             value={`${window.location.origin}/join-trip?code=${trip.joinCode}`}
-            size={190}
+            size={200}
             level="H"
           />
         </div>
