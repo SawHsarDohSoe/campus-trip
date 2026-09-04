@@ -3,12 +3,14 @@ import {
   ArrowRight,
   CalendarDays,
   CheckCircle2,
+  ClipboardList,
   Cloud,
   Clock3,
   CloudRain,
   Droplets,
   MapPin,
   Plus,
+  ReceiptText,
   Users,
   Wind,
 } from "lucide-react";
@@ -304,35 +306,35 @@ setSchedules(schedulesData.schedules);
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
+    <div className="flex min-h-screen bg-[#F5F8FF]">
       <Sidebar />
 
-      <main className="flex flex-1 flex-col gap-5 p-3 pt-20 sm:p-5 md:gap-7 md:p-8">
+      <main className="dashboard-home flex flex-1 flex-col gap-5 p-3 pt-20 sm:p-5 md:gap-7 md:p-8">
 
         {/* ───────── Header ───────── */}
-        <section className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <section className="dashboard-welcome flex flex-col gap-4 rounded-3xl bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6">
 
           <div>
-            <p className="text-sm font-semibold text-blue-700">
-              CampusTrip
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-700">
+              Your trip workspace
             </p>
 
             <h1 className="mt-1 text-2xl font-bold tracking-tight text-[#1E3A8A] sm:text-3xl md:text-4xl">
-              Welcome back
+              Good to see you
               {user?.name
                 ? `, ${user.name.split(" ")[0]}`
                 : ""}
               ! 👋
             </h1>
 
-            <p className="mt-2 text-gray-500">
-              Everything you need for your next campus trip.
+            <p className="mt-2 text-sm text-gray-500">
+              Plan, organize, and keep everyone on track.
             </p>
           </div>
 
           <Link
             to="/trips/create"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white shadow-lg transition hover:bg-blue-700"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white shadow-md transition hover:bg-blue-700"
           >
             <Plus size={19} />
             New Trip
@@ -364,7 +366,7 @@ setSchedules(schedulesData.schedules);
             </p>
 
             <Link
-              to="/trips/new"
+              to="/trips/create"
               className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#1E3A8A] px-6 py-3 font-semibold text-white hover:bg-blue-700"
             >
               <Plus size={19} />
@@ -375,13 +377,15 @@ setSchedules(schedulesData.schedules);
         ) : (
           <>
             {/* ───────── Hero / Next Trip ───────── */}
-            <section className="overflow-hidden rounded-3xl bg-[#1E3A8A] shadow-xl">
+            <section className="dashboard-trip-hero overflow-hidden rounded-3xl bg-gradient-to-br from-[#102A68] via-[#1E3A8A] to-[#3565C5] shadow-lg">
 
-              <div className="p-6 text-white md:p-8">
+              <div className="relative p-6 text-white md:p-8">
+
+                <MapPin className="pointer-events-none absolute -right-4 -top-4 text-white/10" size={150} />
 
                 <div className="flex flex-col gap-7 lg:flex-row lg:items-center lg:justify-between">
 
-                  <div className="min-w-0">
+                  <div className="relative min-w-0">
 
                     <div className="flex flex-wrap items-center gap-3">
 
@@ -430,7 +434,7 @@ setSchedules(schedulesData.schedules);
 
                   <Link
                     to={`/trips/${upcomingTrip._id}`}
-                    className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 font-semibold text-[#1E3A8A] transition hover:bg-blue-50"
+                    className="relative inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-5 py-3 font-semibold text-[#1E3A8A] transition hover:bg-blue-50"
                   >
                     View Trip
                     <ArrowRight size={18} />
@@ -440,6 +444,29 @@ setSchedules(schedulesData.schedules);
 
               </div>
 
+            </section>
+
+            {/* ───────── Quick Actions ───────── */}
+            <section className="dashboard-actions grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <Link to="/trips/create" className="rounded-2xl bg-white p-4 text-[#1E3A8A] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+                <Plus size={21} />
+                <p className="mt-3 text-sm font-semibold">New trip</p>
+              </Link>
+
+              <Link to="/schedule" className="rounded-2xl bg-white p-4 text-[#1E3A8A] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+                <CalendarDays size={21} />
+                <p className="mt-3 text-sm font-semibold">Schedule</p>
+              </Link>
+
+              <Link to="/checklist" className="rounded-2xl bg-white p-4 text-[#1E3A8A] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+                <ClipboardList size={21} />
+                <p className="mt-3 text-sm font-semibold">Packing</p>
+              </Link>
+
+              <Link to="/budget" className="rounded-2xl bg-white p-4 text-[#1E3A8A] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+                <ReceiptText size={21} />
+                <p className="mt-3 text-sm font-semibold">Budget</p>
+              </Link>
             </section>
 
             {/* ───────── Main Stats ───────── */}

@@ -415,6 +415,34 @@
     margin-top: 10px !important;
   }
 
+  /* Dashboard home: a compact app-style header and quick-action grid. */
+  main.dashboard-home .dashboard-welcome {
+    padding: 16px !important;
+    border-radius: 20px !important;
+  }
+
+  main.dashboard-home .dashboard-welcome h1 {
+    font-size: 25px !important;
+  }
+
+  main.dashboard-home .dashboard-trip-hero > div {
+    padding: 16px !important;
+  }
+
+  main.dashboard-home .dashboard-actions {
+    gap: 10px !important;
+  }
+
+  main.dashboard-home .dashboard-actions a {
+    min-height: 92px;
+    padding: 14px !important;
+    border-radius: 18px !important;
+  }
+
+  main.dashboard-home .dashboard-actions p {
+    font-size: 13px !important;
+  }
+
   /* =======================================================
      LONG TEXT
      ======================================================= */

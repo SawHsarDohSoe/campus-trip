@@ -1,6 +1,5 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 
-import Landing from "./pages/Landing";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import StudentDashboard from "./pages/dashboard/Dashboard";
@@ -21,6 +20,10 @@ import JoinTrip from "./pages/join-trip/JoinTrip";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 function App() {
+  const isAuthenticated = Boolean(
+    localStorage.getItem("campusTripToken")
+  );
+
   return (
     <BrowserRouter>
       <Routes>
@@ -31,7 +34,12 @@ function App() {
 
         <Route
           path="/"
-          element={<Landing />}
+          element={
+            <Navigate
+              to={isAuthenticated ? "/dashboard" : "/login"}
+              replace
+            />
+          }
         />
 
         <Route
