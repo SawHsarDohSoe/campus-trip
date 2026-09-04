@@ -664,6 +664,25 @@ export async function markAllNotificationsRead(token) {
   return data;
 }
 
+export async function deleteNotification(notificationId, token) {
+  const response = await fetch(
+    `${API_URL}/notifications/${notificationId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const data = await response.json();
+    throw new Error(
+      data.message || "Unable to delete notification."
+    );
+  }
+}
+
 export async function getPolls(tripId, token) {
   const response = await fetch(
     `${API_URL}/polls/${tripId}`,

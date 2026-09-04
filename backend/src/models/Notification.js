@@ -54,4 +54,11 @@ const notificationSchema = new mongoose.Schema(
 
 notificationSchema.index({ user: 1, read: 1, createdAt: -1 });
 
+// MongoDB removes notification records after 30 days. This prevents an
+// active account from accumulating an unbounded notification list.
+notificationSchema.index(
+  { createdAt: 1 },
+  { expireAfterSeconds: 60 * 60 * 24 * 30 }
+);
+
 export default mongoose.model("Notification", notificationSchema);

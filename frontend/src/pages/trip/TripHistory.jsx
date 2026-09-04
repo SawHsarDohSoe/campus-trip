@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { History, MapPin, CalendarDays } from "lucide-react";
+import { History, MapPin, CalendarDays, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../../components/layout/Sidebar";
-import { getTripHistory } from "../../api/authApi";
+import { deleteTrip, getTripHistory } from "../../api/authApi";
 
 function TripHistory() {
   const navigate = useNavigate();
@@ -39,6 +39,26 @@ function TripHistory() {
       day: "numeric",
       year: "numeric",
     });
+  };
+
+  const handleDeleteHistoryItem = async (trip) => {
+    const confirmed = window.confirm(
+      `Delete "${trip.title}" from Trip History? This cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const token = localStorage.getItem("campusTripToken");
+      if (!token) return;
+
+      await deleteTrip(trip._id, token);
+      setTrips((current) =>
+        current.filter((item) => item._id !== trip._id)
+      );
+    } catch (deleteError) {
+      setError(deleteError.message);
+    }
   };
 
   return (
@@ -145,13 +165,24 @@ function TripHistory() {
                     </p>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => navigate(`/trips/${trip._id}`)}
-                    className="mt-5 w-full rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white hover:bg-blue-700"
-                  >
-                    View Trip
-                  </button>
+                  <div className="mt-5 flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/trips/${trip._id}`)}
+                      className="flex-1 rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white hover:bg-blue-700"
+                    >
+                      View Trip
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteHistoryItem(trip)}
+                      className="rounded-xl border border-red-200 px-4 text-red-600 hover:bg-red-50"
+                      aria-label={`Delete ${trip.title} from Trip History`}
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

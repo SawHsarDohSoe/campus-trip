@@ -11,6 +11,7 @@ import {
   Map,
   Menu,
   Settings,
+  Trash2,
   Users,
   Wallet,
   X,
@@ -18,6 +19,7 @@ import {
 import { useEffect, useState } from "react";
 import {
   getNotifications,
+  deleteNotification,
   markAllNotificationsRead,
 } from "../../api/authApi";
 
@@ -114,6 +116,20 @@ function Sidebar() {
   const unreadCount = notifications.filter(
     (notification) => !notification.read
   ).length;
+
+  const handleDeleteNotification = async (notificationId) => {
+    try {
+      const token = localStorage.getItem("campusTripToken");
+      if (!token) return;
+
+      await deleteNotification(notificationId, token);
+      setNotifications((current) =>
+        current.filter((notification) => notification._id !== notificationId)
+      );
+    } catch (error) {
+      console.error("Unable to delete notification:", error);
+    }
+  };
 
   return (
     <>
@@ -236,7 +252,7 @@ function Sidebar() {
                   {notifications.map((notification) => (
                     <div
                       key={notification._id}
-                      className={`rounded-xl p-3 ${
+                      className={`relative rounded-xl p-3 pr-10 ${
                         notification.read
                           ? "bg-gray-50"
                           : "bg-blue-50"
@@ -249,6 +265,17 @@ function Sidebar() {
                       <p className="mt-1 text-xs text-gray-600">
                         {notification.message}
                       </p>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleDeleteNotification(notification._id)
+                        }
+                        className="absolute right-2 top-2 rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                        aria-label={`Delete notification: ${notification.title}`}
+                      >
+                        <Trash2 size={15} />
+                      </button>
 
                       {!notification.read && (
                         <span className="mt-2 inline-block text-xs font-semibold text-blue-600">

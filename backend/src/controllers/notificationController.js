@@ -2,6 +2,16 @@ import Notification from "../models/Notification.js";
 
 export async function listNotifications(request, response, next) {
   try {
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+    // The TTL index performs the background cleanup. This makes expiry
+    // immediate when a user opens notifications, including on older indexes.
+    await Notification.deleteMany({
+      user: request.user._id,
+      createdAt: { $lt: oneMonthAgo },
+    });
+
     const notifications = await Notification.find({
       user: request.user._id,
     }).sort({
