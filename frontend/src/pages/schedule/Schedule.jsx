@@ -26,7 +26,18 @@ const emptyForm = {
 };
 
 function formatDate(date) {
-  return new Date(`${date}T00:00:00`).toLocaleDateString(
+  if (!date) return "Date unavailable";
+
+  const parsedDate =
+    typeof date === "string" && date.includes("T")
+      ? new Date(date)
+      : new Date(`${date}T00:00:00`);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "Date unavailable";
+  }
+
+  return parsedDate.toLocaleDateString(
     "en-GB",
     {
       weekday: "short",
