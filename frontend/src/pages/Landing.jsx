@@ -312,6 +312,157 @@ function Landing() {
 
         </section>
 
+        {/* ================= TEAM MEMBERS ================= */}
+
+        <section
+          id="team"
+          className="w-full py-14 sm:py-20"
+        >
+
+          <div className="mb-12 text-center sm:mb-16">
+
+            <p className="font-semibold uppercase tracking-[0.2em] text-blue-600 sm:tracking-[0.3em]">
+              OUR TEAM
+            </p>
+
+            <h2 className="mt-4 text-2xl font-bold leading-tight text-[#1E3A8A] sm:text-3xl lg:text-4xl">
+              CampusTrip Team Members
+            </h2>
+
+            <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">
+              Meet the team behind CampusTrip.
+            </p>
+
+          </div>
+
+
+          <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
+
+            {/* MEMBER 1 */}
+            <div className="rounded-2xl border border-blue-100 bg-white p-6 text-center shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-3xl">
+                👤
+              </div>
+
+              <h3 className="mt-5 text-lg font-bold text-gray-900">
+                Yoon Pa Pa Aung
+              </h3>
+
+              <p className="mt-2 text-sm text-gray-500">
+                240702404714
+              </p>
+
+            </div>
+
+
+            {/* MEMBER 2 */}
+            <div className="rounded-2xl border border-blue-100 bg-white p-6 text-center shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-3xl">
+                👤
+              </div>
+
+              <h3 className="mt-5 text-lg font-bold text-gray-900">
+                Htet Myat Naing
+              </h3>
+
+              <p className="mt-2 text-sm text-gray-500">
+                250702401589
+              </p>
+
+            </div>
+
+
+            {/* MEMBER 3 */}
+            <div className="rounded-2xl border border-blue-100 bg-white p-6 text-center shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-3xl">
+                👤
+              </div>
+
+              <h3 className="mt-5 text-lg font-bold text-gray-900">
+                Saw Hsar Doh Soe
+              </h3>
+
+              <p className="mt-2 text-sm text-gray-500">
+                240702404451
+              </p>
+
+            </div>
+
+
+            {/* MEMBER 4 */}
+            <div className="rounded-2xl border border-blue-100 bg-white p-6 text-center shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-3xl">
+                👤
+              </div>
+
+              <h3 className="mt-5 text-lg font-bold text-gray-900">
+                May Thiri Kyaw
+              </h3>
+
+              <p className="mt-2 text-sm text-gray-500">
+                250702404285
+              </p>
+
+            </div>
+
+            {/* MEMBER 5 */}
+            <div className="rounded-2xl border border-blue-100 bg-white p-6 text-center shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-3xl">
+                👤
+              </div>
+
+              <h3 className="mt-5 text-lg font-bold text-gray-900">
+                Ahmad Nikaji
+              </h3>
+
+              <p className="mt-2 text-sm text-gray-500">
+                680702402678
+              </p>
+
+            </div>
+
+            {/* MEMBER 6 */}
+            <div className="rounded-2xl border border-blue-100 bg-white p-6 text-center shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-3xl">
+                👤
+              </div>
+
+              <h3 className="mt-5 text-lg font-bold text-gray-900">
+                Nayi Zin Minn
+              </h3>
+
+              <p className="mt-2 text-sm text-gray-500">
+                240702404678
+              </p>
+
+            </div>
+
+            {/* MEMBER 7 */}
+            <div className="rounded-2xl border border-blue-100 bg-white p-6 text-center shadow-md transition hover:-translate-y-1 hover:shadow-lg">
+
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 text-3xl">
+                👤
+              </div>
+
+              <h3 className="mt-5 text-lg font-bold text-gray-900">
+                Lian Khia
+              </h3>
+
+              <p className="mt-2 text-sm text-gray-500">
+                240702404504
+              </p>
+
+            </div>
+
+          </div>
+
+        </section>
 
         {/* ================= FOOTER ================= */}
 

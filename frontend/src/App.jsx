@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
+import Landing from "./pages/Landing";
 
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -34,12 +35,7 @@ function App() {
 
         <Route
           path="/"
-          element={
-            <Navigate
-              to={isAuthenticated ? "/dashboard" : "/login"}
-              replace
-            />
-          }
+          element={<Landing />}
         />
 
         <Route
