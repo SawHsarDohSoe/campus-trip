@@ -3,9 +3,33 @@ import Member from "../models/Member.js";
 import Notification from "../models/Notification.js";
 
 function tripPayload(body) {
-  const { title, destination, startDate, endDate, transportation, budget, members, description, status } = body;
+  const {
+    title,
+    destination,
+    district,
+    tambon,
+    startDate,
+    endDate,
+    transportation,
+    budget,
+    members,
+    description,
+    status,
+  } = body;
   return Object.fromEntries(
-    Object.entries({ title, destination, startDate, endDate, transportation, budget, members, description, status })
+    Object.entries({
+      title,
+      destination,
+      district,
+      tambon,
+      startDate,
+      endDate,
+      transportation,
+      budget,
+      members,
+      description,
+      status,
+    })
       .filter(([, value]) => value !== undefined),
   );
 }

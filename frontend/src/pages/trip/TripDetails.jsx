@@ -623,7 +623,9 @@ const isTripOwner =
 
                   <p className="flex items-center gap-2">
                     <MapPin size={18} />
-                    {trip.destination}
+                    {[trip.tambon, trip.district, trip.destination]
+                      .filter(Boolean)
+                      .join(", ")}
                   </p>
 
                   <p className="flex items-center gap-2">

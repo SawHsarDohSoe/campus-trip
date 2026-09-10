@@ -30,6 +30,8 @@ function EditTrip() {
         setFormData({
           title: trip.title,
           destination: trip.destination,
+          district: trip.district || "",
+          tambon: trip.tambon || "",
           startDate: trip.startDate.slice(0, 10),
           endDate: trip.endDate.slice(0, 10),
           transportation: trip.transportation,
@@ -76,6 +78,8 @@ function EditTrip() {
         {
           title: formData.title,
           destination: formData.destination,
+          district: formData.district,
+          tambon: formData.tambon,
           startDate: formData.startDate,
           endDate: formData.endDate,
           transportation: formData.transportation,
@@ -204,6 +208,39 @@ function EditTrip() {
                 onChange={handleChange}
                 className="w-full rounded-xl border px-4 py-3 outline-none focus:border-[#1E3A8A]"
               />
+            </div>
+
+            {/* Dates */}
+            <div className="grid gap-6 md:grid-cols-2">
+
+              <div>
+                <label className="mb-2 block font-medium">
+                  District (Amphoe)
+                </label>
+
+                <input
+                  name="district"
+                  value={formData.district}
+                  onChange={handleChange}
+                  placeholder="e.g. Khlong Luang"
+                  className="w-full rounded-xl border px-4 py-3 outline-none focus:border-[#1E3A8A]"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block font-medium">
+                  Tambon (Subdistrict)
+                </label>
+
+                <input
+                  name="tambon"
+                  value={formData.tambon}
+                  onChange={handleChange}
+                  placeholder="e.g. Khlong Nueng"
+                  className="w-full rounded-xl border px-4 py-3 outline-none focus:border-[#1E3A8A]"
+                />
+              </div>
+
             </div>
 
             {/* Dates */}

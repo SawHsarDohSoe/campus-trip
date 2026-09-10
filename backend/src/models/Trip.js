@@ -19,6 +19,18 @@ const tripSchema = new mongoose.Schema(
       required: [true, "Destination is required."],
       trim: true,
     },
+    district: {
+      type: String,
+      trim: true,
+      maxlength: [120, "District cannot exceed 120 characters."],
+      default: "",
+    },
+    tambon: {
+      type: String,
+      trim: true,
+      maxlength: [120, "Tambon cannot exceed 120 characters."],
+      default: "",
+    },
     startDate: { type: Date, required: [true, "Start date is required."] },
     endDate: { type: Date, required: [true, "End date is required."] },
     transportation: {

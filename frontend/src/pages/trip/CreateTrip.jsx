@@ -6,6 +6,8 @@ import { createTrip } from "../../api/authApi";
 const initialForm = {
   title: "",
   destination: "",
+  district: "",
+  tambon: "",
   startDate: "",
   endDate: "",
   transportation: "Bus",
@@ -48,6 +50,8 @@ function CreateTrip() {
         {
           title: formData.title,
           destination: formData.destination,
+          district: formData.district,
+          tambon: formData.tambon,
           startDate: formData.startDate,
           endDate: formData.endDate,
           transportation: formData.transportation,
@@ -135,6 +139,41 @@ function CreateTrip() {
                 placeholder="Bangkok, Thailand"
                 className="w-full rounded-xl border px-4 py-3 outline-none focus:border-[#1E3A8A]"
               />
+            </div>
+
+            {/* Dates */}
+            <div className="grid gap-6 md:grid-cols-2">
+
+              <div>
+                <label className="mb-2 block font-medium">
+                  District (Amphoe)
+                </label>
+
+                <input
+                  required
+                  name="district"
+                  value={formData.district}
+                  onChange={handleChange}
+                  placeholder="e.g. Khlong Luang"
+                  className="w-full rounded-xl border px-4 py-3 outline-none focus:border-[#1E3A8A]"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block font-medium">
+                  Tambon (Subdistrict)
+                </label>
+
+                <input
+                  required
+                  name="tambon"
+                  value={formData.tambon}
+                  onChange={handleChange}
+                  placeholder="e.g. Khlong Nueng"
+                  className="w-full rounded-xl border px-4 py-3 outline-none focus:border-[#1E3A8A]"
+                />
+              </div>
+
             </div>
 
             {/* Dates */}
