@@ -12,7 +12,7 @@ export default function BottomNav() {
   const isProfile = path === "/profile" || path === "/settings";
 
   return (
-    <nav className="sticky bottom-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-100 px-4 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-sm">
+    <nav className="md:hidden sticky bottom-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-100 px-4 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] shadow-sm">
       <div className="flex items-center justify-between max-w-md mx-auto relative">
         {/* 1. Home */}
         <Link
