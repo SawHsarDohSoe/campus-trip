@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { QrCode, X, Check } from "lucide-react";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import MobileShell from "../../components/layout/MobileShell";
@@ -9,7 +9,12 @@ import { joinTrip } from "../../api/authApi";
 
 export default function JoinTrip() {
   const navigate = useNavigate();
-  const [digits, setDigits] = useState(["", "", "", "", "", ""]);
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const sharedCode = (searchParams.get("code") || "").replace(/\D/g, "").slice(0, 6);
+  const [digits, setDigits] = useState(() =>
+    [...sharedCode, "", "", "", "", ""].slice(0, 6)
+  );
   const inputRefs = useRef([]);
   const [showScanner, setShowScanner] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -88,7 +93,7 @@ export default function JoinTrip() {
 
   return (
     <MobileShell showBottomNav={true} contentClassName="bg-white">
-      <MobileHeader title="Join Trip" showBack backTo="/dashboard" />
+      <MobileHeader title="Join Trip" showBack backTo={location.state?.from || "/dashboard"} />
 
       <div className="px-6 py-5 flex flex-col items-center text-center">
         {/* Illustration */}

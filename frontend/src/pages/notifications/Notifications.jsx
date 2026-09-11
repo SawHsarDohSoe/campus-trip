@@ -14,6 +14,7 @@ import MobileHeader from "../../components/layout/MobileHeader";
 import {
   deleteNotification,
   getNotifications,
+  markNotificationRead,
   markAllNotificationsRead,
 } from "../../api/authApi";
 
@@ -77,6 +78,26 @@ export default function Notifications() {
       setError(err.message || "Unable to delete notification.");
     } finally {
       setDeletingId("");
+    }
+  };
+
+  const handleNotificationAction = async (notification) => {
+    const token = localStorage.getItem("campusTripToken");
+    if (!token) return;
+
+    try {
+      if (!notification.read) {
+        const { notification: updated } = await markNotificationRead(notification._id, token);
+        setNotifications((current) =>
+          current.map((item) => (item._id === notification._id ? updated : item))
+        );
+      }
+
+      if (notification.trip) {
+        navigate(`/trips/${notification.trip}`, { state: { from: "/notifications" } });
+      }
+    } catch (err) {
+      setError(err.message || "Unable to update notification.");
     }
   };
 
@@ -175,6 +196,12 @@ export default function Notifications() {
             return (
               <div
                 key={item._id}
+                role="button"
+                tabIndex={0}
+                onClick={() => handleNotificationAction(item)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") handleNotificationAction(item);
+                }}
                 className={`p-3.5 bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3.5 transition hover:shadow-md ${
                   isUnread ? "border-l-4 border-l-blue-600" : ""
                 }`}
@@ -209,7 +236,10 @@ export default function Notifications() {
 
                 <button
                   type="button"
-                  onClick={() => handleDelete(item._id)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleDelete(item._id);
+                  }}
                   disabled={deletingId === item._id}
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
                   aria-label={`Delete ${item.title} notification`}

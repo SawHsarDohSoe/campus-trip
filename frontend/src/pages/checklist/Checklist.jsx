@@ -27,6 +27,8 @@ export default function Checklist() {
   const [filter, setFilter] = useState("All");
   const [newItemText, setNewItemText] = useState("");
   const [activeMenuId, setActiveMenuId] = useState(null);
+  const [editingItemId, setEditingItemId] = useState(null);
+  const [editingLabel, setEditingLabel] = useState("");
   const [, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -94,8 +96,25 @@ export default function Checklist() {
     try {
       await updateChecklistItem(item._id, { completed: updated }, token);
     } catch (err) {
-      console.error("Failed to update item:", err);
+      setError(err.message || "Failed to update item.");
       await fetchItems();
+    }
+  };
+
+  const handleSaveEdit = async (event, itemId) => {
+    event.preventDefault();
+    const label = editingLabel.trim();
+    const token = localStorage.getItem("campusTripToken");
+    if (!label || !token) return;
+
+    try {
+      setError("");
+      const { item } = await updateChecklistItem(itemId, { label }, token);
+      setItems((current) => current.map((existing) => (existing._id === itemId ? item : existing)));
+      setEditingItemId(null);
+      setEditingLabel("");
+    } catch (err) {
+      setError(err.message || "Failed to update item.");
     }
   };
 
@@ -262,11 +281,11 @@ export default function Checklist() {
                   key={item._id}
                   className="p-3 bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between hover:shadow-md transition"
                 >
-                  <div
-                    onClick={() => toggleItem(item)}
-                    className="flex items-center gap-3.5 flex-1 cursor-pointer select-none"
-                  >
-                    <div
+                  <div className="flex items-center gap-3.5 flex-1 min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => toggleItem(item)}
+                      aria-label={item.completed ? "Mark item incomplete" : "Mark item complete"}
                       className={`w-5 h-5 rounded-md border flex items-center justify-center transition shrink-0 ${
                         item.completed
                           ? "bg-blue-600 border-blue-600 text-white"
@@ -274,17 +293,31 @@ export default function Checklist() {
                       }`}
                     >
                       {item.completed && <Check size={13} strokeWidth={3} />}
-                    </div>
+                    </button>
 
-                    <span
-                      className={`text-xs font-semibold transition ${
-                        item.completed
-                          ? "text-slate-400 line-through"
-                          : "text-slate-800"
-                      }`}
-                    >
-                      {item.task || item.name}
-                    </span>
+                    {editingItemId === item._id ? (
+                      <form onSubmit={(event) => handleSaveEdit(event, item._id)} className="flex min-w-0 flex-1 items-center gap-2">
+                        <input
+                          autoFocus
+                          value={editingLabel}
+                          onChange={(event) => setEditingLabel(event.target.value)}
+                          className="min-w-0 flex-1 rounded-lg border border-blue-300 bg-white px-2 py-1 text-xs font-semibold text-slate-800 outline-none"
+                        />
+                        <button type="submit" className="text-[11px] font-semibold text-blue-600">Save</button>
+                        <button type="button" onClick={() => setEditingItemId(null)} className="text-[11px] font-semibold text-slate-400">Cancel</button>
+                      </form>
+                    ) : (
+                      <span
+                        onClick={() => toggleItem(item)}
+                        className={`min-w-0 flex-1 cursor-pointer text-xs font-semibold transition ${
+                          item.completed
+                            ? "text-slate-400 line-through"
+                            : "text-slate-800"
+                        }`}
+                      >
+                        {item.label}
+                      </span>
+                    )}
                   </div>
 
                   <div className="relative">
@@ -300,6 +333,17 @@ export default function Checklist() {
 
                     {activeMenuId === item._id && (
                       <div className="absolute right-0 mt-1 w-28 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-30">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingItemId(item._id);
+                            setEditingLabel(item.label);
+                            setActiveMenuId(null);
+                          }}
+                          className="w-full px-3 py-1.5 text-left text-xs text-slate-700 hover:bg-slate-50"
+                        >
+                          Edit
+                        </button>
                         <button
                           onClick={() => handleDeleteItem(item._id)}
                           className="w-full px-3 py-1.5 text-left text-xs text-red-600 hover:bg-red-50 flex items-center gap-2"

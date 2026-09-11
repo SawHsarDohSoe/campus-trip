@@ -53,15 +53,17 @@ export async function createChecklistItem(request, response, next) {
 
 export async function updateChecklistItem(request, response, next) {
   try {
-    const item = await ChecklistItem.findOne({
-      _id: request.params.id,
-      owner: request.user._id,
-    });
+    const item = await ChecklistItem.findById(request.params.id);
 
     if (!item) {
       return response.status(404).json({
         message: "Checklist item not found.",
       });
+    }
+
+    const { isMember } = await getTripAccess(request.user, item.trip);
+    if (!isMember) {
+      return response.status(403).json({ message: "You are not a member of this trip." });
     }
 
     if (request.body.label !== undefined) {
@@ -82,15 +84,17 @@ export async function updateChecklistItem(request, response, next) {
 
 export async function deleteChecklistItem(request, response, next) {
   try {
-    const item = await ChecklistItem.findOne({
-      _id: request.params.id,
-      owner: request.user._id,
-    });
+    const item = await ChecklistItem.findById(request.params.id);
 
     if (!item) {
       return response.status(404).json({
         message: "Checklist item not found.",
       });
+    }
+
+    const { isMember } = await getTripAccess(request.user, item.trip);
+    if (!isMember) {
+      return response.status(403).json({ message: "You are not a member of this trip." });
     }
 
     await item.deleteOne();

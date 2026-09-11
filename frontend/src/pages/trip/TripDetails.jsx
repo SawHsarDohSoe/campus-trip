@@ -29,6 +29,14 @@ export default function TripDetails() {
   const [weatherLoading, setWeatherLoading] = useState(false);
   const [weatherError, setWeatherError] = useState("");
   const [shareMessage, setShareMessage] = useState("");
+  const currentUserId = (() => {
+    try {
+      const storedUser = JSON.parse(localStorage.getItem("campusTripCurrentUser") || "null");
+      return storedUser?.id || storedUser?._id || "";
+    } catch {
+      return "";
+    }
+  })();
 
   useEffect(() => {
     const loadTripData = async () => {
@@ -106,25 +114,29 @@ export default function TripDetails() {
   };
 
   const handleShareTrip = async () => {
-    const shareUrl = window.location.href;
+    const shareUrl = new URL("/join-trip", window.location.origin);
+    if (trip.joinCode) shareUrl.searchParams.set("code", trip.joinCode);
+    const shareText = trip.joinCode
+      ? `Join my trip "${trip.title}" in CampusTrip with code ${trip.joinCode}.`
+      : `View my trip "${trip.title}" in CampusTrip.`;
     setShowMenu(false);
 
     try {
       if (navigator.share) {
         await navigator.share({
           title: trip.title,
-          text: `Join me on ${trip.title} in CampusTrip.`,
-          url: shareUrl,
+          text: shareText,
+          url: shareUrl.toString(),
         });
         setShareMessage("Trip link shared.");
         return;
       }
 
       if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(shareUrl);
+        await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
       } else {
         const textArea = document.createElement("textarea");
-        textArea.value = shareUrl;
+        textArea.value = `${shareText}\n${shareUrl}`;
         textArea.style.position = "fixed";
         textArea.style.opacity = "0";
         document.body.appendChild(textArea);
@@ -187,6 +199,8 @@ export default function TripDetails() {
     );
   }
 
+  const isTripOwner = String(trip.owner) === String(currentUserId);
+
   return (
     <MobileShell showBottomNav={true} contentClassName="bg-white pb-20">
       {/* Header: ← Back     Trip Details     ⋮ */}
@@ -212,15 +226,17 @@ export default function TripDetails() {
                   onClick={() => setShowMenu(false)}
                 />
                 <div className="absolute right-0 mt-1 w-44 bg-white rounded-2xl shadow-xl border border-slate-100 py-1.5 z-30 animate-in fade-in zoom-in-95">
-                  <Link
-                    to={`/trips/${trip._id}/edit`}
-                    state={{ from: `/trips/${trip._id}` }}
-                    className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
-                    onClick={() => setShowMenu(false)}
-                  >
-                    <Pencil size={15} className="text-slate-500" />
-                    <span>Edit Trip</span>
-                  </Link>
+                  {isTripOwner && (
+                    <Link
+                      to={`/trips/${trip._id}/edit`}
+                      state={{ from: `/trips/${trip._id}` }}
+                      className="flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-slate-700 hover:bg-slate-50 transition"
+                      onClick={() => setShowMenu(false)}
+                    >
+                      <Pencil size={15} className="text-slate-500" />
+                      <span>Edit Trip</span>
+                    </Link>
+                  )}
                   <button
                     type="button"
                     onClick={handleShareTrip}
@@ -229,18 +245,22 @@ export default function TripDetails() {
                     <Share2 size={15} className="text-slate-500" />
                     <span>Share</span>
                   </button>
-                  <div className="my-1 border-t border-slate-100" />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowMenu(false);
-                      handleDeleteTrip();
-                    }}
-                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-red-600 hover:bg-red-50 text-left cursor-pointer transition"
-                  >
-                    <Trash2 size={15} className="text-red-500" />
-                    <span>Delete Trip</span>
-                  </button>
+                  {isTripOwner && (
+                    <>
+                      <div className="my-1 border-t border-slate-100" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowMenu(false);
+                          handleDeleteTrip();
+                        }}
+                        className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-red-600 hover:bg-red-50 text-left cursor-pointer transition"
+                      >
+                        <Trash2 size={15} className="text-red-500" />
+                        <span>Delete Trip</span>
+                      </button>
+                    </>
+                  )}
                 </div>
               </>
             )}
@@ -363,14 +383,16 @@ export default function TripDetails() {
         <div className="bg-slate-50/80 rounded-3xl p-4 sm:p-5 border border-slate-100">
           <div className="flex items-center justify-between mb-3.5">
             <h2 className="text-sm font-bold text-slate-900">Trip Information</h2>
-            <Link
-              to={`/trips/${trip._id}/edit`}
-              state={{ from: `/trips/${trip._id}` }}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700"
-            >
-              <Pencil size={12} />
-              <span>Edit</span>
-            </Link>
+            {isTripOwner && (
+              <Link
+                to={`/trips/${trip._id}/edit`}
+                state={{ from: `/trips/${trip._id}` }}
+                className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700"
+              >
+                <Pencil size={12} />
+                <span>Edit</span>
+              </Link>
+            )}
           </div>
 
           <div className="divide-y divide-slate-200/60 text-xs">

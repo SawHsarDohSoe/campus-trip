@@ -79,23 +79,24 @@ export default function Profile() {
   const handleToggleNotifications = async () => {
     const token = localStorage.getItem("campusTripToken");
     const nextState = !notificationsEnabled;
+    if (!token) return navigate("/login");
     setNotificationsEnabled(nextState);
 
-    if (token) {
-      try {
-        await updateSettings(
-          {
-            notifications: {
-              tripUpdates: nextState,
-              budgetAlerts: nextState,
-              memberInvitations: nextState,
-            },
+    try {
+      await updateSettings(
+        {
+          notifications: {
+            tripUpdates: nextState,
+            budgetAlerts: nextState,
+            memberInvitations: nextState,
           },
-          token
-        );
-      } catch (err) {
-        console.error("Failed to update notification settings:", err);
-      }
+        },
+        token
+      );
+      setNotice(`Notifications ${nextState ? "enabled" : "disabled"}.`);
+    } catch (err) {
+      setNotificationsEnabled(!nextState);
+      setNotice(err.message || "Unable to update notification settings.");
     }
   };
 
