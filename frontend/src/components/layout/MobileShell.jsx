@@ -9,14 +9,14 @@ export default function MobileShell({
   contentClassName = "",
 }) {
   return (
-    <div className="fixed inset-0 w-full h-full flex flex-col md:flex-row bg-white md:bg-slate-100 overflow-hidden">
+    <div className="fixed inset-0 w-full h-full flex flex-col md:flex-row bg-white md:bg-slate-50 overflow-hidden">
       {/* Desktop Sidebar (visible on md+ screens) */}
       <div className="hidden md:flex shrink-0 h-full">
         <Sidebar />
       </div>
 
       {/* Main App Container */}
-      <div className="flex-1 h-full flex flex-col min-w-0 bg-white md:bg-slate-50 relative overflow-hidden">
+      <div className="flex-1 h-full flex flex-col min-w-0 bg-white md:bg-gradient-to-br md:from-slate-50 md:via-white md:to-blue-50/60 relative overflow-hidden">
         {/* Scrollable Viewport */}
         <main
           className={`flex-1 overflow-y-auto overscroll-contain flex flex-col min-h-0 ${contentClassName}`}
@@ -32,4 +32,3 @@ export default function MobileShell({
     </div>
   );
 }
-

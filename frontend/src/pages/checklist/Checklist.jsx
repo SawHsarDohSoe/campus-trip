@@ -28,6 +28,7 @@ export default function Checklist() {
   const [newItemText, setNewItemText] = useState("");
   const [activeMenuId, setActiveMenuId] = useState(null);
   const [, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const loadTrips = async () => {
@@ -109,6 +110,7 @@ export default function Checklist() {
     setNewItemText("");
 
     try {
+      setError("");
       await createChecklistItem(
         {
           tripId: selectedTripId,
@@ -118,7 +120,7 @@ export default function Checklist() {
       );
       await fetchItems();
     } catch (err) {
-      alert(err.message || "Failed to create item.");
+      setError(err.message || "Failed to create item.");
     }
   };
 
@@ -127,11 +129,12 @@ export default function Checklist() {
     if (!token) return;
 
     try {
+      setError("");
       await deleteChecklistItem(id, token);
       setItems((prev) => prev.filter((i) => i._id !== id));
       setActiveMenuId(null);
     } catch (err) {
-      alert(err.message || "Failed to delete item.");
+      setError(err.message || "Failed to delete item.");
     }
   };
 
@@ -149,6 +152,12 @@ export default function Checklist() {
       <MobileHeader title="Checklist" showBack backTo={location.state?.from || "/dashboard"} />
 
       <div className="px-4 sm:px-6 py-4 space-y-4">
+        {error && (
+          <div className="flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-700">
+            <span>{error}</span>
+            <button type="button" onClick={() => setError("")} className="font-semibold">Dismiss</button>
+          </div>
+        )}
         {/* Trip Switcher Dropdown */}
         {trips.length > 0 ? (
           <div className="relative">

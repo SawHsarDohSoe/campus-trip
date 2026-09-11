@@ -281,6 +281,24 @@ export async function getWeather(city, token, date) {
   return data;
 }
 
+export async function changePassword({ currentPassword, newPassword }, token) {
+  const response = await fetch(`${API_URL}/auth/change-password`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || "Unable to change password.");
+  }
+
+  return data;
+}
+
 export async function getExpenses(token, tripId) {
   const url = tripId
     ? `${API_URL}/expenses?tripId=${encodeURIComponent(tripId)}`

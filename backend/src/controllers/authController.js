@@ -63,3 +63,29 @@ export function getCurrentUser(request, response) {
     },
   });
 }
+
+export async function changePassword(request, response, next) {
+  try {
+    const { currentPassword, newPassword } = request.body;
+
+    if (!currentPassword || !newPassword) {
+      return response.status(400).json({ message: "Current and new passwords are required." });
+    }
+
+    if (newPassword.length < 6) {
+      return response.status(400).json({ message: "Your new password must be at least 6 characters." });
+    }
+
+    const user = await User.findById(request.user._id).select("+password");
+    if (!user || !(await user.isPasswordCorrect(currentPassword))) {
+      return response.status(401).json({ message: "Your current password is incorrect." });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    return response.json({ message: "Password updated successfully." });
+  } catch (error) {
+    return next(error);
+  }
+}

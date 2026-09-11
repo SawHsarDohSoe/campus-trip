@@ -2,7 +2,6 @@ import { NavLink, useNavigate } from "react-router-dom";
 import {
   CalendarDays,
   CheckSquare,
-  Compass,
   History,
   Bell,
   Home,
@@ -23,6 +22,7 @@ import {
   deleteNotification,
   markAllNotificationsRead,
 } from "../../api/authApi";
+import BrandLogo from "../common/BrandLogo";
 
 function Sidebar() {
   const navigate = useNavigate();
@@ -156,17 +156,14 @@ function Sidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col overflow-y-auto bg-white p-5 shadow-xl transition-transform duration-300 md:static md:min-h-screen md:w-64 md:max-w-none md:translate-x-0 md:shadow-sm ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col overflow-y-auto border-r border-slate-100 bg-white p-5 shadow-xl transition-transform duration-300 md:static md:min-h-screen md:w-64 md:max-w-none md:translate-x-0 md:shadow-sm ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Logo */}
         <div className="mb-8 flex items-center justify-between">
-          <NavLink to="/dashboard" className="flex items-center gap-2 text-2xl font-bold text-[#1E3A8A]">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#1E3A8A] text-white">
-              <Compass size={21} />
-            </span>
-            CampusTrip
+          <NavLink to="/dashboard" className="transition-transform hover:scale-[1.02]">
+            <BrandLogo size="sm" />
           </NavLink>
 
           <button
@@ -186,7 +183,7 @@ function Sidebar() {
             onClick={() => {
               setShowNotifications((current) => !current);
             }}
-            className="relative flex w-full items-center gap-3 rounded-xl p-3 text-gray-700 transition hover:bg-blue-50 hover:text-[#1E3A8A]"
+            className="relative flex w-full items-center gap-3 rounded-xl p-3 text-slate-700 transition hover:bg-blue-50 hover:text-blue-700"
           >
             <Bell size={20} />
 
@@ -202,7 +199,7 @@ function Sidebar() {
           {showNotifications && (
             <div className="absolute left-0 top-full z-[100] mt-2 w-full rounded-2xl border bg-white p-3 shadow-xl">
               <div className="flex items-center justify-between px-2 py-2">
-                <h3 className="font-bold text-[#1E3A8A]">
+                <h3 className="font-bold text-slate-900">
                   Notifications
                 </h3>
 
@@ -289,7 +286,7 @@ function Sidebar() {
             setIsOpen(false);
             navigate("/");
           }}
-          className="mb-6 hidden items-center gap-3 rounded-xl bg-blue-50 p-3 font-semibold text-[#1E3A8A] transition hover:bg-blue-100 md:flex"
+          className="mb-6 hidden items-center gap-3 rounded-xl bg-blue-50 p-3 font-semibold text-blue-700 transition hover:bg-blue-100 md:flex"
         >
           <Home size={20} />
           Home
@@ -306,8 +303,8 @@ function Sidebar() {
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-xl p-3 transition ${
                   isActive
-                    ? "bg-blue-50 font-semibold text-[#1E3A8A]"
-                    : "text-gray-700 hover:bg-blue-50 hover:text-[#1E3A8A]"
+                    ? "bg-blue-50 font-semibold text-blue-700"
+                    : "text-slate-700 hover:bg-blue-50 hover:text-blue-700"
                 }`
               }
             >

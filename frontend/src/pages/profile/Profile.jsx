@@ -9,16 +9,27 @@ import {
   ChevronRight,
   LogOut,
   Settings as SettingsIcon,
+  X,
 } from "lucide-react";
 import MobileShell from "../../components/layout/MobileShell";
 import MobileHeader from "../../components/layout/MobileHeader";
-import { getCurrentUser, getSettings, updateSettings } from "../../api/authApi";
+import {
+  changePassword,
+  getCurrentUser,
+  getSettings,
+  updateSettings,
+} from "../../api/authApi";
 
 export default function Profile() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [, setLoading] = useState(true);
+  const [notice, setNotice] = useState("");
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "" });
+  const [passwordError, setPasswordError] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -96,6 +107,25 @@ export default function Profile() {
     }
   };
 
+  const handleChangePassword = async (event) => {
+    event.preventDefault();
+    const token = localStorage.getItem("campusTripToken");
+    if (!token) return navigate("/login");
+
+    try {
+      setSavingPassword(true);
+      setPasswordError("");
+      const data = await changePassword(passwordForm, token);
+      setNotice(data.message || "Password updated successfully.");
+      setPasswordForm({ currentPassword: "", newPassword: "" });
+      setShowPasswordForm(false);
+    } catch (err) {
+      setPasswordError(err.message || "Unable to change password.");
+    } finally {
+      setSavingPassword(false);
+    }
+  };
+
   const initialLetter = (user?.name || "U")[0].toUpperCase();
 
   return (
@@ -108,6 +138,14 @@ export default function Profile() {
           <h1 className="text-xl font-bold tracking-tight text-slate-900">Profile</h1>
           <p className="mt-0.5 text-xs text-slate-500">Your account and app preferences.</p>
         </div>
+        {notice && (
+          <div className="flex items-start justify-between gap-3 rounded-2xl border border-blue-100 bg-blue-50 px-3.5 py-3 text-xs text-blue-700">
+            <span>{notice}</span>
+            <button type="button" onClick={() => setNotice("")} aria-label="Dismiss message">
+              <X size={15} />
+            </button>
+          </div>
+        )}
         {/* User Card */}
         <div className="flex flex-col items-center text-center">
           <div className="w-20 h-20 rounded-full bg-blue-600 text-white font-bold text-3xl flex items-center justify-center shadow-lg shadow-blue-500/25 mb-3">
@@ -152,7 +190,10 @@ export default function Profile() {
           {/* Change Password */}
           <button
             type="button"
-            onClick={() => alert("Password reset instructions sent to your email address.")}
+            onClick={() => {
+              setPasswordError("");
+              setShowPasswordForm(true);
+            }}
             className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 active:bg-slate-100 transition text-left cursor-pointer"
           >
             <div className="flex items-center gap-3.5">
@@ -191,9 +232,7 @@ export default function Profile() {
           {/* About */}
           <button
             type="button"
-            onClick={() =>
-              alert("CampusTrip v1.0.0\nPlan smarter. Travel together.\nStudent trip planning made simple.")
-            }
+            onClick={() => setNotice("CampusTrip v1.0.0 — Plan smarter. Travel together. Student trip planning made simple.")}
             className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 active:bg-slate-100 transition text-left cursor-pointer"
           >
             <div className="flex items-center gap-3.5">
@@ -208,9 +247,7 @@ export default function Profile() {
           {/* Help & Support */}
           <button
             type="button"
-            onClick={() =>
-              alert("For support or inquiries, contact:\nsupport@campustrip.app")
-            }
+            onClick={() => setNotice("For support or inquiries, contact support@campustrip.app.")}
             className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 active:bg-slate-100 transition text-left cursor-pointer"
           >
             <div className="flex items-center gap-3.5">
@@ -222,6 +259,34 @@ export default function Profile() {
             <ChevronRight size={16} className="text-slate-300" />
           </button>
         </div>
+
+        {showPasswordForm && (
+          <div className="fixed inset-0 z-50 flex items-end bg-slate-900/40 p-4 sm:items-center sm:justify-center">
+            <form onSubmit={handleChangePassword} className="w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">Change Password</h2>
+                  <p className="mt-0.5 text-xs text-slate-500">Enter your current password and choose a new one.</p>
+                </div>
+                <button type="button" onClick={() => setShowPasswordForm(false)} className="rounded-full p-2 text-slate-500 hover:bg-slate-100" aria-label="Close">
+                  <X size={18} />
+                </button>
+              </div>
+              {passwordError && <p className="mb-3 rounded-xl bg-red-50 px-3 py-2 text-xs text-red-700">{passwordError}</p>}
+              <label className="mb-3 block text-xs font-semibold text-slate-700">
+                Current password
+                <input type="password" required value={passwordForm.currentPassword} onChange={(event) => setPasswordForm((current) => ({ ...current, currentPassword: event.target.value }))} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:bg-white" />
+              </label>
+              <label className="block text-xs font-semibold text-slate-700">
+                New password
+                <input type="password" required minLength={6} value={passwordForm.newPassword} onChange={(event) => setPasswordForm((current) => ({ ...current, newPassword: event.target.value }))} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm outline-none focus:border-blue-600 focus:bg-white" />
+              </label>
+              <button type="submit" disabled={savingPassword} className="mt-5 w-full rounded-xl bg-blue-600 py-3 text-xs font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60">
+                {savingPassword ? "Updating password..." : "Update Password"}
+              </button>
+            </form>
+          </div>
+        )}
 
         {/* Single Visually Separated Logout Action at Bottom */}
         <div className="pt-2 md:hidden">

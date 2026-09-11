@@ -28,6 +28,7 @@ export default function TripDetails() {
   const [weather, setWeather] = useState(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
   const [weatherError, setWeatherError] = useState("");
+  const [shareMessage, setShareMessage] = useState("");
 
   useEffect(() => {
     const loadTripData = async () => {
@@ -100,6 +101,41 @@ export default function TripDetails() {
         navigate("/trips", { replace: true });
       } catch (e) {
         alert(e.message || "Failed to delete trip.");
+      }
+    }
+  };
+
+  const handleShareTrip = async () => {
+    const shareUrl = window.location.href;
+    setShowMenu(false);
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: trip.title,
+          text: `Join me on ${trip.title} in CampusTrip.`,
+          url: shareUrl,
+        });
+        setShareMessage("Trip link shared.");
+        return;
+      }
+
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = shareUrl;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+      setShareMessage("Trip link copied to clipboard.");
+    } catch (err) {
+      if (err?.name !== "AbortError") {
+        setShareMessage("Unable to share the trip link. Please try again.");
       }
     }
   };
@@ -187,11 +223,7 @@ export default function TripDetails() {
                   </Link>
                   <button
                     type="button"
-                    onClick={() => {
-                      navigator.clipboard?.writeText(window.location.href);
-                      alert("Trip link copied to clipboard!");
-                      setShowMenu(false);
-                    }}
+                    onClick={handleShareTrip}
                     className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium text-slate-700 hover:bg-slate-50 text-left cursor-pointer transition"
                   >
                     <Share2 size={15} className="text-slate-500" />
@@ -215,6 +247,13 @@ export default function TripDetails() {
           </div>
         }
       />
+
+      {shareMessage && (
+        <div className="fixed left-1/2 top-16 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-xl bg-slate-900 px-4 py-3 text-center text-xs font-medium text-white shadow-xl">
+          {shareMessage}
+          <button type="button" className="ml-3 text-blue-200 hover:text-white" onClick={() => setShareMessage("")}>Dismiss</button>
+        </div>
+      )}
 
       {/* Trip Hero Banner */}
       <div className="relative">
