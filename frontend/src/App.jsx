@@ -18,6 +18,7 @@ import Schedule from "./pages/schedule/Schedule";
 import Budget from "./pages/budget/Budget";
 import Checklist from "./pages/checklist/Checklist";
 import Members from "./pages/members/Members";
+import Polls from "./pages/polls/Polls";
 import Chat from "./pages/chat/Chat";
 import Profile from "./pages/profile/Profile";
 import EditProfile from "./pages/profile/EditProfile";
@@ -55,6 +56,7 @@ export default function App() {
         <Route path="/budget" element={<Budget />} />
         <Route path="/checklist" element={<Checklist />} />
         <Route path="/members" element={<Members />} />
+        <Route path="/polls" element={<Polls />} />
 
         {/* Communication & Account */}
         <Route path="/chat" element={<Chat />} />

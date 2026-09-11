@@ -10,12 +10,12 @@ import {
   ArrowRight,
   Plus,
   ChevronRight,
+  BarChart3,
 } from "lucide-react";
 import MobileShell from "../../components/layout/MobileShell";
 import MobileHeader from "../../components/layout/MobileHeader";
 import WeatherCard from "../../components/weather/WeatherCard";
 import { TripThumbnail } from "../../components/common/Illustrations";
-import TripPolls from "../trip/TripPolls";
 import { getWeatherLocation } from "../../utils/weatherLocation";
 import { getCurrentUser, getTrips, getNotifications, getWeather } from "../../api/authApi";
 
@@ -270,17 +270,9 @@ export default function Dashboard() {
           />
         )}
 
-        {upcomingTrip && (
-          <TripPolls
-            tripId={upcomingTrip._id}
-            isOwner={String(upcomingTrip.owner?._id || upcomingTrip.owner) === String(user?._id || user?.id)}
-            tripStatus={upcomingTrip.status}
-          />
-        )}
-
-        {/* 4 Quick Action Buttons Grid */}
+        {/* Trip module shortcut grid */}
         <div>
-          <div className="grid grid-cols-4 gap-2 sm:gap-3">
+          <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 sm:gap-3">
             {/* Schedule */}
             <Link
               to="/schedule"
@@ -334,6 +326,20 @@ export default function Dashboard() {
               </div>
               <span className="text-[11px] font-semibold text-slate-700 truncate w-full text-center">
                 Members
+              </span>
+            </Link>
+
+            {/* Polls */}
+            <Link
+              to="/polls"
+              state={{ from: "/dashboard", tripId: upcomingTrip?._id }}
+              className="flex flex-col items-center justify-center p-2.5 bg-white rounded-2xl border border-slate-100 shadow-xs hover:shadow-md hover:border-amber-100 active:scale-95 transition group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
+                <BarChart3 size={18} strokeWidth={2.2} />
+              </div>
+              <span className="text-[11px] font-semibold text-slate-700 truncate w-full text-center">
+                Polls
               </span>
             </Link>
           </div>

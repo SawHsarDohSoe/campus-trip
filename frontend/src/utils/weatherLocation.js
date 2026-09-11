@@ -6,7 +6,9 @@ export function getWeatherLocation(trip) {
     .map((part) => part.trim())
     .filter(Boolean);
   const destinationCity = destinationParts[0] || "";
-  const destinationCountry = destinationParts.at(-1) || "";
+  const destinationCountry = (destinationParts.at(-1) || "")
+    .replace(/\s*\([^)]*\)\s*/g, "")
+    .trim();
   const locality = trip.tambon?.trim() || trip.district?.trim() || destinationCity;
   const district = trip.district?.trim() || "";
 

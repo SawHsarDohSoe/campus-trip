@@ -378,7 +378,7 @@ export default function TripDetails() {
           data={weather}
           error={weatherError}
           loading={weatherLoading}
-          title={`Forecast for ${trip.destination}`}
+          title={`${weather?.mode === "forecast" ? "Forecast for" : "Weather in"} ${weatherLocation}`}
         />
 
         {/* Trip Information Section with District and Tambon */}

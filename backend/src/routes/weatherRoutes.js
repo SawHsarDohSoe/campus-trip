@@ -50,16 +50,12 @@ router.get("/", async (request, response) => {
       });
     }
 
-    if (requestedDate && requestedDate > forecastLimit) {
-      return response.json({
-        available: false,
-        mode: "forecast",
-        requestedDate: date,
-        message: "Forecast data is not available yet for this trip date. Check again within 5 days of departure.",
-      });
-    }
-
-    const useForecast = requestedDate && requestedDate > today;
+    // OpenWeather only provides a short forecast window. For trips further in
+    // the future, show useful current conditions for the entered location.
+    const useForecast =
+      requestedDate &&
+      requestedDate > today &&
+      requestedDate <= forecastLimit;
     const endpoint = useForecast ? "forecast" : "weather";
     const weatherResponse = await fetch(
       `https://api.openweathermap.org/data/2.5/${endpoint}?q=${encodeURIComponent(
@@ -121,6 +117,7 @@ router.get("/", async (request, response) => {
       result = {
         available: true,
         mode: "current",
+        requestedDate: date || undefined,
         city: data.name,
         country: data.sys.country,
         temperature: data.main.temp,
