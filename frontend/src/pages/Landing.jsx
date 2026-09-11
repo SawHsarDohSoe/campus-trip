@@ -4,7 +4,6 @@ import DashboardPreview from "../components/dashboard/DashboardPreview";
 import StatsCard from "../components/cards/StatsCard";
 import FeatureCard from "../components/cards/FeatureCard";
 import InfoCard from "../components/cards/InfoCard";
-import StepCard from "../components/cards/StepCard";
 import Footer from "../components/layout/Footer";
 import BackgroundShapes from "../components/common/BackgroundShapes";
 import { useNavigate } from "react-router-dom";
@@ -164,7 +163,7 @@ function Landing() {
         {/* ================= 2. TEAM MEMBERS (FIRST SECTION) ================= */}
         <section
           id="team"
-          className="w-full py-12 sm:py-16 scroll-mt-24 border-t border-blue-100/60"
+          className="w-full py-9 sm:py-12 scroll-mt-24 border-t border-blue-100/60"
         >
           <div className="mb-10 text-center sm:mb-12">
             <span className="inline-block rounded-full bg-blue-100 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-blue-700">
@@ -181,38 +180,37 @@ function Landing() {
           </div>
 
           {/* Team Members Grid */}
-          <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 lg:gap-6">
+          <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
             {TEAM_MEMBERS.map((member, index) => (
               <div
                 key={member.id}
-                className="group relative flex flex-col items-center rounded-2xl border border-blue-100/80 bg-white/95 p-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-blue-300 hover:shadow-xl"
+                className="group relative flex min-w-0 flex-col items-center rounded-2xl border border-blue-100/80 bg-white/95 p-3.5 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg sm:p-4"
               >
                 {/* Number Badge */}
-                <div className="absolute top-3 right-3 flex h-6 w-6 items-center justify-center rounded-full bg-blue-50 text-[11px] font-bold text-blue-700">
+                <div className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-50 text-[10px] font-bold text-blue-700 sm:right-3 sm:top-3">
                   {index + 1}
                 </div>
 
                 {/* Avatar with Initials */}
                 <div
-                  className={`mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-tr ${member.gradient} text-xl font-bold text-white shadow-md shadow-blue-500/10 transition-transform group-hover:scale-105`}
+                  className={`mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-tr ${member.gradient} text-sm font-bold text-white shadow-md shadow-blue-500/10 transition-transform group-hover:scale-105 sm:h-14 sm:w-14 sm:text-base`}
                 >
                   {member.initials}
                 </div>
 
                 {/* Name */}
-                <h3 className="mt-4 text-base font-bold text-gray-900 group-hover:text-blue-700 transition-colors">
+                <h3 className="mt-2.5 w-full truncate text-xs font-bold text-gray-900 transition-colors group-hover:text-blue-700 sm:text-sm">
                   {member.name}
                 </h3>
 
                 {/* Student ID Chip */}
-                <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
-                  <span className="text-[10px] font-semibold text-blue-600">ID:</span>
+                <div className="mt-1.5 inline-flex max-w-full items-center rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-medium text-slate-700 sm:text-[10px]">
                   <span className="font-mono tracking-tight font-semibold">{member.id}</span>
                 </div>
 
                 {/* Role Pill */}
-                <span className="mt-3 text-[11px] font-semibold uppercase tracking-wider text-blue-600 bg-blue-50/80 px-2.5 py-0.5 rounded-md">
-                  Student Contributor
+                <span className="mt-2 rounded-md bg-blue-50/80 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-blue-600 sm:text-[9px]">
+                  Contributor
                 </span>
               </div>
             ))}

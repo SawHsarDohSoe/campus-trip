@@ -6,25 +6,25 @@ function FeatureCard({
   description,
 }) {
   return (
-    <div className="group bg-white rounded-3xl border border-gray-100 p-8 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:border-blue-200 cursor-pointer">
+    <div className="group rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-lg sm:p-6">
 
       {/* Icon */}
-      <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center text-3xl mb-6 transition duration-300 group-hover:scale-110 group-hover:bg-blue-100">
+      <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-2xl transition duration-300 group-hover:scale-105 group-hover:bg-blue-100 sm:h-12 sm:w-12">
         {icon}
       </div>
 
       {/* Title */}
-      <h3 className="text-2xl font-bold text-[#1E3A8A]">
+      <h3 className="text-base font-bold text-slate-900 sm:text-lg">
         {title}
       </h3>
 
       {/* Description */}
-      <p className="mt-4 text-gray-600 leading-7">
+      <p className="mt-2 text-sm leading-6 text-slate-600">
         {description}
       </p>
 
       {/* Learn More */}
-      <div className="mt-8 flex items-center gap-2 text-[#1E3A8A] font-semibold opacity-0 translate-x-[-10px] group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+      <div className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-blue-600 opacity-0 transition-all duration-300 group-hover:opacity-100">
         <span>Learn More</span>
         <ArrowRight size={18} />
       </div>
