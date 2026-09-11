@@ -20,14 +20,28 @@ export default function MobileHeader({
       onBack();
       return;
     }
-    // If there is prior browser history within the app
+
+    // A child opened by the app has an explicit parent in location state. Pop it
+    // normally so the parent is not duplicated in Android/browser history.
+    if (location.state?.from && window.history.state?.idx > 0) {
+      navigate(-1);
+      return;
+    }
+
+    // Deep links may not have an in-app parent. Use the declared fallback without
+    // creating another entry, rather than sending the user to an unrelated page.
+    if (backTo) {
+      navigate(backTo, { replace: true });
+      return;
+    }
+
+    // Keep platform Back behavior when no logical parent was supplied.
     if (window.history.state && window.history.state.idx > 0) {
       navigate(-1);
-    } else if (backTo) {
-      navigate(backTo);
-    } else {
-      navigate("/dashboard");
+      return;
     }
+
+    navigate("/dashboard", { replace: true });
   };
 
   return (

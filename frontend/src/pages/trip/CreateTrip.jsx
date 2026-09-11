@@ -53,7 +53,7 @@ export default function CreateTrip() {
         },
         token
       );
-      navigate("/trips");
+      navigate("/trips", { replace: true });
     } catch (err) {
       setError(err.message || "Unable to create trip.");
     } finally {

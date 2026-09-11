@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ChevronRight, CalendarDays, History } from "lucide-react";
 import MobileShell from "../../components/layout/MobileShell";
 import MobileHeader from "../../components/layout/MobileHeader";
@@ -8,6 +8,7 @@ import { getTripHistory } from "../../api/authApi";
 
 export default function TripHistory() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -53,7 +54,7 @@ export default function TripHistory() {
 
   return (
     <MobileShell showBottomNav={true} contentClassName="bg-slate-50/50">
-      <MobileHeader title="Trip History" showBack backTo="/trips" />
+      <MobileHeader title="Trip History" showBack backTo={location.state?.from || "/trips"} />
 
       {/* History List */}
       <div className="px-5 py-4 space-y-3">
@@ -82,6 +83,7 @@ export default function TripHistory() {
             <Link
               key={trip._id}
               to={`/trips/${trip._id}`}
+              state={{ from: "/trip-history" }}
               className="p-3 bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3.5 hover:shadow-md hover:border-slate-200 transition group"
             >
               {/* Thumbnail */}

@@ -219,6 +219,7 @@ export default function Dashboard() {
               <div className="mt-4 pt-1">
                 <Link
                   to={`/trips/${upcomingTrip._id}`}
+                  state={{ from: "/dashboard" }}
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-blue-600 text-xs font-bold rounded-xl shadow-md hover:bg-blue-50 active:scale-95 transition"
                 >
                   <span>View Details</span>
@@ -345,6 +346,7 @@ export default function Dashboard() {
                 <Link
                   key={trip._id}
                   to={`/trips/${trip._id}`}
+                  state={{ from: "/dashboard" }}
                   className="p-3 bg-white rounded-2xl border border-slate-100 shadow-xs flex items-center gap-3 hover:shadow-sm transition group"
                 >
                   <TripThumbnail

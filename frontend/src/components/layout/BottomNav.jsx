@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Home, Compass, KeyRound, Plus, MessageSquare, User, X } from "lucide-react";
 
@@ -6,7 +6,12 @@ export default function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const path = location.pathname;
+  const currentPath = `${location.pathname}${location.search}`;
   const [showTripActions, setShowTripActions] = useState(false);
+
+  useEffect(() => {
+    setShowTripActions(false);
+  }, [location.key]);
 
   const isHome = path === "/dashboard";
   const isTrips =
@@ -18,8 +23,13 @@ export default function BottomNav() {
 
   // Tab navigation with replace: true to prevent endless back-history loops
   const handleTabClick = (targetPath) => {
-    if (path === targetPath) return;
-    navigate(targetPath, { replace: true });
+    if (currentPath === targetPath) return;
+    navigate(targetPath, { replace: true, state: null });
+  };
+
+  const getChatTarget = () => {
+    const tripId = localStorage.getItem("campusTripChatTripId");
+    return tripId ? `/chat?trip=${encodeURIComponent(tripId)}` : "/chat";
   };
 
   const handleCreateClick = () => {
@@ -98,7 +108,7 @@ export default function BottomNav() {
         {/* 4. Chat */}
         <button
           type="button"
-          onClick={() => handleTabClick("/chat")}
+          onClick={() => handleTabClick(getChatTarget())}
           className={`flex flex-col items-center justify-center flex-1 py-1 transition-colors cursor-pointer ${
             isChat ? "text-blue-600 font-bold" : "text-slate-400 hover:text-slate-600"
           }`}

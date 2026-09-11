@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { Send, ChevronDown, MessageSquare, Plus } from "lucide-react";
 import MobileShell from "../../components/layout/MobileShell";
 import MobileHeader from "../../components/layout/MobileHeader";
@@ -11,6 +11,7 @@ import {
 
 export default function Chat() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [trips, setTrips] = useState([]);
   const [selectedTripId, setSelectedTripId] = useState("");
   const [messages, setMessages] = useState([]);
@@ -19,6 +20,7 @@ export default function Chat() {
   const [loading, setLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef(null);
+  const initialTripIdRef = useRef(new URLSearchParams(location.search).get("trip"));
 
   useEffect(() => {
     const storedUser = localStorage.getItem("campusTripCurrentUser");
@@ -44,7 +46,12 @@ export default function Chat() {
         const data = await getTrips(token);
         if (data?.trips?.length) {
           setTrips(data.trips);
-          setSelectedTripId(data.trips[0]._id);
+          const savedTripId = localStorage.getItem("campusTripChatTripId");
+          const preferredTripId = initialTripIdRef.current || savedTripId;
+          const selectedTrip = data.trips.find((trip) => trip._id === preferredTripId);
+          const nextTripId = selectedTrip?._id || data.trips[0]._id;
+          setSelectedTripId(nextTripId);
+          localStorage.setItem("campusTripChatTripId", nextTripId);
         }
       } catch (err) {
         console.error("Failed to load trips:", err);
@@ -54,6 +61,12 @@ export default function Chat() {
     };
     loadTrips();
   }, [navigate]);
+
+  const handleTripChange = (tripId) => {
+    setSelectedTripId(tripId);
+    localStorage.setItem("campusTripChatTripId", tripId);
+    navigate(`/chat?trip=${encodeURIComponent(tripId)}`, { replace: true });
+  };
 
   const fetchMessages = async () => {
     const token = localStorage.getItem("campusTripToken");
@@ -148,7 +161,7 @@ export default function Chat() {
               <div className="relative inline-block max-w-full">
               <select
                 value={selectedTripId}
-                onChange={(e) => setSelectedTripId(e.target.value)}
+                onChange={(e) => handleTripChange(e.target.value)}
                 className="text-[11px] font-medium text-blue-600 bg-transparent pr-4 truncate border-none outline-none appearance-none cursor-pointer"
               >
                 {trips.map((t) => (

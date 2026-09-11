@@ -48,7 +48,11 @@ export default function EditProfile() {
         "campusTripCurrentUser",
         JSON.stringify({ ...stored, ...data.profile })
       );
-      navigate(-1);
+      if (location.state?.from && window.history.state?.idx > 0) {
+        navigate(-1);
+      } else {
+        navigate("/profile", { replace: true });
+      }
     } catch (err) {
       setError(err.message || "Unable to save your profile.");
     } finally {

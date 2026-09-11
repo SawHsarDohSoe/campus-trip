@@ -13,7 +13,7 @@ export default function JoinTrip() {
   const [searchParams] = useSearchParams();
   const sharedCode = (searchParams.get("code") || "").replace(/\D/g, "").slice(0, 6);
   const [digits, setDigits] = useState(() =>
-    [...sharedCode, "", "", "", "", ""].slice(0, 6)
+    Array.from({ length: 6 }, (_, index) => sharedCode[index] || "")
   );
   const inputRefs = useRef([]);
   const [showScanner, setShowScanner] = useState(false);
@@ -71,7 +71,7 @@ export default function JoinTrip() {
 
       const res = await joinTrip(code, token);
       setSuccess(res?.message || "Successfully joined trip!");
-      setTimeout(() => navigate("/trips"), 1200);
+      setTimeout(() => navigate("/trips", { replace: true }), 1200);
     } catch (err) {
       setError(err.message || "Invalid or expired join code.");
     } finally {

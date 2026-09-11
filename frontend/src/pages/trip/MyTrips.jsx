@@ -134,6 +134,7 @@ export default function MyTrips() {
             </p>
             <Link
               to="/trips/create"
+              state={{ from: "/trips" }}
               className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-xl shadow-md active:scale-95 transition"
             >
               <Plus size={13} strokeWidth={2.5} />
