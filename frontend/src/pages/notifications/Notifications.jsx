@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
   UserPlus,
   Calendar,
   Wallet,
@@ -11,10 +10,12 @@ import {
   Bell,
 } from "lucide-react";
 import MobileShell from "../../components/layout/MobileShell";
+import MobileHeader from "../../components/layout/MobileHeader";
 import { getNotifications, markAllNotificationsRead } from "../../api/authApi";
 
 export default function Notifications() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [filter, setFilter] = useState("All");
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -90,20 +91,11 @@ export default function Notifications() {
 
   return (
     <MobileShell showBottomNav={true} contentClassName="bg-slate-50/50">
-      {/* Header */}
-      <div className="bg-white px-5 pt-3 pb-3 flex items-center justify-between border-b border-slate-100 sticky top-0 z-20">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate(-1)}
-            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-700 transition"
-            aria-label="Back"
-          >
-            <ArrowLeft size={19} />
-          </button>
-          <h1 className="text-lg font-bold text-slate-900">Notifications</h1>
-        </div>
-
-        {notifications.length > 0 && (
+      <MobileHeader
+        title="Notifications"
+        showBack
+        backTo={location.state?.from || "/dashboard"}
+        rightAction={notifications.length > 0 && (
           <button
             onClick={handleMarkAllRead}
             title="Mark all as read"
@@ -112,7 +104,7 @@ export default function Notifications() {
             <CheckCheck size={18} />
           </button>
         )}
-      </div>
+      />
 
       {/* Filter Tabs */}
       <div className="px-5 pt-4 pb-2 flex items-center gap-2">

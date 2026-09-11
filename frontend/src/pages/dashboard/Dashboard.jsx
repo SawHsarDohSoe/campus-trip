@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Bell,
   Calendar,
   Wallet,
   CheckSquare,
@@ -10,17 +9,24 @@ import {
   CalendarDays,
   ArrowRight,
   Plus,
+  ChevronRight,
 } from "lucide-react";
 import MobileShell from "../../components/layout/MobileShell";
-import BrandLogo from "../../components/common/BrandLogo";
-import { getCurrentUser, getTrips, getNotifications } from "../../api/authApi";
+import MobileHeader from "../../components/layout/MobileHeader";
+import WeatherCard from "../../components/weather/WeatherCard";
+import { TripThumbnail } from "../../components/common/Illustrations";
+import { getCurrentUser, getTrips, getNotifications, getWeather } from "../../api/authApi";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [upcomingTrip, setUpcomingTrip] = useState(null);
+  const [recentTrips, setRecentTrips] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [weather, setWeather] = useState(null);
+  const [weatherLoading, setWeatherLoading] = useState(false);
+  const [weatherError, setWeatherError] = useState("");
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -62,11 +68,13 @@ export default function Dashboard() {
             );
             const active =
               sorted.find(
-                (t) => t.status === "Planning" || t.status === "Upcoming"
+                (t) => t.status === "Planning" || t.status === "Ongoing" || t.status === "Upcoming"
               ) || sorted[0];
             setUpcomingTrip(active);
+            setRecentTrips(sorted.filter((t) => t._id !== active._id).slice(0, 3));
           } else {
             setUpcomingTrip(null);
+            setRecentTrips([]);
           }
         } catch (err) {
           console.error("Error loading trips:", err);
@@ -90,6 +98,38 @@ export default function Dashboard() {
     loadDashboardData();
   }, [navigate]);
 
+  useEffect(() => {
+    if (!upcomingTrip?.destination) {
+      setWeather(null);
+      setWeatherError("");
+      return;
+    }
+
+    let cancelled = false;
+    const loadWeather = async () => {
+      const token = localStorage.getItem("campusTripToken");
+      if (!token) return;
+      try {
+        setWeatherLoading(true);
+        setWeatherError("");
+        const data = await getWeather(upcomingTrip.destination, token);
+        if (!cancelled) setWeather(data);
+      } catch (err) {
+        if (!cancelled) {
+          setWeather(null);
+          setWeatherError(err.message || "Weather is temporarily unavailable.");
+        }
+      } finally {
+        if (!cancelled) setWeatherLoading(false);
+      }
+    };
+
+    loadWeather();
+    return () => {
+      cancelled = true;
+    };
+  }, [upcomingTrip?._id, upcomingTrip?.destination]);
+
   const formatDateRange = (start, end) => {
     if (!start) return "Date flexible";
     const s = new Date(start).toLocaleDateString("en-GB", {
@@ -106,30 +146,26 @@ export default function Dashboard() {
     return e ? `${s} - ${e}` : s;
   };
 
-  return (
-    <MobileShell showBottomNav={true} contentClassName="bg-slate-50/50">
-      {/* Top Bar: Logo + Notification Bell */}
-      <div className="bg-white px-4 sm:px-6 pt-3.5 pb-3 flex items-center justify-between border-b border-slate-100 sticky top-0 z-20 shadow-xs">
-        <BrandLogo size="sm" />
-        <Link
-          to="/notifications"
-          className="relative w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-700 hover:bg-slate-100 transition"
-          aria-label="Notifications"
-        >
-          <Bell size={18} />
-          {unreadCount > 0 && (
-            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-blue-600 ring-2 ring-white"></span>
-          )}
-        </Link>
-      </div>
+  const getDistrictTambonText = (trip) => {
+    if (!trip) return "";
+    const parts = [];
+    if (trip.tambon) parts.push(trip.tambon);
+    if (trip.district) parts.push(trip.district);
+    return parts.join(", ");
+  };
 
-      <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-5 sm:space-y-6">
+  return (
+    <MobileShell showBottomNav={true} contentClassName="bg-slate-50/60 pb-20">
+      {/* Top Bar: CampusTrip Logo + Notification Bell */}
+      <MobileHeader showBack={false} unreadCount={unreadCount} />
+
+      <div className="px-4 sm:px-6 py-4 space-y-5">
         {/* Welcome Greeting */}
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
             Good to see you, {user?.name || "Francis"}! 👋
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5 sm:mt-1">Plan your next adventure</p>
+          <p className="text-xs text-slate-500 mt-0.5">Plan your next adventure.</p>
         </div>
 
         {/* Upcoming Trip Card */}
@@ -138,7 +174,7 @@ export default function Dashboard() {
             <span className="text-xs text-slate-400">Loading trips...</span>
           </div>
         ) : upcomingTrip ? (
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-500 via-sky-400 to-sky-300 p-6 text-white shadow-xl shadow-blue-500/20">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-blue-500 to-sky-400 p-5 sm:p-6 text-white shadow-xl shadow-blue-500/20">
             {/* Background graphic */}
             <div className="absolute right-0 top-0 bottom-0 w-1/2 opacity-20 pointer-events-none">
               <svg viewBox="0 0 160 200" className="w-full h-full object-cover">
@@ -147,19 +183,29 @@ export default function Dashboard() {
               </svg>
             </div>
 
-            <div className="relative z-10 flex flex-col justify-between min-h-[165px]">
+            <div className="relative z-10 flex flex-col justify-between min-h-[160px]">
               <div>
-                <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[11px] font-semibold text-white tracking-wide mb-3">
-                  Upcoming Trip
-                </span>
-                <h2 className="text-2xl font-bold tracking-tight text-white drop-shadow-sm">
+                <div className="flex items-center justify-between mb-2.5">
+                  <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[11px] font-semibold text-white tracking-wide">
+                    {upcomingTrip.status || "Upcoming Trip"}
+                  </span>
+                </div>
+
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white drop-shadow-sm truncate">
                   {upcomingTrip.title}
                 </h2>
 
-                <div className="mt-3 space-y-1 text-xs text-blue-50 font-medium">
-                  <p className="flex items-center gap-1.5">
+                <div className="mt-2.5 space-y-1 text-xs text-blue-50 font-medium">
+                  <p className="flex items-center gap-1.5 truncate">
                     <MapPin size={13} className="text-blue-100 shrink-0" />
-                    <span>{upcomingTrip.destination}</span>
+                    <span>
+                      {upcomingTrip.destination}
+                      {getDistrictTambonText(upcomingTrip) && (
+                        <span className="text-blue-200 text-[11px] ml-1">
+                          ({getDistrictTambonText(upcomingTrip)})
+                        </span>
+                      )}
+                    </span>
                   </p>
                   <p className="flex items-center gap-1.5">
                     <CalendarDays size={13} className="text-blue-100 shrink-0" />
@@ -170,21 +216,21 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="mt-4 pt-2">
+              <div className="mt-4 pt-1">
                 <Link
                   to={`/trips/${upcomingTrip._id}`}
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-white text-blue-600 text-xs font-bold rounded-xl shadow-md hover:bg-blue-50 active:scale-95 transition"
                 >
-                  <span>See Details</span>
+                  <span>View Details</span>
                   <ArrowRight size={13} strokeWidth={2.5} />
                 </Link>
               </div>
             </div>
           </div>
         ) : (
-          <div className="rounded-3xl bg-blue-50/70 border border-blue-100 p-6 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center mx-auto shadow-md shadow-blue-500/30">
-              <Plus size={22} />
+          <div className="rounded-3xl bg-white border border-blue-100 p-6 text-center space-y-3 shadow-sm">
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto shadow-sm">
+              <Plus size={22} strokeWidth={2.5} />
             </div>
             <div>
               <h3 className="text-sm font-bold text-slate-800">No Upcoming Trips</h3>
@@ -195,7 +241,8 @@ export default function Dashboard() {
             <div className="pt-1 flex items-center justify-center gap-2">
               <Link
                 to="/trips/create"
-                className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-xl shadow-md hover:bg-blue-700 transition"
+                state={{ from: "/dashboard" }}
+                className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-xl shadow-sm hover:bg-blue-700 transition"
               >
                 Create Trip
               </Link>
@@ -209,18 +256,29 @@ export default function Dashboard() {
           </div>
         )}
 
+        {upcomingTrip && (
+          <WeatherCard
+            data={weather}
+            error={weatherError}
+            loading={weatherLoading}
+            title={`Weather in ${upcomingTrip.destination}`}
+            compact
+          />
+        )}
+
         {/* 4 Quick Action Buttons Grid */}
         <div>
-          <div className="grid grid-cols-4 gap-2 sm:gap-4">
+          <div className="grid grid-cols-4 gap-2 sm:gap-3">
             {/* Schedule */}
             <Link
               to="/schedule"
-              className="flex flex-col items-center justify-center p-2 sm:p-3.5 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-indigo-100 active:scale-95 transition group"
+              state={{ from: "/dashboard", tripId: upcomingTrip?._id }}
+              className="flex flex-col items-center justify-center p-2.5 bg-white rounded-2xl border border-slate-100 shadow-xs hover:shadow-md hover:border-indigo-100 active:scale-95 transition group"
             >
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-1.5 sm:mb-2 group-hover:scale-110 transition-transform">
-                <Calendar size={18} strokeWidth={2.2} className="sm:w-5 sm:h-5" />
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
+                <Calendar size={18} strokeWidth={2.2} />
               </div>
-              <span className="text-[10px] sm:text-xs font-semibold text-slate-700 truncate w-full text-center">
+              <span className="text-[11px] font-semibold text-slate-700 truncate w-full text-center">
                 Schedule
               </span>
             </Link>
@@ -228,12 +286,13 @@ export default function Dashboard() {
             {/* Budget */}
             <Link
               to="/budget"
-              className="flex flex-col items-center justify-center p-2 sm:p-3.5 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-purple-100 active:scale-95 transition group"
+              state={{ from: "/dashboard", tripId: upcomingTrip?._id }}
+              className="flex flex-col items-center justify-center p-2.5 bg-white rounded-2xl border border-slate-100 shadow-xs hover:shadow-md hover:border-purple-100 active:scale-95 transition group"
             >
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-1.5 sm:mb-2 group-hover:scale-110 transition-transform">
-                <Wallet size={18} strokeWidth={2.2} className="sm:w-5 sm:h-5" />
+              <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
+                <Wallet size={18} strokeWidth={2.2} />
               </div>
-              <span className="text-[10px] sm:text-xs font-semibold text-slate-700 truncate w-full text-center">
+              <span className="text-[11px] font-semibold text-slate-700 truncate w-full text-center">
                 Budget
               </span>
             </Link>
@@ -241,12 +300,13 @@ export default function Dashboard() {
             {/* Checklist */}
             <Link
               to="/checklist"
-              className="flex flex-col items-center justify-center p-2 sm:p-3.5 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-teal-100 active:scale-95 transition group"
+              state={{ from: "/dashboard", tripId: upcomingTrip?._id }}
+              className="flex flex-col items-center justify-center p-2.5 bg-white rounded-2xl border border-slate-100 shadow-xs hover:shadow-md hover:border-teal-100 active:scale-95 transition group"
             >
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center mb-1.5 sm:mb-2 group-hover:scale-110 transition-transform">
-                <CheckSquare size={18} strokeWidth={2.2} className="sm:w-5 sm:h-5" />
+              <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
+                <CheckSquare size={18} strokeWidth={2.2} />
               </div>
-              <span className="text-[10px] sm:text-xs font-semibold text-slate-700 truncate w-full text-center">
+              <span className="text-[11px] font-semibold text-slate-700 truncate w-full text-center">
                 Checklist
               </span>
             </Link>
@@ -254,17 +314,64 @@ export default function Dashboard() {
             {/* Members */}
             <Link
               to="/members"
-              className="flex flex-col items-center justify-center p-2 sm:p-3.5 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-100 active:scale-95 transition group"
+              state={{ from: "/dashboard", tripId: upcomingTrip?._id }}
+              className="flex flex-col items-center justify-center p-2.5 bg-white rounded-2xl border border-slate-100 shadow-xs hover:shadow-md hover:border-blue-100 active:scale-95 transition group"
             >
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-1.5 sm:mb-2 group-hover:scale-110 transition-transform">
-                <Users size={18} strokeWidth={2.2} className="sm:w-5 sm:h-5" />
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
+                <Users size={18} strokeWidth={2.2} />
               </div>
-              <span className="text-[10px] sm:text-xs font-semibold text-slate-700 truncate w-full text-center">
+              <span className="text-[11px] font-semibold text-slate-700 truncate w-full text-center">
                 Members
               </span>
             </Link>
           </div>
         </div>
+
+        {/* Recent Trips / Useful Trip Information */}
+        {recentTrips.length > 0 && (
+          <div className="pt-1">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-bold text-slate-900">Recent Trips</h2>
+              <Link
+                to="/trips"
+                className="text-xs font-semibold text-blue-600 hover:text-blue-700"
+              >
+                View all
+              </Link>
+            </div>
+
+            <div className="space-y-2.5">
+              {recentTrips.map((trip) => (
+                <Link
+                  key={trip._id}
+                  to={`/trips/${trip._id}`}
+                  className="p-3 bg-white rounded-2xl border border-slate-100 shadow-xs flex items-center gap-3 hover:shadow-sm transition group"
+                >
+                  <TripThumbnail
+                    destination={trip.destination || trip.title}
+                    className="w-14 h-14 rounded-xl"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-xs font-bold text-slate-900 truncate group-hover:text-blue-600 transition">
+                      {trip.title}
+                    </h3>
+                    <p className="flex items-center gap-1 text-[11px] text-slate-500 mt-0.5 truncate">
+                      <MapPin size={11} className="text-slate-400 shrink-0" />
+                      <span>{trip.destination}</span>
+                      {getDistrictTambonText(trip) && (
+                        <span className="text-slate-400">· {getDistrictTambonText(trip)}</span>
+                      )}
+                    </p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      {formatDateRange(trip.startDate, trip.endDate)}
+                    </p>
+                  </div>
+                  <ChevronRight size={16} className="text-slate-300 group-hover:text-blue-600 shrink-0" />
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </MobileShell>
   );

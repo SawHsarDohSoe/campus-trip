@@ -1,19 +1,16 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import {
-  ArrowLeft,
-  Menu,
   ChevronDown,
   Plus,
   Train,
   Hotel,
   Utensils,
-  Receipt,
-  X,
   Trash2,
   Wallet,
 } from "lucide-react";
 import MobileShell from "../../components/layout/MobileShell";
+import MobileHeader from "../../components/layout/MobileHeader";
 import {
   getTrips,
   getExpenses,
@@ -23,11 +20,12 @@ import {
 
 export default function Budget() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [trips, setTrips] = useState([]);
   const [selectedTripId, setSelectedTripId] = useState("");
   const [expenses, setExpenses] = useState([]);
   const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [newExpense, setNewExpense] = useState({
     name: "",
     amount: "",
@@ -47,7 +45,12 @@ export default function Budget() {
         const data = await getTrips(token);
         if (data?.trips?.length) {
           setTrips(data.trips);
-          setSelectedTripId(data.trips[0]._id);
+          const requestedTrip = location.state?.tripId;
+          setSelectedTripId(
+            data.trips.some((trip) => trip._id === requestedTrip)
+              ? requestedTrip
+              : data.trips[0]._id
+          );
         }
       } catch (err) {
         console.error("Error loading trips:", err);
@@ -56,7 +59,7 @@ export default function Budget() {
       }
     };
     loadTrips();
-  }, [navigate]);
+  }, [navigate, location.state?.tripId]);
 
   const fetchExpenses = async () => {
     const token = localStorage.getItem("campusTripToken");
@@ -160,19 +163,7 @@ export default function Budget() {
 
   return (
     <MobileShell showBottomNav={true} contentClassName="bg-slate-50/50">
-      {/* Top Header */}
-      <div className="bg-white px-4 sm:px-6 pt-3 pb-3 flex items-center justify-between border-b border-slate-100 sticky top-0 z-20">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-700 transition cursor-pointer"
-            aria-label="Back to Dashboard"
-          >
-            <ArrowLeft size={19} />
-          </button>
-          <h1 className="text-lg font-bold text-slate-900">Budget</h1>
-        </div>
-      </div>
+      <MobileHeader title="Budget" showBack backTo={location.state?.from || "/dashboard"} />
 
       <div className="px-4 sm:px-6 py-4 space-y-4">
         {/* Trip Switcher Dropdown */}

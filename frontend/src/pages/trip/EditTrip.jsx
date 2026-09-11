@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import MobileShell from "../../components/layout/MobileShell";
+import MobileHeader from "../../components/layout/MobileHeader";
 import { getTrip, updateTrip } from "../../api/authApi";
 
 export default function EditTrip() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams();
 
   const [formData, setFormData] = useState({
@@ -17,6 +18,8 @@ export default function EditTrip() {
     endDate: "",
     transportation: "Bus",
     budget: "",
+    description: "",
+    status: "Planning",
   });
 
   const [error, setError] = useState("");
@@ -49,6 +52,8 @@ export default function EditTrip() {
             endDate: data.trip.endDate ? data.trip.endDate.split("T")[0] : "",
             transportation: data.trip.transportation || "Bus",
             budget: data.trip.budget || "",
+            description: data.trip.description || "",
+            status: data.trip.status || "Planning",
           });
         }
       } catch (err) {
@@ -103,162 +108,202 @@ export default function EditTrip() {
   }
 
   return (
-    <MobileShell showBottomNav={false} contentClassName="bg-white">
-      {/* Top Header */}
-      <div className="bg-white px-5 pt-3 pb-3 flex items-center gap-3 border-b border-slate-100 sticky top-0 z-20">
-        <button
-          onClick={() => navigate(-1)}
-          className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-700 transition"
-          aria-label="Back"
-        >
-          <ArrowLeft size={19} />
-        </button>
-        <h1 className="text-lg font-bold text-slate-900">Edit Trip</h1>
-      </div>
+    <MobileShell showBottomNav={false} contentClassName="bg-slate-50/60 pb-16">
+      {/* Top Header: ← Back     Edit Trip */}
+      <MobileHeader
+        title="Edit Trip"
+        showBack={true}
+        backTo={location.state?.from || `/trips/${id}`}
+      />
 
-      <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+      <form onSubmit={handleSubmit} className="px-4 sm:px-6 py-5 space-y-5">
         {error && (
-          <div className="rounded-xl bg-red-50 border border-red-200 p-3 text-xs text-red-600">
+          <div className="rounded-2xl bg-red-50 border border-red-200 p-3.5 text-xs text-red-600">
             {error}
           </div>
         )}
 
-        {/* Trip Name */}
-        <div>
-          <label className="block text-xs font-medium text-slate-700 mb-1.5">
-            Trip Name
-          </label>
-          <input
-            type="text"
-            name="title"
-            required
-            value={formData.title}
-            onChange={handleChange}
-            placeholder="e.g. Pattaya Trip"
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-3.5 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
-          />
-        </div>
+        {/* Section 1: Basic Information */}
+        <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-100 shadow-xs space-y-4">
+          <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+            Basic Information
+          </h2>
 
-        {/* Destination */}
-        <div>
-          <label className="block text-xs font-medium text-slate-700 mb-1.5">
-            Destination
-          </label>
-          <input
-            type="text"
-            name="destination"
-            required
-            value={formData.destination}
-            onChange={handleChange}
-            placeholder="e.g. Chon Buri, Thailand"
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-3.5 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
-          />
-        </div>
-
-        {/* District & Tambon (2 columns) */}
-        <div className="grid grid-cols-2 gap-3">
+          {/* Trip Name */}
           <div>
             <label className="block text-xs font-medium text-slate-700 mb-1.5">
-              District (Amphoe)
+              Trip Name *
             </label>
             <input
               type="text"
-              name="district"
-              value={formData.district}
+              name="title"
+              required
+              value={formData.title}
               onChange={handleChange}
-              placeholder="e.g. Pattaya"
+              placeholder="Trip Name"
               className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-3.5 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
             />
           </div>
 
+          {/* Destination */}
           <div>
             <label className="block text-xs font-medium text-slate-700 mb-1.5">
-              Tambon (Subdistrict)
+              Destination *
             </label>
             <input
               type="text"
-              name="tambon"
-              value={formData.tambon}
+              name="destination"
+              required
+              value={formData.destination}
               onChange={handleChange}
-              placeholder="e.g. Pattaya"
+              placeholder="Destination"
               className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-3.5 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
             />
           </div>
+
+          {/* District & Tambon */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                District (Amphoe)
+              </label>
+              <input
+                type="text"
+                name="district"
+                value={formData.district}
+                onChange={handleChange}
+                placeholder="District"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-3.5 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                Tambon (Subdistrict)
+              </label>
+              <input
+                type="text"
+                name="tambon"
+                value={formData.tambon}
+                onChange={handleChange}
+                placeholder="Tambon"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-3.5 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Dates (2 columns) */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* Section 2: Trip Details */}
+        <div className="bg-white rounded-3xl p-4 sm:p-5 border border-slate-100 shadow-xs space-y-4">
+          <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+            Trip Details
+          </h2>
+
+          {/* Status */}
           <div>
             <label className="block text-xs font-medium text-slate-700 mb-1.5">
-              Start Date
+              Status
+            </label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-3.5 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
+            >
+              <option value="Planning">Planning</option>
+              <option value="Ongoing">Ongoing</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+
+          {/* Dates */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                Start Date
+              </label>
+              <input
+                type="date"
+                name="startDate"
+                value={formData.startDate}
+                onChange={handleChange}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1.5">
+                End Date
+              </label>
+              <input
+                type="date"
+                name="endDate"
+                value={formData.endDate}
+                onChange={handleChange}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
+              />
+            </div>
+          </div>
+
+          {/* Transportation */}
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              Transportation
+            </label>
+            <select
+              name="transportation"
+              value={formData.transportation}
+              onChange={handleChange}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-3.5 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
+            >
+              <option value="Train">Train</option>
+              <option value="Bus">Bus</option>
+              <option value="Van">Van</option>
+              <option value="Car">Car</option>
+              <option value="Flight">Flight</option>
+              <option value="Boat">Boat</option>
+            </select>
+          </div>
+
+          {/* Trip Budget */}
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              Trip Budget (THB)
             </label>
             <input
-              type="date"
-              name="startDate"
-              required
-              value={formData.startDate}
+              type="number"
+              name="budget"
+              value={formData.budget}
               onChange={handleChange}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
+              placeholder="e.g. 5000"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-600 focus:outline-none transition"
             />
           </div>
 
+          {/* Description */}
           <div>
             <label className="block text-xs font-medium text-slate-700 mb-1.5">
-              End Date
+              Trip Description
             </label>
-            <input
-              type="date"
-              name="endDate"
-              required
-              value={formData.endDate}
+            <textarea
+              name="description"
+              rows={3}
+              value={formData.description}
               onChange={handleChange}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
+              placeholder="Notes, packing reminders, or trip objectives..."
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3.5 text-xs text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-blue-600 focus:outline-none transition resize-none"
             />
           </div>
         </div>
 
-        {/* Transportation Dropdown */}
-        <div>
-          <label className="block text-xs font-medium text-slate-700 mb-1.5">
-            Transportation
-          </label>
-          <select
-            name="transportation"
-            value={formData.transportation}
-            onChange={handleChange}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-3.5 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
-          >
-            <option value="Bus">Bus</option>
-            <option value="Van">Van</option>
-            <option value="Train">Train</option>
-            <option value="Airplane">Airplane</option>
-          </select>
-        </div>
-
-        {/* Trip Budget */}
-        <div>
-          <label className="block text-xs font-medium text-slate-700 mb-1.5">
-            Trip Budget (THB)
-          </label>
-          <input
-            type="number"
-            name="budget"
-            required
-            value={formData.budget}
-            onChange={handleChange}
-            placeholder="e.g. 10000"
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-3.5 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
-          />
-        </div>
-
-        {/* Update Button */}
-        <div className="pt-4 pb-6">
+        {/* Submit Button */}
+        <div className="pt-2">
           <button
             type="submit"
             disabled={updating}
-            className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-lg shadow-blue-500/25 active:scale-[0.99] transition disabled:opacity-70"
+            className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-2xl shadow-lg shadow-blue-500/25 active:scale-[0.99] transition disabled:opacity-70 cursor-pointer"
           >
-            {updating ? "Updating..." : "Update Trip"}
+            {updating ? "Saving Changes..." : "Save Changes"}
           </button>
         </div>
       </form>

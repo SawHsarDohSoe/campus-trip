@@ -20,6 +20,7 @@ import Checklist from "./pages/checklist/Checklist";
 import Members from "./pages/members/Members";
 import Chat from "./pages/chat/Chat";
 import Profile from "./pages/profile/Profile";
+import EditProfile from "./pages/profile/EditProfile";
 import Settings from "./pages/settings/Settings";
 
 import Landing from "./pages/Landing";
@@ -58,6 +59,7 @@ export default function App() {
         {/* Communication & Account */}
         <Route path="/chat" element={<Chat />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/edit" element={<EditProfile />} />
         <Route path="/settings" element={<Settings />} />
 
         {/* Catch-all fallback */}

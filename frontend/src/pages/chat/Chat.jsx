@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Send, ChevronDown, MessageSquare, Plus } from "lucide-react";
+import { Send, ChevronDown, MessageSquare, Plus } from "lucide-react";
 import MobileShell from "../../components/layout/MobileShell";
+import MobileHeader from "../../components/layout/MobileHeader";
 import {
   getTrips,
   getDiscussionMessages,
@@ -135,18 +136,16 @@ export default function Chat() {
     }
   };
 
-  const activeTrip = trips.find((t) => t._id === selectedTripId);
-
   return (
     <MobileShell showBottomNav={true} contentClassName="bg-slate-50 flex flex-col h-full">
-      {/* Real App Header */}
-      <div className="bg-white px-4 sm:px-6 py-3 flex items-center justify-between border-b border-slate-100 sticky top-0 z-20 shadow-xs">
-        <div className="flex-1 min-w-0">
-          <h1 className="text-base font-bold text-slate-900 leading-tight">
-            Group Chat
-          </h1>
-          {trips.length > 0 ? (
-            <div className="relative inline-block max-w-full">
+      <MobileHeader showBack={false} />
+
+      <div className="border-b border-slate-100 bg-white px-4 py-3 sm:px-6">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-base font-bold leading-tight text-slate-900">Group Chat</h1>
+            {trips.length > 0 ? (
+              <div className="relative inline-block max-w-full">
               <select
                 value={selectedTripId}
                 onChange={(e) => setSelectedTripId(e.target.value)}
@@ -162,18 +161,18 @@ export default function Chat() {
                 size={11}
                 className="absolute right-0 top-1/2 -translate-y-1/2 text-blue-600 pointer-events-none"
               />
+              </div>
+            ) : (
+              <p className="text-[11px] text-slate-400">No active trips</p>
+            )}
+          </div>
+          {selectedTripId && (
+            <div className="flex shrink-0 items-center gap-1">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-emerald-100" />
+              <span className="ml-1 text-[10px] font-medium text-slate-400">Live</span>
             </div>
-          ) : (
-            <p className="text-[11px] text-slate-400">No active trips</p>
           )}
         </div>
-
-        {selectedTripId && (
-          <div className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-emerald-100"></span>
-            <span className="text-[10px] text-slate-400 font-medium ml-1">Live</span>
-          </div>
-        )}
       </div>
 
       {/* Message Thread */}

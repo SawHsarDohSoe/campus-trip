@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, ChevronRight, CalendarDays, History } from "lucide-react";
+import { ChevronRight, CalendarDays, History } from "lucide-react";
 import MobileShell from "../../components/layout/MobileShell";
+import MobileHeader from "../../components/layout/MobileHeader";
 import { TripThumbnail } from "../../components/common/Illustrations";
 import { getTripHistory } from "../../api/authApi";
 
@@ -52,17 +53,7 @@ export default function TripHistory() {
 
   return (
     <MobileShell showBottomNav={true} contentClassName="bg-slate-50/50">
-      {/* Top Header */}
-      <div className="bg-white px-5 pt-3 pb-3 flex items-center gap-3 border-b border-slate-100 sticky top-0 z-20">
-        <button
-          onClick={() => navigate(-1)}
-          className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-700 transition"
-          aria-label="Back"
-        >
-          <ArrowLeft size={19} />
-        </button>
-        <h1 className="text-lg font-bold text-slate-900">Trip History</h1>
-      </div>
+      <MobileHeader title="Trip History" showBack backTo="/trips" />
 
       {/* History List */}
       <div className="px-5 py-4 space-y-3">

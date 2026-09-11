@@ -9,9 +9,10 @@ import {
   KeyRound,
   LogOut,
   Map,
-  Menu,
+  MessageSquare,
   Settings,
   Trash2,
+  UserCircle,
   Users,
   Wallet,
   X,
@@ -98,6 +99,16 @@ function Sidebar() {
       icon: Users,
     },
     {
+      to: "/chat",
+      label: "Group Chat",
+      icon: MessageSquare,
+    },
+    {
+      to: "/profile",
+      label: "Profile",
+      icon: UserCircle,
+    },
+    {
       to: "/settings",
       label: "Settings",
       icon: Settings,
@@ -133,26 +144,6 @@ function Sidebar() {
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      <button
-        type="button"
-        aria-label="Open navigation menu"
-        onClick={() => setIsOpen(true)}
-        className="fixed left-4 top-4 z-40 rounded-xl bg-white p-3 text-[#1E3A8A] shadow-lg md:hidden"
-      >
-        <Menu size={22} />
-      </button>
-
-      {/* One-tap, logo-only Home control for every mobile app page. */}
-      <NavLink
-        to="/dashboard"
-        replace
-        aria-label="CampusTrip dashboard"
-        className="fixed left-20 top-4 z-40 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-[#1E3A8A] shadow-sm ring-1 ring-blue-100 transition hover:bg-blue-100 md:hidden"
-      >
-        <Compass size={22} />
-      </NavLink>
-
       {/* Mobile Overlay */}
       {isOpen && (
         <button
@@ -165,9 +156,10 @@ function Sidebar() {
 
       {/* Sidebar */}
       <aside
-       className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col overflow-y-auto bg-white p-5 shadow-xl transition-transform duration-300 md:static md:min-h-screen md:w-64 md:max-w-none md:translate-x-0 md:shadow-sm ${
-        isOpen ? "translate-x-0" : "-translate-x-full"
-}`} >
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-col overflow-y-auto bg-white p-5 shadow-xl transition-transform duration-300 md:static md:min-h-screen md:w-64 md:max-w-none md:translate-x-0 md:shadow-sm ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         {/* Logo */}
         <div className="mb-8 flex items-center justify-between">
           <NavLink to="/dashboard" className="flex items-center gap-2 text-2xl font-bold text-[#1E3A8A]">
@@ -309,7 +301,7 @@ function Sidebar() {
             <NavLink
               key={to}
               to={to}
-              replace
+              replace={["/dashboard", "/trips", "/chat", "/profile"].includes(to)}
               onClick={() => setIsOpen(false)}
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-xl p-3 transition ${

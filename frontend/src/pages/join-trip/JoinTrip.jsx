@@ -1,8 +1,9 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, QrCode, X, Check } from "lucide-react";
+import { QrCode, X, Check } from "lucide-react";
 import { Scanner } from "@yudiel/react-qr-scanner";
 import MobileShell from "../../components/layout/MobileShell";
+import MobileHeader from "../../components/layout/MobileHeader";
 import { HighFiveIllustration } from "../../components/common/Illustrations";
 import { joinTrip } from "../../api/authApi";
 
@@ -87,17 +88,7 @@ export default function JoinTrip() {
 
   return (
     <MobileShell showBottomNav={true} contentClassName="bg-white">
-      {/* Top Header */}
-      <div className="px-5 pt-3 pb-3 flex items-center gap-3 border-b border-slate-100 sticky top-0 z-20 bg-white">
-        <button
-          onClick={() => navigate(-1)}
-          className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-700 transition"
-          aria-label="Back"
-        >
-          <ArrowLeft size={19} />
-        </button>
-        <h1 className="text-lg font-bold text-slate-900">Join Trip</h1>
-      </div>
+      <MobileHeader title="Join Trip" showBack backTo="/dashboard" />
 
       <div className="px-6 py-5 flex flex-col items-center text-center">
         {/* Illustration */}

@@ -250,9 +250,20 @@ export async function updateSchedule(
   return result;
 }
 
-export async function getWeather(city, token) {
+const weatherCache = new Map();
+const WEATHER_CACHE_MS = 10 * 60 * 1000;
+
+export async function getWeather(city, token, date) {
+  const cacheKey = `${city.trim().toLowerCase()}|${date || "current"}`;
+  const cached = weatherCache.get(cacheKey);
+  if (cached && Date.now() - cached.createdAt < WEATHER_CACHE_MS) {
+    return cached.data;
+  }
+
+  const params = new URLSearchParams({ city });
+  if (date) params.set("date", date);
   const response = await fetch(
-    `${API_URL}/weather?city=${encodeURIComponent(city)}`,
+    `${API_URL}/weather?${params.toString()}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -266,6 +277,7 @@ export async function getWeather(city, token) {
     throw new Error(data.message || "Unable to load weather.");
   }
 
+  weatherCache.set(cacheKey, { data, createdAt: Date.now() });
   return data;
 }
 
