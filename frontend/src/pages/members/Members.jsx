@@ -26,6 +26,7 @@ export default function Members() {
   const [trips, setTrips] = useState([]);
   const [selectedTripId, setSelectedTripId] = useState("");
   const [members, setMembers] = useState([]);
+  const [organizer, setOrganizer] = useState(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [copied, setCopied] = useState(false);
   const [inviteName, setInviteName] = useState("");
@@ -69,6 +70,7 @@ export default function Members() {
       const data = await getMembers(token, selectedTripId);
       if (data?.members) {
         setMembers(data.members);
+        setOrganizer(data.organizer || null);
       }
     } catch (err) {
       console.error("Failed to load members:", err);
@@ -78,6 +80,7 @@ export default function Members() {
   useEffect(() => {
     if (!selectedTripId) {
       setMembers([]);
+      setOrganizer(null);
       return;
     }
     fetchMembers();
@@ -85,6 +88,14 @@ export default function Members() {
 
   const activeTrip = trips.find((t) => t._id === selectedTripId);
   const joinCode = activeTrip?.joinCode || "";
+  const displayedMembers = organizer
+    ? [
+        { ...organizer, role: "Trip Organizer", isOrganizer: true },
+        ...members.filter(
+          (member) => member.email?.toLowerCase() !== organizer.email?.toLowerCase()
+        ),
+      ]
+    : members;
 
   const handleCopyCode = () => {
     if (!joinCode) return;
@@ -190,12 +201,12 @@ export default function Members() {
         {/* Members List */}
         {selectedTripId && (
           <div className="space-y-2.5 pt-1">
-            {members.length === 0 ? (
+            {displayedMembers.length === 0 ? (
               <div className="text-center py-8 bg-white rounded-2xl border border-slate-100">
                 <p className="text-xs text-slate-400">No members added to this trip yet.</p>
               </div>
             ) : (
-              members.map((member, idx) => (
+              displayedMembers.map((member, idx) => (
                 <div
                   key={member._id}
                   className="p-3 bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between hover:shadow-md transition group"
@@ -214,7 +225,7 @@ export default function Members() {
                         <h2 className="text-xs font-bold text-slate-900">
                           {member.name}
                         </h2>
-                        {member.role === "Trip Creator" || idx === 0 ? (
+                        {member.isOrganizer ? (
                           <Crown
                             size={14}
                             className="text-amber-500 fill-amber-500 shrink-0"
@@ -227,7 +238,7 @@ export default function Members() {
                     </div>
                   </div>
 
-                  {idx !== 0 && (
+                  {!member.isOrganizer && (
                     <button
                       onClick={() => handleDeleteMember(member._id)}
                       className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500 transition p-1.5"

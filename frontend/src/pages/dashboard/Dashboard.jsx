@@ -15,6 +15,8 @@ import MobileShell from "../../components/layout/MobileShell";
 import MobileHeader from "../../components/layout/MobileHeader";
 import WeatherCard from "../../components/weather/WeatherCard";
 import { TripThumbnail } from "../../components/common/Illustrations";
+import TripPolls from "../trip/TripPolls";
+import { getWeatherLocation } from "../../utils/weatherLocation";
 import { getCurrentUser, getTrips, getNotifications, getWeather } from "../../api/authApi";
 
 export default function Dashboard() {
@@ -27,6 +29,7 @@ export default function Dashboard() {
   const [weather, setWeather] = useState(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
   const [weatherError, setWeatherError] = useState("");
+  const upcomingWeatherLocation = getWeatherLocation(upcomingTrip);
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -99,7 +102,7 @@ export default function Dashboard() {
   }, [navigate]);
 
   useEffect(() => {
-    if (!upcomingTrip?.destination) {
+    if (!upcomingWeatherLocation) {
       setWeather(null);
       setWeatherError("");
       return;
@@ -112,7 +115,7 @@ export default function Dashboard() {
       try {
         setWeatherLoading(true);
         setWeatherError("");
-        const data = await getWeather(upcomingTrip.destination, token);
+        const data = await getWeather(upcomingWeatherLocation, token);
         if (!cancelled) setWeather(data);
       } catch (err) {
         if (!cancelled) {
@@ -128,7 +131,7 @@ export default function Dashboard() {
     return () => {
       cancelled = true;
     };
-  }, [upcomingTrip?._id, upcomingTrip?.destination]);
+  }, [upcomingTrip?._id, upcomingWeatherLocation]);
 
   const formatDateRange = (start, end) => {
     if (!start) return "Date flexible";
@@ -264,6 +267,14 @@ export default function Dashboard() {
             loading={weatherLoading}
             title={`Weather in ${upcomingTrip.destination}`}
             compact
+          />
+        )}
+
+        {upcomingTrip && (
+          <TripPolls
+            tripId={upcomingTrip._id}
+            isOwner={String(upcomingTrip.owner?._id || upcomingTrip.owner) === String(user?._id || user?.id)}
+            tripStatus={upcomingTrip.status}
           />
         )}
 

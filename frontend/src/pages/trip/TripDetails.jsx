@@ -15,6 +15,7 @@ import {
 import MobileShell from "../../components/layout/MobileShell";
 import MobileHeader from "../../components/layout/MobileHeader";
 import WeatherCard from "../../components/weather/WeatherCard";
+import { getWeatherLocation } from "../../utils/weatherLocation";
 import { getTrip, deleteTrip, getWeather } from "../../api/authApi";
 
 export default function TripDetails() {
@@ -29,6 +30,7 @@ export default function TripDetails() {
   const [weatherLoading, setWeatherLoading] = useState(false);
   const [weatherError, setWeatherError] = useState("");
   const [shareMessage, setShareMessage] = useState("");
+  const weatherLocation = getWeatherLocation(trip);
   const currentUserId = (() => {
     try {
       const storedUser = JSON.parse(localStorage.getItem("campusTripCurrentUser") || "null");
@@ -70,7 +72,7 @@ export default function TripDetails() {
   }, [id, navigate]);
 
   useEffect(() => {
-    if (!trip?.destination) return;
+    if (!weatherLocation) return;
     let cancelled = false;
 
     const loadWeather = async () => {
@@ -82,7 +84,7 @@ export default function TripDetails() {
         const tripDate = trip.startDate
           ? new Date(trip.startDate).toISOString().slice(0, 10)
           : undefined;
-        const data = await getWeather(trip.destination, token, tripDate);
+        const data = await getWeather(weatherLocation, token, tripDate);
         if (!cancelled) setWeather(data);
       } catch (err) {
         if (!cancelled) {
@@ -98,7 +100,7 @@ export default function TripDetails() {
     return () => {
       cancelled = true;
     };
-  }, [trip?._id, trip?.destination, trip?.startDate]);
+  }, [trip?._id, trip?.startDate, weatherLocation]);
 
   const handleDeleteTrip = async () => {
     if (!window.confirm(`Are you sure you want to delete "${trip?.title}"?`)) return;

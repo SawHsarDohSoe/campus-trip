@@ -240,8 +240,18 @@ export async function deleteTrip(request, response, next) {
     const trip = await findOwnedTrip(request, response);
     if (!trip) return;
 
-    await trip.deleteOne();
-    return response.status(204).send();
+    trip.status = "Cancelled";
+    await trip.save();
+
+    await Notification.create({
+      user: request.user._id,
+      title: "Trip Cancelled",
+      message: `Your trip "${trip.title}" was cancelled and moved to trip history.`,
+      type: "Trip",
+      trip: trip._id,
+    });
+
+    return response.json({ trip });
   } catch (error) {
     return next(error);
   }

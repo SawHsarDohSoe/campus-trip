@@ -1,4 +1,5 @@
 import Member from "../models/Member.js";
+import User from "../models/User.js";
 import { getTripAccess } from "../utils/tripAccess.js";
 
 export async function listMembers(request, response, next) {
@@ -6,6 +7,7 @@ export async function listMembers(request, response, next) {
     const { tripId } = request.query;
 
     const filter = { owner: request.user._id };
+    let organizer = null;
 
     if (tripId) {
       const { trip, isMember } = await getTripAccess(request.user, tripId);
@@ -13,12 +15,20 @@ export async function listMembers(request, response, next) {
       if (!isMember) return response.status(403).json({ message: "You are not a member of this trip." });
       filter.trip = tripId;
       delete filter.owner;
+      const organizerUser = await User.findById(trip.owner).select("name email");
+      if (organizerUser) {
+        organizer = {
+          _id: organizerUser._id,
+          name: organizerUser.name,
+          email: organizerUser.email,
+        };
+      }
     }
 
     const members = await Member.find(filter)
       .sort({ createdAt: 1 });
 
-    response.json({ members });
+    response.json({ members, organizer });
   } catch (error) {
     next(error);
   }

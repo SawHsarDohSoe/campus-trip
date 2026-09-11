@@ -19,7 +19,9 @@ export default function Chat() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const messagesContainerRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const shouldStickToBottomRef = useRef(true);
   const initialTripIdRef = useRef(new URLSearchParams(location.search).get("trip"));
 
   useEffect(() => {
@@ -102,14 +104,22 @@ export default function Chat() {
 
   useEffect(() => {
     if (!selectedTripId) return;
+    shouldStickToBottomRef.current = true;
     fetchMessages();
     const interval = setInterval(fetchMessages, 3500);
     return () => clearInterval(interval);
   }, [selectedTripId, user]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (shouldStickToBottomRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
   }, [messages]);
+
+  const handleMessageScroll = (event) => {
+    const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
+    shouldStickToBottomRef.current = scrollHeight - scrollTop - clientHeight < 48;
+  };
 
   const handleSend = async (e) => {
     e.preventDefault();
@@ -123,6 +133,7 @@ export default function Chat() {
 
     const sentText = text.trim();
     setText("");
+    shouldStickToBottomRef.current = true;
 
     // Optimistic UI update
     const optimisticMsg = {
@@ -153,7 +164,7 @@ export default function Chat() {
     <MobileShell showBottomNav={true} contentClassName="bg-slate-50 flex flex-col h-full">
       <MobileHeader showBack={false} />
 
-      <div className="border-b border-slate-100 bg-white px-4 py-3 sm:px-6">
+      <div className="sticky top-14 z-10 shrink-0 border-b border-slate-100 bg-white px-4 py-3 sm:px-6">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0 flex-1">
             <h1 className="text-base font-bold leading-tight text-slate-900">Group Chat</h1>
@@ -189,7 +200,11 @@ export default function Chat() {
       </div>
 
       {/* Message Thread */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3.5 min-h-0">
+      <div
+        ref={messagesContainerRef}
+        onScroll={handleMessageScroll}
+        className="flex-1 overflow-y-auto px-4 py-4 space-y-3.5 min-h-0"
+      >
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-7 h-7 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
