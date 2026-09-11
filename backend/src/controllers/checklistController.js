@@ -15,11 +15,18 @@ export async function listChecklistItems(request, response, next) {
       delete filter.owner;
     }
 
-    const items = await ChecklistItem.find(filter).sort({
-      createdAt: 1,
-    });
+    const items = await ChecklistItem.find(filter)
+      .sort({ createdAt: 1 })
+      .lean();
 
-    response.json({ items });
+    // Support checklist records created by earlier frontend versions that
+    // stored their text as `task` or `name` before the API standardised on `label`.
+    response.json({
+      items: items.map((item) => ({
+        ...item,
+        label: item.label || item.task || item.name || "Untitled checklist item",
+      })),
+    });
   } catch (error) {
     next(error);
   }

@@ -5,6 +5,7 @@ import {
   Plus,
   Trash2,
   Calendar,
+  Pencil,
 } from "lucide-react";
 import MobileShell from "../../components/layout/MobileShell";
 import MobileHeader from "../../components/layout/MobileHeader";
@@ -13,6 +14,7 @@ import {
   getSchedules,
   createSchedule,
   deleteSchedule,
+  updateSchedule,
 } from "../../api/authApi";
 
 export default function Schedule() {
@@ -23,6 +25,7 @@ export default function Schedule() {
   const [schedules, setSchedules] = useState([]);
   const [isDayOpen, setIsDayOpen] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editingSchedule, setEditingSchedule] = useState(null);
   const [, setLoading] = useState(true);
   const [newActivity, setNewActivity] = useState({
     time: "09:00",
@@ -93,16 +96,18 @@ export default function Schedule() {
         ? new Date(activeTrip.startDate).toISOString().split("T")[0]
         : new Date().toISOString().split("T")[0];
 
-      await createSchedule(
-        selectedTripId,
-        {
-          date: tripDate,
-          time: newActivity.time,
-          activity: newActivity.activity,
-        },
-        token
-      );
+      const payload = {
+        date: editingSchedule?.date || tripDate,
+        time: newActivity.time,
+        activity: newActivity.activity,
+      };
+      if (editingSchedule) {
+        await updateSchedule(selectedTripId, editingSchedule._id, payload, token);
+      } else {
+        await createSchedule(selectedTripId, payload, token);
+      }
       setNewActivity({ time: "09:00", activity: "" });
+      setEditingSchedule(null);
       setShowModal(false);
       await fetchSchedules();
     } catch (err) {
@@ -218,13 +223,28 @@ export default function Schedule() {
                             </span>
                           </div>
 
-                          <button
-                            onClick={() => handleDeleteActivity(item._id)}
-                            className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500 transition p-1"
-                            aria-label="Delete activity"
-                          >
-                            <Trash2 size={13} />
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingSchedule(item);
+                                setNewActivity({ time: item.time || "09:00", activity: item.activity || "" });
+                                setShowModal(true);
+                              }}
+                              className="rounded-lg p-1.5 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition"
+                              aria-label="Edit activity"
+                            >
+                              <Pencil size={13} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteActivity(item._id)}
+                              className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500 transition"
+                              aria-label="Delete activity"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
                         </div>
                       );
                     })}
@@ -234,7 +254,11 @@ export default function Schedule() {
                 {/* Add Activity Button */}
                 <div className="mt-5 pt-3 border-t border-slate-100">
                   <button
-                    onClick={() => setShowModal(true)}
+                    onClick={() => {
+                      setEditingSchedule(null);
+                      setNewActivity({ time: "09:00", activity: "" });
+                      setShowModal(true);
+                    }}
                     className="w-full py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-600 font-semibold text-xs rounded-xl flex items-center justify-center gap-1.5 transition active:scale-98"
                   >
                     <Plus size={15} strokeWidth={2.5} />
@@ -252,9 +276,12 @@ export default function Schedule() {
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl w-full max-w-sm p-5 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-sm font-bold text-slate-900">Add Activity</h3>
+              <h3 className="text-sm font-bold text-slate-900">{editingSchedule ? "Edit Activity" : "Add Activity"}</h3>
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => {
+                  setShowModal(false);
+                  setEditingSchedule(null);
+                }}
                 className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500"
               >
                 ✕
@@ -298,7 +325,7 @@ export default function Schedule() {
                   type="submit"
                   className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-md transition"
                 >
-                  Save Activity
+                  {editingSchedule ? "Save Changes" : "Save Activity"}
                 </button>
               </div>
             </form>

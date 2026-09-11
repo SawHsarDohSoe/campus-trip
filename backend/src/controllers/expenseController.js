@@ -62,16 +62,16 @@ export async function createExpense(request, response, next) {
 
 export async function deleteExpense(request, response, next) {
   try {
-    const expense = await Expense.findOne({
-      _id: request.params.id,
-      owner: request.user._id,
-    });
+    const expense = await Expense.findById(request.params.id);
 
     if (!expense) {
       return response.status(404).json({
         message: "Expense not found.",
       });
     }
+
+    const { isMember } = await getTripAccess(request.user, expense.trip);
+    if (!isMember) return response.status(403).json({ message: "You are not a member of this trip." });
 
     await expense.deleteOne();
 
@@ -83,16 +83,16 @@ export async function deleteExpense(request, response, next) {
 
 export async function updateExpense(request, response, next) {
   try {
-    const expense = await Expense.findOne({
-      _id: request.params.id,
-      owner: request.user._id,
-    });
+    const expense = await Expense.findById(request.params.id);
 
     if (!expense) {
       return response.status(404).json({
         message: "Expense not found.",
       });
     }
+
+    const { isMember } = await getTripAccess(request.user, expense.trip);
+    if (!isMember) return response.status(403).json({ message: "You are not a member of this trip." });
 
     const allowedFields = [
       "name",

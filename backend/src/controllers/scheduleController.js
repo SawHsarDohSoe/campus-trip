@@ -92,7 +92,6 @@ export async function updateSchedule(request, response, next) {
     const schedule = await Schedule.findOne({
       _id: request.params.scheduleId,
       trip: request.params.tripId,
-      owner: request.user._id,
     });
 
     if (!schedule) {
@@ -100,6 +99,9 @@ export async function updateSchedule(request, response, next) {
         message: "Schedule item not found.",
       });
     }
+
+    const { isMember } = await getTripAccess(request.user, schedule.trip);
+    if (!isMember) return response.status(403).json({ message: "You are not a member of this trip." });
 
     const allowedFields = [
       "date",
@@ -128,7 +130,6 @@ export async function deleteSchedule(request, response, next) {
     const schedule = await Schedule.findOne({
       _id: request.params.scheduleId,
       trip: request.params.tripId,
-      owner: request.user._id,
     });
 
     if (!schedule) {
@@ -136,6 +137,9 @@ export async function deleteSchedule(request, response, next) {
         message: "Schedule item not found.",
       });
     }
+
+    const { isMember } = await getTripAccess(request.user, schedule.trip);
+    if (!isMember) return response.status(403).json({ message: "You are not a member of this trip." });
 
     await schedule.deleteOne();
 

@@ -8,6 +8,7 @@ import {
   Utensils,
   Trash2,
   Wallet,
+  Pencil,
 } from "lucide-react";
 import MobileShell from "../../components/layout/MobileShell";
 import MobileHeader from "../../components/layout/MobileHeader";
@@ -16,6 +17,7 @@ import {
   getExpenses,
   createExpense,
   deleteExpense,
+  updateExpense,
 } from "../../api/authApi";
 
 export default function Budget() {
@@ -25,6 +27,7 @@ export default function Budget() {
   const [selectedTripId, setSelectedTripId] = useState("");
   const [expenses, setExpenses] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [editingExpense, setEditingExpense] = useState(null);
   const [, setLoading] = useState(true);
   const [newExpense, setNewExpense] = useState({
     name: "",
@@ -109,16 +112,19 @@ export default function Budget() {
     if (!token) return;
 
     try {
-      await createExpense(
-        {
-          tripId: selectedTripId,
-          name: newExpense.name,
-          amount: Number(newExpense.amount),
-          category: newExpense.category,
-        },
-        token
-      );
+      const payload = {
+        tripId: selectedTripId,
+        name: newExpense.name,
+        amount: Number(newExpense.amount),
+        category: newExpense.category,
+      };
+      if (editingExpense) {
+        await updateExpense(editingExpense._id, payload, token);
+      } else {
+        await createExpense(payload, token);
+      }
       setNewExpense({ name: "", amount: "", category: "Transportation" });
+      setEditingExpense(null);
       setShowModal(false);
       await fetchExpenses();
     } catch (err) {
@@ -251,7 +257,11 @@ export default function Budget() {
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-900">Expenses List</h3>
               <button
-                onClick={() => setShowModal(true)}
+                onClick={() => {
+                  setEditingExpense(null);
+                  setNewExpense({ name: "", amount: "", category: "Transportation" });
+                  setShowModal(true);
+                }}
                 className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-full shadow-sm shadow-blue-500/30 transition active:scale-95"
               >
                 <Plus size={13} strokeWidth={2.5} />
@@ -285,8 +295,25 @@ export default function Budget() {
                         {formatCurrency(item.amount)}
                       </span>
                       <button
+                        type="button"
+                        onClick={() => {
+                          setEditingExpense(item);
+                          setNewExpense({
+                            name: item.name || "",
+                            amount: String(item.amount || ""),
+                            category: item.category || "Transportation",
+                          });
+                          setShowModal(true);
+                        }}
+                        className="rounded-lg p-1.5 text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition"
+                        aria-label="Edit expense"
+                      >
+                        <Pencil size={13} />
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => handleDeleteExpense(item._id)}
-                        className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500 transition p-1"
+                        className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500 transition"
                         aria-label="Delete expense"
                       >
                         <Trash2 size={13} />
@@ -305,9 +332,12 @@ export default function Budget() {
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl w-full max-w-sm p-5 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-sm font-bold text-slate-900">Add Expense</h3>
+              <h3 className="text-sm font-bold text-slate-900">{editingExpense ? "Edit Expense" : "Add Expense"}</h3>
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => {
+                  setShowModal(false);
+                  setEditingExpense(null);
+                }}
                 className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500"
               >
                 ✕
@@ -361,7 +391,7 @@ export default function Budget() {
                   <option value="Transportation">Transportation</option>
                   <option value="Accommodation">Accommodation</option>
                   <option value="Food">Food & Dining</option>
-                  <option value="Activity">Activity / Tickets</option>
+                  <option value="Activities">Activity / Tickets</option>
                   <option value="Other">Other</option>
                 </select>
               </div>
@@ -371,7 +401,7 @@ export default function Budget() {
                   type="submit"
                   className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-md transition"
                 >
-                  Save Expense
+                  {editingExpense ? "Save Changes" : "Save Expense"}
                 </button>
               </div>
             </form>
