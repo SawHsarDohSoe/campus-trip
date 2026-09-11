@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, Compass, Plus, MessageSquare, User } from "lucide-react";
+import { Home, Compass, KeyRound, Plus, MessageSquare, User, X } from "lucide-react";
 
 export default function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const path = location.pathname;
+  const [showTripActions, setShowTripActions] = useState(false);
 
   const isHome = path === "/dashboard";
   const isTrips =
@@ -22,8 +23,14 @@ export default function BottomNav() {
   };
 
   const handleCreateClick = () => {
+    setShowTripActions(false);
     // Regular push navigation so Back returns to previous screen
     navigate("/trips/create", { state: { from: path } });
+  };
+
+  const handleJoinClick = () => {
+    setShowTripActions(false);
+    navigate("/join-trip", { state: { from: path } });
   };
 
   return (
@@ -55,15 +62,36 @@ export default function BottomNav() {
           <span className="text-[11px] mt-1 font-medium tracking-tight">Trips</span>
         </button>
 
-        {/* 3. Center Elevated (+) Create Trip Button */}
+        {/* 3. Center elevated trip actions */}
         <div className="flex items-center justify-center flex-1 -mt-6">
+          {showTripActions && (
+            <div className="absolute bottom-[4.75rem] left-1/2 -translate-x-1/2 w-44 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl shadow-slate-900/15">
+              <button
+                type="button"
+                onClick={handleCreateClick}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-700"
+              >
+                <Plus size={18} strokeWidth={2.5} />
+                Create Trip
+              </button>
+              <button
+                type="button"
+                onClick={handleJoinClick}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-slate-700 transition-colors hover:bg-blue-50 hover:text-blue-700"
+              >
+                <KeyRound size={18} strokeWidth={2.2} />
+                Join Trip
+              </button>
+            </div>
+          )}
           <button
             type="button"
-            onClick={handleCreateClick}
+            onClick={() => setShowTripActions((isOpen) => !isOpen)}
             className="w-13 h-13 rounded-full bg-gradient-to-tr from-blue-700 to-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-600/35 hover:brightness-110 active:scale-95 transition-all cursor-pointer ring-4 ring-white"
-            aria-label="Create Trip"
+            aria-label={showTripActions ? "Close trip actions" : "Trip actions"}
+            aria-expanded={showTripActions}
           >
-            <Plus size={26} strokeWidth={3} />
+            {showTripActions ? <X size={24} strokeWidth={3} /> : <Plus size={26} strokeWidth={3} />}
           </button>
         </div>
 
@@ -96,4 +124,3 @@ export default function BottomNav() {
     </nav>
   );
 }
-
