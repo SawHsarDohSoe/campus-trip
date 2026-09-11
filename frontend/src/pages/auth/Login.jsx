@@ -43,29 +43,11 @@ export default function Login() {
       setLoading(false);
     }
   };
-
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
-      {/* Top Header on Mobile & Desktop */}
-      <header className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-blue-600 transition"
-        >
-          <ArrowLeft size={16} />
-          <span>Back to Home</span>
-        </Link>
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white text-sm shadow-sm">
-            🧳
-          </div>
-          <span className="font-bold text-slate-900 text-sm hidden sm:inline">CampusTrip</span>
-        </Link>
-      </header>
-
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4 sm:p-6">
       {/* Main Centered Form Container */}
-      <main className="flex-1 flex items-center justify-center px-4 py-6 sm:py-10">
-        <div className="w-full max-w-md bg-white rounded-3xl sm:shadow-xl sm:border sm:border-slate-100 p-6 sm:p-9 transition-all">
+      <main className="w-full max-w-md my-auto">
+        <div className="w-full bg-white rounded-3xl shadow-md sm:shadow-xl sm:border sm:border-slate-100 p-6 sm:p-9 transition-all">
           {/* Rocket Badge */}
           <div className="flex justify-center mb-4">
             <RocketBadge size="md" className="w-12 h-12 rounded-2xl" />

@@ -8,23 +8,23 @@ export default function MobileShell({
   contentClassName = "",
 }) {
   return (
-    <div className="min-h-screen bg-slate-100/60 flex flex-col items-center justify-start w-full">
+    <div className="fixed inset-0 w-full h-full flex flex-col items-center justify-center bg-slate-100 overflow-hidden">
       {/* 
-        Responsive Shell for Mobile Phones, Tablets, and iPads:
-        - Mobile Phones (< 640px): 100% full-width, edge-to-edge native app feel.
-        - Tablets & iPads (640px - 1024px+): Clean centered tablet canvas (max-w-2xl / max-w-3xl) with smooth corners.
+        App Viewport Container:
+        - Mobile Phones: 100% full-width and full-height, pinned flush to the screen edges with zero top gap.
+        - Tablets & iPads: Centered, clean canvas (max-w-2xl / max-w-3xl) with smooth rounded corners.
       */}
       <div
-        className={`w-full sm:max-w-xl md:max-w-2xl lg:max-w-3xl min-h-screen flex flex-col bg-white sm:shadow-lg sm:my-3 sm:rounded-3xl overflow-hidden relative transition-all ${className}`}
+        className={`w-full sm:max-w-xl md:max-w-2xl lg:max-w-3xl h-full sm:h-[96vh] sm:max-h-[960px] flex flex-col bg-white sm:shadow-2xl sm:rounded-3xl overflow-hidden relative ${className}`}
       >
-        {/* Main Content Viewport */}
+        {/* Scrollable Viewport (the only scrolling element) */}
         <main
-          className={`flex-1 overflow-y-auto flex flex-col min-h-0 ${contentClassName}`}
+          className={`flex-1 overflow-y-auto overscroll-contain flex flex-col min-h-0 ${contentClassName}`}
         >
           {children}
         </main>
 
-        {/* Persistent Bottom Navigation for Mobile & Tablet/iPad App */}
+        {/* Stable, Unscrollable Bottom Navigation */}
         {showBottomNav && <BottomNav />}
       </div>
     </div>

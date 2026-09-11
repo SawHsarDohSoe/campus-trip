@@ -109,7 +109,7 @@ export default function Dashboard() {
   return (
     <MobileShell showBottomNav={true} contentClassName="bg-slate-50/50">
       {/* Top Bar: Logo + Notification Bell */}
-      <div className="bg-white px-4 sm:px-6 pt-3.5 pb-3 flex items-center justify-between border-b border-slate-100">
+      <div className="bg-white px-4 sm:px-6 pt-3.5 pb-3 flex items-center justify-between border-b border-slate-100 sticky top-0 z-20 shadow-xs">
         <BrandLogo size="sm" />
         <Link
           to="/notifications"
