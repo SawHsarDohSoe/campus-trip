@@ -1,540 +1,323 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import {
-  CheckCircle2,
-  Pencil,
+  ArrowLeft,
+  Menu,
+  ChevronDown,
+  Check,
+  MoreVertical,
   Plus,
   Trash2,
+  CheckSquare,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import Sidebar from "../../components/layout/Sidebar";
+import MobileShell from "../../components/layout/MobileShell";
 import {
-  createChecklistItem,
-  deleteChecklistItem,
-  getChecklistItems,
   getTrips,
+  getChecklistItems,
+  createChecklistItem,
   updateChecklistItem,
+  deleteChecklistItem,
 } from "../../api/authApi";
 
-function Checklist() {
+export default function Checklist() {
   const navigate = useNavigate();
-
   const [trips, setTrips] = useState([]);
+  const [selectedTripId, setSelectedTripId] = useState("");
   const [items, setItems] = useState([]);
-
-  const [tripId, setTripId] = useState("");
-
-  const [newItem, setNewItem] = useState("");
-
-const [editingItemId, setEditingItemId] = useState(null);
-const [editingLabel, setEditingLabel] = useState("");
-
-const [loading, setLoading] = useState(true);
-const [saving, setSaving] = useState(false);
-const [error, setError] = useState("");
-
-  const completedCount = useMemo(
-    () =>
-      items.filter((item) => item.completed).length,
-    [items]
-  );
-
-  const progress = items.length
-    ? Math.round(
-        (completedCount / items.length) * 100
-      )
-    : 0;
+  const [filter, setFilter] = useState("All");
+  const [newItemText, setNewItemText] = useState("");
+  const [activeMenuId, setActiveMenuId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadChecklist = async () => {
+    const loadTrips = async () => {
+      const token = localStorage.getItem("campusTripToken");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
       try {
-        const token =
-          localStorage.getItem("campusTripToken");
-
-        if (!token) {
-          navigate("/login");
-          return;
+        setLoading(true);
+        const data = await getTrips(token);
+        if (data?.trips?.length) {
+          setTrips(data.trips);
+          setSelectedTripId(data.trips[0]._id);
         }
-
-        const tripsData = await getTrips(token);
-
-        setTrips(tripsData.trips);
-
-        if (tripsData.trips.length > 0) {
-          const firstTrip = tripsData.trips[0];
-
-          setTripId(firstTrip._id);
-
-          const checklistData =
-            await getChecklistItems(
-              token,
-              firstTrip._id
-            );
-
-          setItems(checklistData.items);
-        }
-      } catch (error) {
-        setError(error.message);
+      } catch (err) {
+        console.error("Error loading trips:", err);
       } finally {
         setLoading(false);
       }
     };
-
-    loadChecklist();
+    loadTrips();
   }, [navigate]);
 
-  const handleTripChange = async (event) => {
-    const selectedTripId = event.target.value;
-
-    setTripId(selectedTripId);
-
-    try {
-      const token =
-        localStorage.getItem("campusTripToken");
-
-      const data = await getChecklistItems(
-        token,
-        selectedTripId
-      );
-
-      setItems(data.items);
-      setError("");
-    } catch (error) {
-      setError(error.message);
-    }
-  };
-
-  const toggleItem = async (item) => {
-    try {
-      const token =
-        localStorage.getItem("campusTripToken");
-
-      const data = await updateChecklistItem(
-        item._id,
-        {
-          completed: !item.completed,
-        },
-        token
-      );
-
-      setItems((current) =>
-        current.map((currentItem) =>
-          currentItem._id === item._id
-            ? data.item
-            : currentItem
-        )
-      );
-    } catch (error) {
-      setError(error.message);
-    }
-  };
-
-  const addItem = async (event) => {
-    event.preventDefault();
-
-    const label = newItem.trim();
-
-    if (!label || !tripId) return;
-
-    try {
-      setSaving(true);
-      setError("");
-
-      const token =
-        localStorage.getItem("campusTripToken");
-
-      const data = await createChecklistItem(
-        {
-          tripId,
-          label,
-        },
-        token
-      );
-
-      setItems((current) => [
-        ...current,
-        data.item,
-      ]);
-
-      setNewItem("");
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const deleteItem = async (itemId) => {
-    const confirmed = window.confirm(
-      "Delete this checklist item?"
-    );
-
-    if (!confirmed) return;
-
-    try {
-      const token =
-        localStorage.getItem("campusTripToken");
-
-      await deleteChecklistItem(
-        itemId,
-        token
-      );
-
-      setItems((current) =>
-        current.filter(
-          (item) => item._id !== itemId
-        )
-      );
-    } catch (error) {
-      setError(error.message);
-    }
-  };
-
-  const startEdit = (item) => {
-  setEditingItemId(item._id);
-  setEditingLabel(item.label);
-  setError("");
-};
-
-const cancelEdit = () => {
-  setEditingItemId(null);
-  setEditingLabel("");
-};
-
-const saveEdit = async (itemId) => {
-  const label = editingLabel.trim();
-
-  if (!label) {
-    setError("Checklist item cannot be empty.");
-    return;
-  }
-
-  try {
-    setSaving(true);
-    setError("");
-
+  const fetchItems = async () => {
     const token = localStorage.getItem("campusTripToken");
+    if (!token || !selectedTripId) return;
 
-    if (!token) {
-      navigate("/login");
+    try {
+      const data = await getChecklistItems(token, selectedTripId);
+      if (data?.items) {
+        setItems(data.items);
+      }
+    } catch (err) {
+      console.error("Failed to load checklist:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (!selectedTripId) {
+      setItems([]);
       return;
     }
+    fetchItems();
+  }, [selectedTripId]);
 
-    const data = await updateChecklistItem(
-      itemId,
-      { label },
-      token
+  const toggleItem = async (item) => {
+    const token = localStorage.getItem("campusTripToken");
+    if (!token) return;
+
+    const updated = !item.completed;
+    // Optimistic UI update
+    setItems((prev) =>
+      prev.map((i) => (i._id === item._id ? { ...i, completed: updated } : i))
     );
 
-    setItems((current) =>
-      current.map((item) =>
-        item._id === itemId
-          ? data.item
-          : item
-      )
-    );
+    try {
+      await updateChecklistItem(item._id, { completed: updated }, token);
+    } catch (err) {
+      console.error("Failed to update item:", err);
+      await fetchItems();
+    }
+  };
 
-    setEditingItemId(null);
-    setEditingLabel("");
-  } catch (error) {
-    setError(error.message);
-  } finally {
-    setSaving(false);
-  }
-};
+  const handleAddItem = async (e) => {
+    e.preventDefault();
+    if (!newItemText.trim() || !selectedTripId) return;
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen bg-slate-50">
-        <Sidebar />
+    const token = localStorage.getItem("campusTripToken");
+    if (!token) return;
 
-        <main className="flex flex-1 items-center justify-center">
-          <p className="text-gray-500">
-            Loading checklist...
-          </p>
-        </main>
-      </div>
-    );
-  }
+    const task = newItemText.trim();
+    setNewItemText("");
+
+    try {
+      await createChecklistItem(
+        {
+          tripId: selectedTripId,
+          task,
+        },
+        token
+      );
+      await fetchItems();
+    } catch (err) {
+      alert(err.message || "Failed to create item.");
+    }
+  };
+
+  const handleDeleteItem = async (id) => {
+    const token = localStorage.getItem("campusTripToken");
+    if (!token) return;
+
+    try {
+      await deleteChecklistItem(id, token);
+      setItems((prev) => prev.filter((i) => i._id !== id));
+      setActiveMenuId(null);
+    } catch (err) {
+      alert(err.message || "Failed to delete item.");
+    }
+  };
+
+  const todoCount = useMemo(() => items.filter((i) => !i.completed).length, [items]);
+  const doneCount = useMemo(() => items.filter((i) => i.completed).length, [items]);
+
+  const filteredItems = useMemo(() => {
+    if (filter === "To Do") return items.filter((i) => !i.completed);
+    if (filter === "Done") return items.filter((i) => i.completed);
+    return items;
+  }, [items, filter]);
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <Sidebar />
-
-      <main className="flex flex-1 flex-col gap-8 p-6 pt-20 md:p-8">
-
-        {/* Header */}
-        <div>
-          <p className="text-sm font-semibold text-blue-700">
-            CampusTrip
-          </p>
-
-          <h1 className="mt-1 text-3xl font-bold text-[#1E3A8A] md:text-4xl">
-            Packing Checklist
-          </h1>
-
-          <p className="mt-2 text-gray-500">
-            Keep the essentials organized before your campus trip.
-          </p>
+    <MobileShell showBottomNav={true} contentClassName="bg-slate-50/50">
+      {/* Top Header */}
+      <div className="bg-white px-5 pt-3 pb-3 flex items-center justify-between border-b border-slate-100 sticky top-0 z-20">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate(-1)}
+            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-700 transition"
+            aria-label="Back"
+          >
+            <ArrowLeft size={19} />
+          </button>
+          <h1 className="text-lg font-bold text-slate-900">Checklist</h1>
         </div>
 
-        {/* Error */}
-        {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-600">
-            {error}
-          </div>
-        )}
+        <button className="text-slate-500 hover:text-slate-800 p-1.5">
+          <Menu size={18} />
+        </button>
+      </div>
 
-        {/* Trip selector */}
-        {trips.length > 0 && (
-          <section className="rounded-3xl bg-white p-6 shadow-lg">
-
-            <label className="mb-2 block font-medium text-gray-700">
-              Select Trip
-            </label>
-
+      <div className="px-5 py-4 space-y-4">
+        {/* Trip Switcher Dropdown */}
+        {trips.length > 0 ? (
+          <div className="relative">
             <select
-              value={tripId}
-              onChange={handleTripChange}
-              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-[#1E3A8A] md:max-w-lg"
+              value={selectedTripId}
+              onChange={(e) => setSelectedTripId(e.target.value)}
+              className="w-full bg-white border border-slate-200 text-xs font-bold text-slate-800 rounded-xl py-2.5 px-3.5 appearance-none focus:outline-none focus:border-blue-600 shadow-sm"
             >
-              {trips.map((trip) => (
-                <option
-                  key={trip._id}
-                  value={trip._id}
-                >
-                  {trip.title} — {trip.destination}
+              {trips.map((t) => (
+                <option key={t._id} value={t._id}>
+                  {t.title}
                 </option>
               ))}
             </select>
-
-          </section>
+            <ChevronDown
+              size={16}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+            />
+          </div>
+        ) : (
+          <div className="p-6 bg-white rounded-2xl border border-slate-100 text-center">
+            <CheckSquare size={28} className="mx-auto text-slate-300 mb-2" />
+            <p className="text-xs font-bold text-slate-700">No Trips Created</p>
+            <p className="text-[11px] text-slate-400 mt-1">Create a trip to manage your checklists.</p>
+            <Link
+              to="/trips/create"
+              className="mt-3 inline-block px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-xl"
+            >
+              Create Trip
+            </Link>
+          </div>
         )}
 
-        {/* Progress + Add */}
-        <section className="grid gap-6 lg:grid-cols-3">
-
-          <div className="rounded-3xl bg-[#E5F6FD] p-7 shadow-lg lg:col-span-2">
-
-            <div className="flex items-center justify-between">
-
-              <div>
-                <p className="font-medium text-gray-600">
-                  Packing progress
-                </p>
-
-                <p className="mt-2 text-4xl font-bold text-[#1E3A8A]">
-                  {progress}%
-                </p>
-              </div>
-
-              <CheckCircle2
-                className="text-[#1E3A8A]"
-                size={42}
-              />
-
-            </div>
-
-            <div className="mt-7 h-3 overflow-hidden rounded-full bg-white">
-
-              <div
-                className="h-full rounded-full bg-[#1E3A8A] transition-all"
-                style={{
-                  width: `${progress}%`,
-                }}
-              />
-
-            </div>
-
-            <p className="mt-3 text-sm text-gray-600">
-              {completedCount} of {items.length} items ready
-            </p>
-
-          </div>
-
-          <form
-            onSubmit={addItem}
-            className="rounded-3xl bg-white p-6 shadow-lg"
-          >
-
-            <h2 className="text-xl font-bold text-[#1E3A8A]">
-              Add an item
-            </h2>
-
-            <input
-              required
-              value={newItem}
-              onChange={(event) =>
-                setNewItem(event.target.value)
-              }
-              placeholder="e.g. Umbrella"
-              className="mt-5 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#1E3A8A]"
-            />
-
+        {/* Filter Chips: All, To Do, Done */}
+        {selectedTripId && (
+          <div className="flex items-center gap-2">
             <button
-              type="submit"
-              disabled={saving || !tripId}
-              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#1E3A8A] px-4 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={() => setFilter("All")}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition ${
+                filter === "All"
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
+              }`}
             >
-              <Plus size={18} />
-
-              {saving
-                ? "Adding..."
-                : "Add to checklist"}
+              All ({items.length})
             </button>
 
-          </form>
+            <button
+              onClick={() => setFilter("To Do")}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition ${
+                filter === "To Do"
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
+              }`}
+            >
+              To Do ({todoCount})
+            </button>
 
-        </section>
-
-        {/* Checklist */}
-        <section className="max-w-3xl rounded-3xl bg-white p-7 shadow-lg md:p-8">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-              <h2 className="text-2xl font-bold text-[#1E3A8A]">
-                Your trip essentials
-              </h2>
-
-              <p className="mt-1 text-gray-500">
-                Check items as you prepare.
-              </p>
-            </div>
-
-            <CheckCircle2
-              className="text-[#1E3A8A]"
-              size={28}
-            />
-
+            <button
+              onClick={() => setFilter("Done")}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition ${
+                filter === "Done"
+                  ? "bg-blue-600 text-white shadow-sm"
+                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
+              }`}
+            >
+              Done ({doneCount})
+            </button>
           </div>
+        )}
 
-          {items.length === 0 ? (
-            <div className="mt-6 rounded-2xl bg-[#E5F6FD] p-8 text-center">
+        {/* Add Item Quick Input */}
+        {selectedTripId && (
+          <form onSubmit={handleAddItem} className="relative flex items-center">
+            <input
+              type="text"
+              placeholder="Add new checklist item..."
+              value={newItemText}
+              onChange={(e) => setNewItemText(e.target.value)}
+              className="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-3.5 pr-10 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 shadow-sm"
+            />
+            <button
+              type="submit"
+              className="absolute right-2 w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition"
+              aria-label="Add item"
+            >
+              <Plus size={15} strokeWidth={2.5} />
+            </button>
+          </form>
+        )}
 
-              <p className="font-semibold text-gray-800">
-                Your checklist is empty.
-              </p>
-
-              <p className="mt-1 text-sm text-gray-500">
-                Add your first item above.
-              </p>
-
-            </div>
-          ) : (
-            <div className="mt-6 divide-y divide-gray-100">
-
-              {items.map((item) => (
+        {/* Items List */}
+        {selectedTripId && (
+          <div className="space-y-2.5">
+            {filteredItems.length === 0 ? (
+              <div className="text-center py-10 bg-white rounded-2xl border border-slate-100">
+                <p className="text-xs text-slate-400">No items in this checklist filter.</p>
+              </div>
+            ) : (
+              filteredItems.map((item) => (
                 <div
                   key={item._id}
-                  className="flex items-center gap-4 py-4"
+                  className="p-3 bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between hover:shadow-md transition"
                 >
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      toggleItem(item)
-                    }
-                    className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 transition ${
-                      item.completed
-                        ? "border-[#1E3A8A] bg-[#1E3A8A] text-white"
-                        : "border-gray-300 hover:border-[#1E3A8A]"
-                    }`}
-                    aria-label={`Mark ${item.label} as ${
-                      item.completed
-                        ? "incomplete"
-                        : "complete"
-                    }`}
+                  <div
+                    onClick={() => toggleItem(item)}
+                    className="flex items-center gap-3.5 flex-1 cursor-pointer select-none"
                   >
-                    {item.completed && "✓"}
-                  </button>
+                    <div
+                      className={`w-5 h-5 rounded-md border flex items-center justify-center transition shrink-0 ${
+                        item.completed
+                          ? "bg-blue-600 border-blue-600 text-white"
+                          : "border-slate-300 bg-slate-50 hover:border-blue-400"
+                      }`}
+                    >
+                      {item.completed && <Check size={13} strokeWidth={3} />}
+                    </div>
 
-                  {editingItemId === item._id ? (
-  <div className="flex flex-1 items-center gap-2">
-    <input
-      type="text"
-      value={editingLabel}
-      onChange={(event) =>
-        setEditingLabel(event.target.value)
-      }
-      onKeyDown={(event) => {
-        if (event.key === "Enter") {
-          saveEdit(item._id);
-        }
+                    <span
+                      className={`text-xs font-semibold transition ${
+                        item.completed
+                          ? "text-slate-400 line-through"
+                          : "text-slate-800"
+                      }`}
+                    >
+                      {item.task || item.name}
+                    </span>
+                  </div>
 
-        if (event.key === "Escape") {
-          cancelEdit();
-        }
-      }}
-      autoFocus
-      className="flex-1 rounded-xl border border-blue-300 px-3 py-2 text-gray-700 outline-none focus:border-[#1E3A8A]"
-    />
+                  <div className="relative">
+                    <button
+                      onClick={() =>
+                        setActiveMenuId(activeMenuId === item._id ? null : item._id)
+                      }
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-50"
+                      aria-label="Item options"
+                    >
+                      <MoreVertical size={14} />
+                    </button>
 
-    <button
-      type="button"
-      onClick={() => saveEdit(item._id)}
-      disabled={saving}
-      className="rounded-xl bg-[#1E3A8A] px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
-    >
-      {saving ? "..." : "Save"}
-    </button>
-
-    <button
-      type="button"
-      onClick={cancelEdit}
-      className="rounded-xl border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50"
-    >
-      Cancel
-    </button>
-  </div>
-) : (
-  <>
-    <p
-      className={`flex-1 ${
-        item.completed
-          ? "text-gray-400 line-through"
-          : "text-gray-700"
-      }`}
-    >
-      {item.label}
-    </p>
-
-    <div className="flex items-center gap-2">
-      
-
-      <div className="flex items-center gap-2">
-  <button
-    type="button"
-    onClick={() => startEdit(item)}
-    className="rounded-xl border border-blue-200 p-2 text-[#1E3A8A] hover:bg-blue-50"
-    aria-label={`Edit ${item.label}`}
-  >
-    <Pencil size={17} />
-  </button>
-
-  <button
-    type="button"
-    onClick={() => deleteItem(item._id)}
-    className="rounded-xl border border-red-200 p-2 text-red-600 hover:bg-red-50"
-    aria-label={`Delete ${item.label}`}
-  >
-    <Trash2 size={17} />
-  </button>
-</div>
-    </div>
-  </>
-)}
-
+                    {activeMenuId === item._id && (
+                      <div className="absolute right-0 mt-1 w-28 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-30">
+                        <button
+                          onClick={() => handleDeleteItem(item._id)}
+                          className="w-full px-3 py-1.5 text-left text-xs text-red-600 hover:bg-red-50 flex items-center gap-2"
+                        >
+                          <Trash2 size={12} />
+                          <span>Delete</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              ))}
-
-            </div>
-          )}
-
-        </section>
-
-      </main>
-    </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+    </MobileShell>
   );
 }
-
-export default Checklist;

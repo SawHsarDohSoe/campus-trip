@@ -1,588 +1,396 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import {
-  Pencil,
+  ArrowLeft,
+  Menu,
+  ChevronDown,
   Plus,
-  ReceiptText,
+  Train,
+  Hotel,
+  Utensils,
+  Receipt,
+  X,
   Trash2,
   Wallet,
 } from "lucide-react";
-import Sidebar from "../../components/layout/Sidebar";
+import MobileShell from "../../components/layout/MobileShell";
 import {
+  getTrips,
+  getExpenses,
   createExpense,
   deleteExpense,
-  getExpenses,
-  getTrips,
-  updateExpense,
 } from "../../api/authApi";
 
-const currency = new Intl.NumberFormat("en-TH", {
-  style: "currency",
-  currency: "THB",
-  maximumFractionDigits: 0,
-});
-
-function Budget() {
+export default function Budget() {
+  const navigate = useNavigate();
   const [trips, setTrips] = useState([]);
+  const [selectedTripId, setSelectedTripId] = useState("");
   const [expenses, setExpenses] = useState([]);
-
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingExpense, setEditingExpense] = useState(null);
-
-  const [formData, setFormData] = useState({
-    tripId: "",
+  const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [newExpense, setNewExpense] = useState({
     name: "",
-    category: "Transportation",
     amount: "",
+    category: "Transportation",
   });
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-
   useEffect(() => {
-    const loadBudget = async () => {
+    const loadTrips = async () => {
+      const token = localStorage.getItem("campusTripToken");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
       try {
-        const token = localStorage.getItem("campusTripToken");
-
-        if (!token) {
-          window.location.href = "/login";
-          return;
+        setLoading(true);
+        const data = await getTrips(token);
+        if (data?.trips?.length) {
+          setTrips(data.trips);
+          setSelectedTripId(data.trips[0]._id);
         }
-
-        const tripsData = await getTrips(token);
-
-        setTrips(tripsData.trips);
-
-        if (tripsData.trips.length > 0) {
-          const firstTrip = tripsData.trips[0];
-
-          setFormData((current) => ({
-            ...current,
-            tripId: firstTrip._id,
-          }));
-
-          const expensesData = await getExpenses(
-            token,
-            firstTrip._id
-          );
-
-          setExpenses(expensesData.expenses);
-        }
-      } catch (error) {
-        setError(error.message);
+      } catch (err) {
+        console.error("Error loading trips:", err);
       } finally {
         setLoading(false);
       }
     };
+    loadTrips();
+  }, [navigate]);
 
-    loadBudget();
-  }, []);
-
-  const selectedTrip = trips.find(
-    (trip) => trip._id === formData.tripId
-  );
-
-  const totalBudget = selectedTrip?.budget ?? 0;
-
-  const spent = useMemo(
-    () =>
-      expenses.reduce(
-        (total, expense) => total + expense.amount,
-        0
-      ),
-    [expenses]
-  );
-
-  const remaining = totalBudget - spent;
-
-  const usage =
-    totalBudget > 0
-      ? Math.min((spent / totalBudget) * 100, 100)
-      : 0;
-
-  const handleTripChange = async (event) => {
-    const tripId = event.target.value;
-
-    setFormData((current) => ({
-      ...current,
-      tripId,
-    }));
+  const fetchExpenses = async () => {
+    const token = localStorage.getItem("campusTripToken");
+    if (!token || !selectedTripId) return;
 
     try {
-      const token = localStorage.getItem("campusTripToken");
-
-      const data = await getExpenses(token, tripId);
-
-      setExpenses(data.expenses);
-      setError("");
-    } catch (error) {
-      setError(error.message);
+      const data = await getExpenses(token, selectedTripId);
+      if (data?.expenses) {
+        setExpenses(data.expenses);
+      }
+    } catch (err) {
+      console.error("Failed to load expenses:", err);
     }
   };
 
-const handleEdit = (expense) => {
-  setEditingExpense(expense);
-
-  setFormData({
-    tripId: expense.trip?._id || formData.tripId,
-    name: expense.name || "",
-    category: expense.category || "Other",
-    amount: expense.amount ?? "",
-  });
-
-  setError("");
-  setIsFormOpen(true);
-};
-
- const handleSubmit = async (event) => {
-  event.preventDefault();
-
-  const amount = Number(formData.amount);
-
-  if (
-    !formData.tripId ||
-    !formData.name.trim() ||
-    !amount ||
-    amount <= 0
-  ) {
-    return;
-  }
-
-  try {
-    setSaving(true);
-    setError("");
-
-    const token = localStorage.getItem("campusTripToken");
-
-    if (!token) {
-      window.location.href = "/login";
+  useEffect(() => {
+    if (!selectedTripId) {
+      setExpenses([]);
       return;
     }
+    fetchExpenses();
+  }, [selectedTripId]);
 
-    const payload = {
-      name: formData.name.trim(),
-      category: formData.category,
-      amount,
-      date: editingExpense?.date || new Date().toISOString(),
-    };
+  const activeTrip = trips.find((t) => t._id === selectedTripId);
+  const totalBudget = activeTrip?.budget || 0;
 
-    if (editingExpense) {
-      const data = await updateExpense(
-        editingExpense._id,
-        payload,
-        token
-      );
+  const totalSpent = useMemo(() => {
+    return expenses.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  }, [expenses]);
 
-      setExpenses((current) =>
-        current.map((expense) =>
-          expense._id === editingExpense._id
-            ? data.expense
-            : expense
-        )
-      );
-    } else {
-      const data = await createExpense(
+  const remainingBudget = Math.max(0, totalBudget - totalSpent);
+  const percentSpent = totalBudget > 0 ? Math.min(100, Math.round((totalSpent / totalBudget) * 100)) : 0;
+
+  const formatCurrency = (val) => {
+    return new Intl.NumberFormat("en-TH", {
+      style: "currency",
+      currency: "THB",
+      maximumFractionDigits: 0,
+    }).format(val || 0);
+  };
+
+  const handleAddExpense = async (e) => {
+    e.preventDefault();
+    if (!newExpense.name || !newExpense.amount || !selectedTripId) return;
+
+    const token = localStorage.getItem("campusTripToken");
+    if (!token) return;
+
+    try {
+      await createExpense(
         {
-          tripId: formData.tripId,
-          ...payload,
+          tripId: selectedTripId,
+          name: newExpense.name,
+          amount: Number(newExpense.amount),
+          category: newExpense.category,
         },
         token
       );
-
-      setExpenses((current) => [
-        data.expense,
-        ...current,
-      ]);
-    }
-
-    setFormData((current) => ({
-      ...current,
-      name: "",
-      category: "Transportation",
-      amount: "",
-    }));
-
-    setEditingExpense(null);
-    setIsFormOpen(false);
-  } catch (error) {
-    setError(error.message);
-  } finally {
-    setSaving(false);
-  }
-};
-
-  const handleDelete = async (expenseId) => {
-    const confirmed = window.confirm(
-      "Delete this expense?"
-    );
-
-    if (!confirmed) return;
-
-    try {
-      const token = localStorage.getItem("campusTripToken");
-
-      await deleteExpense(expenseId, token);
-
-      setExpenses((current) =>
-        current.filter(
-          (expense) => expense._id !== expenseId
-        )
-      );
-    } catch (error) {
-      setError(error.message);
+      setNewExpense({ name: "", amount: "", category: "Transportation" });
+      setShowModal(false);
+      await fetchExpenses();
+    } catch (err) {
+      alert(err.message || "Failed to add expense.");
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen bg-slate-50">
-        <Sidebar />
+  const handleDeleteExpense = async (id) => {
+    const token = localStorage.getItem("campusTripToken");
+    if (!token) return;
 
-        <main className="flex flex-1 items-center justify-center">
-          <p className="text-gray-500">
-            Loading budget...
-          </p>
-        </main>
+    try {
+      await deleteExpense(id, token);
+      setExpenses((prev) => prev.filter((e) => e._id !== id));
+    } catch (err) {
+      alert(err.message || "Failed to delete expense.");
+    }
+  };
+
+  const getExpenseIcon = (category = "") => {
+    const cat = category.toLowerCase();
+    if (cat.includes("hotel") || cat.includes("accom")) {
+      return (
+        <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+          <Hotel size={18} />
+        </div>
+      );
+    }
+    if (cat.includes("food") || cat.includes("dining")) {
+      return (
+        <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+          <Utensils size={18} />
+        </div>
+      );
+    }
+    return (
+      <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+        <Train size={18} />
       </div>
     );
-  }
+  };
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <Sidebar />
-
-      <main className="flex flex-1 flex-col gap-8 p-6 pt-20 md:p-8">
-
-        {/* Header */}
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-
-          <div>
-            <p className="text-sm font-semibold text-blue-700">
-              CampusTrip
-            </p>
-
-            <h1 className="mt-1 text-3xl font-bold text-[#1E3A8A] md:text-4xl">
-              Trip Budget
-            </h1>
-
-            <p className="mt-2 text-gray-500">
-              Track your trip spending and keep every expense on plan.
-            </p>
-          </div>
-
+    <MobileShell showBottomNav={true} contentClassName="bg-slate-50/50">
+      {/* Top Header */}
+      <div className="bg-white px-5 pt-3 pb-3 flex items-center justify-between border-b border-slate-100 sticky top-0 z-20">
+        <div className="flex items-center gap-3">
           <button
-            type="button"
-            onClick={() => setIsFormOpen(true)}
-            disabled={trips.length === 0}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white shadow-lg transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => navigate(-1)}
+            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-700 transition"
+            aria-label="Back"
           >
-            <Plus size={20} />
-            Add Expense
+            <ArrowLeft size={19} />
           </button>
-
+          <h1 className="text-lg font-bold text-slate-900">Budget</h1>
         </div>
 
-        {/* Error */}
-        {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-600">
-            {error}
-          </div>
-        )}
+        <button className="text-slate-500 hover:text-slate-800 p-1.5">
+          <Menu size={18} />
+        </button>
+      </div>
 
-        {/* Trip Selector */}
-        {trips.length > 0 && (
-          <section className="rounded-3xl bg-white p-6 shadow-lg">
-
-            <label className="mb-2 block font-medium text-gray-700">
-              Select Trip
-            </label>
-
+      <div className="px-5 py-4 space-y-4">
+        {/* Trip Switcher Dropdown */}
+        {trips.length > 0 ? (
+          <div className="relative">
             <select
-              value={formData.tripId}
-              onChange={handleTripChange}
-              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-[#1E3A8A] md:max-w-lg"
+              value={selectedTripId}
+              onChange={(e) => setSelectedTripId(e.target.value)}
+              className="w-full bg-white border border-slate-200 text-xs font-bold text-slate-800 rounded-xl py-2.5 px-3.5 appearance-none focus:outline-none focus:border-blue-600 shadow-sm"
             >
-              {trips.map((trip) => (
-                <option key={trip._id} value={trip._id}>
-                  {trip.title} — {trip.destination}
+              {trips.map((t) => (
+                <option key={t._id} value={t._id}>
+                  {t.title}
                 </option>
               ))}
             </select>
-
-          </section>
+            <ChevronDown
+              size={16}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+            />
+          </div>
+        ) : (
+          <div className="p-6 bg-white rounded-2xl border border-slate-100 text-center">
+            <Wallet size={28} className="mx-auto text-slate-300 mb-2" />
+            <p className="text-xs font-bold text-slate-700">No Trips Created</p>
+            <p className="text-[11px] text-slate-400 mt-1">Create a trip to manage your travel budget.</p>
+            <Link
+              to="/trips/create"
+              className="mt-3 inline-block px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-xl"
+            >
+              Create Trip
+            </Link>
+          </div>
         )}
 
-        {/* Summary */}
-        <section className="grid gap-6 lg:grid-cols-3">
+        {/* Total Budget Card */}
+        {selectedTripId && (
+          <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4">
+            <div>
+              <span className="text-xs text-slate-400 font-medium">Total Budget</span>
+              <h2 className="text-2xl font-black text-slate-900 mt-0.5 tracking-tight">
+                {formatCurrency(totalBudget)}
+              </h2>
+            </div>
 
-          <div className="rounded-3xl bg-[#1E3A8A] p-7 text-white shadow-lg lg:col-span-2">
-
-            <div className="flex items-center justify-between">
+            <div className="grid grid-cols-2 gap-4 pt-1">
+              <div>
+                <span className="text-[11px] text-slate-400 font-medium block">
+                  Expenses
+                </span>
+                <span className="text-sm font-bold text-emerald-600">
+                  {formatCurrency(totalSpent)}
+                </span>
+              </div>
 
               <div>
-                <p className="text-sm text-blue-100">
-                  Total trip budget
-                </p>
-
-                <p className="mt-2 text-4xl font-bold">
-                  {currency.format(totalBudget)}
-                </p>
+                <span className="text-[11px] text-slate-400 font-medium block">
+                  Remaining
+                </span>
+                <span className="text-sm font-bold text-blue-600">
+                  {formatCurrency(remainingBudget)}
+                </span>
               </div>
-
-              <div className="rounded-2xl bg-white/15 p-4">
-                <Wallet size={30} />
-              </div>
-
             </div>
 
-            <div className="mt-8 h-3 overflow-hidden rounded-full bg-white/20">
-              <div
-                className="h-full rounded-full bg-[#A8D6FF] transition-all"
-                style={{ width: `${usage}%` }}
-              />
-            </div>
-
-            <div className="mt-3 flex justify-between text-sm text-blue-100">
-              <span>{Math.round(usage)}% used</span>
-
-              <span>
-                {currency.format(spent)} spent
-              </span>
-            </div>
-
-          </div>
-
-          <div className="rounded-3xl bg-white p-7 shadow-lg">
-
-            <p className="text-sm font-medium text-gray-500">
-              Remaining budget
-            </p>
-
-            <p
-              className={`mt-2 text-4xl font-bold ${
-                remaining >= 0
-                  ? "text-[#1E3A8A]"
-                  : "text-red-600"
-              }`}
-            >
-              {currency.format(remaining)}
-            </p>
-
-            <p className="mt-3 text-sm text-gray-500">
-              Available for the rest of the trip.
-            </p>
-
-          </div>
-
-        </section>
-
-        {/* Expenses */}
-        <section className="rounded-3xl bg-white p-6 shadow-lg md:p-8">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-              <h2 className="text-2xl font-bold text-[#1E3A8A]">
-                Recent expenses
-              </h2>
-
-              <p className="mt-1 text-gray-500">
-                Expenses saved in your CampusTrip account.
-              </p>
-            </div>
-
-            <ReceiptText
-              className="text-[#1E3A8A]"
-              size={28}
-            />
-
-          </div>
-
-          <div className="mt-6 divide-y divide-gray-100">
-
-            {expenses.length > 0 ? (
-              expenses.map((expense) => (
+            {/* Progress Bar */}
+            <div className="space-y-1.5 pt-1">
+              <div className="w-full h-2.5 bg-blue-100 rounded-full overflow-hidden flex">
                 <div
-                  key={expense._id}
-                  className="flex flex-col gap-3 py-5 sm:flex-row sm:items-center sm:justify-between"
-                >
+                  style={{ width: `${percentSpent}%` }}
+                  className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                ></div>
+              </div>
+              <div className="flex justify-between text-[10px] text-slate-400 font-medium">
+                <span>{percentSpent}% spent</span>
+                <span>{100 - percentSpent}% left</span>
+              </div>
+            </div>
+          </div>
+        )}
 
-                  <div>
-                    <h3 className="font-semibold text-gray-800">
-                      {expense.name}
-                    </h3>
+        {/* Expenses List Section */}
+        {selectedTripId && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-slate-900">Expenses List</h3>
+              <button
+                onClick={() => setShowModal(true)}
+                className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-full shadow-sm shadow-blue-500/30 transition active:scale-95"
+              >
+                <Plus size={13} strokeWidth={2.5} />
+                <span>Add</span>
+              </button>
+            </div>
 
-                    <p className="mt-1 text-sm text-gray-500">
-                      {expense.category} ·{" "}
-                      {new Date(
-                        expense.date
-                      ).toLocaleDateString("en-GB")}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-
-                    <p className="text-lg font-bold text-[#1E3A8A]">
-                      {currency.format(expense.amount)}
-                    </p>
+            <div className="space-y-2.5">
+              {expenses.length === 0 ? (
+                <div className="text-center py-8 bg-white rounded-2xl border border-slate-100">
+                  <p className="text-xs text-slate-400">No expenses recorded yet.</p>
+                </div>
+              ) : (
+                expenses.map((item) => (
+                  <div
+                    key={item._id}
+                    className="p-3 bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between hover:shadow-md transition group"
+                  >
+                    <div className="flex items-center gap-3">
+                      {getExpenseIcon(item.category)}
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-900">{item.name}</h4>
+                        <span className="text-[10px] text-slate-400 block mt-0.5">
+                          {item.category || "Expense"}
+                        </span>
+                      </div>
+                    </div>
 
                     <div className="flex items-center gap-2">
-                       <button
-                          type="button"
-                          onClick={() => handleEdit(expense)}
-                          className="rounded-xl border border-blue-200 p-3 text-[#1E3A8A] hover:bg-blue-50"
-                          aria-label={`Edit ${expense.name}`}
-                        >
-                          <Pencil size={18} />
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(expense._id)}
-                          className="rounded-xl border border-red-200 p-3 text-red-600 hover:bg-red-50"
-                          aria-label={`Delete ${expense.name}`}
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-
+                      <span className="text-xs font-bold text-slate-900">
+                        {formatCurrency(item.amount)}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteExpense(item._id)}
+                        className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500 transition p-1"
+                        aria-label="Delete expense"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
                   </div>
-
-                </div>
-              ))
-            ) : (
-              <div className="py-10 text-center">
-
-                <ReceiptText
-                  className="mx-auto text-gray-300"
-                  size={40}
-                />
-
-                <p className="mt-4 text-gray-500">
-                  No expenses yet.
-                </p>
-
-                <p className="mt-1 text-sm text-gray-400">
-                  Add an expense to start tracking your spending.
-                </p>
-
-              </div>
-            )}
-
+                ))
+              )}
+            </div>
           </div>
-
-        </section>
-
-      </main>
+        )}
+      </div>
 
       {/* Add Expense Modal */}
-      {isFormOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-
-          <form
-            onSubmit={handleSubmit}
-            className="w-full max-w-md rounded-3xl bg-white p-7 shadow-2xl"
-          >
-
-           <h2 className="text-2xl font-bold text-[#1E3A8A]">
-            {editingExpense ? "Edit Expense" : "Add an Expense"}
-          </h2>
-
-            <p className="mt-2 text-sm text-gray-500">
-              {editingExpense
-                ? "Update this expense in your trip budget."
-                : "This expense will be saved to your account."}
-            </p>
-
-            <div className="mt-6 space-y-4">
-
-              <input
-                required
-                value={formData.name}
-                onChange={(event) =>
-                  setFormData({
-                    ...formData,
-                    name: event.target.value,
-                  })
-                }
-                placeholder="Expense name"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#1E3A8A]"
-              />
-
-              <select
-                value={formData.category}
-                onChange={(event) =>
-                  setFormData({
-                    ...formData,
-                    category: event.target.value,
-                  })
-                }
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#1E3A8A]"
+      {showModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-sm p-5 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900">Add Expense</h3>
+              <button
+                onClick={() => setShowModal(false)}
+                className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500"
               >
-                <option>Transportation</option>
-                <option>Accommodation</option>
-                <option>Food</option>
-                <option>Activities</option>
-                <option>Other</option>
-              </select>
-
-              <input
-                required
-                min="1"
-                type="number"
-                value={formData.amount}
-                onChange={(event) =>
-                  setFormData({
-                    ...formData,
-                    amount: event.target.value,
-                  })
-                }
-                placeholder="Amount (THB)"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#1E3A8A]"
-              />
-
+                ✕
+              </button>
             </div>
 
-            <div className="mt-7 flex justify-end gap-3">
+            <form onSubmit={handleAddExpense} className="space-y-3.5 mt-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Expense Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Train Ticket"
+                  value={newExpense.name}
+                  onChange={(e) =>
+                    setNewExpense({ ...newExpense, name: e.target.value })
+                  }
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-900 focus:outline-none focus:border-blue-600"
+                />
+              </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  setIsFormOpen(false);
-                  setEditingExpense(null);
-                  setFormData((current) => ({
-                    ...current,
-                    name: "",
-                    category: "Transportation",
-                    amount: "",
-                  }));
-                }}
-                className="rounded-xl border border-gray-300 px-5 py-3 font-medium hover:bg-gray-50"
-              >
-                Cancel
-              </button>
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Amount (THB)
+                </label>
+                <input
+                  type="number"
+                  required
+                  placeholder="e.g. 800"
+                  value={newExpense.amount}
+                  onChange={(e) =>
+                    setNewExpense({ ...newExpense, amount: e.target.value })
+                  }
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-900 focus:outline-none focus:border-blue-600"
+                />
+              </div>
 
-              <button
-                type="submit"
-                disabled={saving}
-                className="rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {saving
-                  ? "Saving..."
-                  : editingExpense
-                    ? "Save Changes"
-                    : "Save Expense"}
-              </button>
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Category
+                </label>
+                <select
+                  value={newExpense.category}
+                  onChange={(e) =>
+                    setNewExpense({ ...newExpense, category: e.target.value })
+                  }
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-900 focus:outline-none focus:border-blue-600"
+                >
+                  <option value="Transportation">Transportation</option>
+                  <option value="Accommodation">Accommodation</option>
+                  <option value="Food">Food & Dining</option>
+                  <option value="Activity">Activity / Tickets</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
 
-            </div>
-
-          </form>
-
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-md transition"
+                >
+                  Save Expense
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
-
-    </div>
+    </MobileShell>
   );
 }
-
-export default Budget;

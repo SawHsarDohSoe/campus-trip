@@ -1,1618 +1,317 @@
-import { useEffect, useState } from "react";
-import { QRCodeSVG } from "qrcode.react";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
-  Bus,
-  CalendarDays,
-  Clock,
-  MapPin,
-  Pencil,
-  Plus,
-  Send,
-  Trash2,
-  UserPlus,
-  Users,
+  MoreVertical,
+  Calendar,
   Wallet,
+  CheckSquare,
+  Users,
+  MapPin,
+  CalendarDays,
+  Pencil,
+  Trash2,
+  Share2,
 } from "lucide-react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import Sidebar from "../../components/layout/Sidebar";
-import {
-  createSchedule,
-  deleteSchedule,
-  deleteTrip,
-  getSchedules,
-  getTrip,
-  getWeather,
-  getPolls,
-  createPoll,
-  votePoll,
-  closePoll,
-  getDiscussionMessages,
-  createDiscussionMessage,
-  deleteDiscussionMessage,
-} from "../../api/authApi";
+import MobileShell from "../../components/layout/MobileShell";
+import { getTrip, deleteTrip } from "../../api/authApi";
 
-const currency = new Intl.NumberFormat("en-TH", {
-  style: "currency",
-  currency: "THB",
-  maximumFractionDigits: 0,
-});
-
-function formatDate(startDate, endDate) {
-  const options = {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  };
-
-  const start = new Date(startDate).toLocaleDateString(
-    "en-GB",
-    options
-  );
-
-  const end = new Date(endDate).toLocaleDateString(
-    "en-GB",
-    options
-  );
-
-  return `${start} – ${end}`;
-}
-
-function formatScheduleDate(date) {
-  return new Date(date).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-}
-
-function TripDetails() {
+export default function TripDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const [trip, setTrip] = useState(null);
-const [schedules, setSchedules] = useState([]);
-const [polls, setPolls] = useState([]);
-const [messages, setMessages] = useState([]);
-const [discussionLoading, setDiscussionLoading] = useState(true);
-const [discussionError, setDiscussionError] = useState("");
-const [newMessage, setNewMessage] = useState("");
-const [sendingMessage, setSendingMessage] = useState(false);
-
-const [pollLoading, setPollLoading] = useState(true);
-const [pollError, setPollError] = useState("");
-const [isPollFormOpen, setIsPollFormOpen] = useState(false);
-const [savingPoll, setSavingPoll] = useState(false);
-
-const [pollForm, setPollForm] = useState({
-  question: "",
-  options: ["", ""],
-});
-
+  const [showMenu, setShowMenu] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [scheduleLoading, setScheduleLoading] = useState(true);
-  const [savingSchedule, setSavingSchedule] = useState(false);
-
-  const [weather, setWeather] = useState(null);
-  const [weatherLoading, setWeatherLoading] = useState(true);
-  const [weatherError, setWeatherError] = useState("");
-
   const [error, setError] = useState("");
-  const [scheduleError, setScheduleError] = useState("");
-const [copied, setCopied] = useState(false);
-
-  const [isScheduleFormOpen, setIsScheduleFormOpen] =
-    useState(false);
-
-  const [scheduleForm, setScheduleForm] = useState({
-    date: "",
-    time: "",
-    activity: "",
-    location: "",
-    notes: "",
-  });
 
   useEffect(() => {
-    const loadTrip = async () => {
+    const loadTripData = async () => {
+      const token = localStorage.getItem("campusTripToken");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      if (!id) {
+        navigate("/trips");
+        return;
+      }
+
       try {
-        const token = localStorage.getItem("campusTripToken");
-
-        if (!token) {
-          navigate("/login");
-          return;
+        setLoading(true);
+        const data = await getTrip(id, token);
+        if (data?.trip) {
+          setTrip(data.trip);
+        } else {
+          setError("Trip not found.");
         }
-
-       const [
-  tripData,
-  scheduleData,
-  pollData,
-  discussionData,
-] = await Promise.all([
-  getTrip(id, token),
-  getSchedules(id, token),
-  getPolls(id, token),
-  getDiscussionMessages(id, token),
-]);
-
-setTrip(tripData.trip);
-setSchedules(scheduleData.schedules);
-setPolls(pollData.polls || []);
-setMessages(discussionData.messages || []);
-
-try {
-  const weatherData = await getWeather(
-    tripData.trip.destination,
-    token
-  );
-
-  setWeather(weatherData);
-} catch (error) {
-  setWeatherError(error.message);
-} finally {
-  setWeatherLoading(false);
-}
-      } catch (error) {
-        setError(error.message);
+      } catch (err) {
+        setError(err.message || "Unable to load trip details.");
       } finally {
         setLoading(false);
-        setScheduleLoading(false);
-        setDiscussionLoading(false);
-        setPollLoading(false);
       }
     };
 
-    loadTrip();
+    loadTripData();
   }, [id, navigate]);
 
-useEffect(() => {
-  const refreshDiscussion = async () => {
-    try {
-      const token = localStorage.getItem("campusTripToken");
-
-      if (!token || !id) {
-        return;
-      }
-
-      const data = await getDiscussionMessages(id, token);
-
-      setMessages(data.messages || []);
-    } catch (error) {
-      console.error("Unable to refresh discussion:", error);
-    }
-  };
-
-  const interval = setInterval(
-    refreshDiscussion,
-    5000
-  );
-
-  return () => {
-    clearInterval(interval);
-  };
-}, [id]);
-
-  const handleScheduleChange = (event) => {
-    setScheduleForm({
-      ...scheduleForm,
-      [event.target.name]: event.target.value,
-    });
-
-    setScheduleError("");
-  };
-
-  const handleCreateSchedule = async (event) => {
-    event.preventDefault();
-
-    setScheduleError("");
-    setSavingSchedule(true);
-
-    try {
-      const token = localStorage.getItem("campusTripToken");
-
-      if (!token) {
-        navigate("/login");
-        return;
-      }
-
-      const data = await createSchedule(
-        id,
-        scheduleForm,
-        token
-      );
-
-      setSchedules((current) => [
-        ...current,
-        data.schedule,
-      ].sort((a, b) => {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
-
-        if (dateA - dateB !== 0) {
-          return dateA - dateB;
-        }
-
-        return a.time.localeCompare(b.time);
-      }));
-
-      setScheduleForm({
-        date: "",
-        time: "",
-        activity: "",
-        location: "",
-        notes: "",
-      });
-
-      setIsScheduleFormOpen(false);
-    } catch (error) {
-      setScheduleError(error.message);
-    } finally {
-      setSavingSchedule(false);
-    }
-  };
-const handlePollOptionChange = (index, value) => {
-  setPollForm((current) => {
-    const options = [...current.options];
-    options[index] = value;
-
-    return {
-      ...current,
-      options,
-    };
-  });
-
-  setPollError("");
-};
-
-const addPollOption = () => {
-  if (pollForm.options.length >= 6) return;
-
-  setPollForm((current) => ({
-    ...current,
-    options: [...current.options, ""],
-  }));
-};
-
-const removePollOption = (index) => {
-  if (pollForm.options.length <= 2) return;
-
-  setPollForm((current) => ({
-    ...current,
-    options: current.options.filter(
-      (_, optionIndex) => optionIndex !== index
-    ),
-  }));
-};
-
-const handleCreatePoll = async (event) => {
-  event.preventDefault();
-
-  setPollError("");
-
-  const question = pollForm.question.trim();
-
-  const options = pollForm.options
-    .map((option) => option.trim())
-    .filter(Boolean);
-
-  if (!question) {
-    setPollError("Please enter a poll question.");
-    return;
-  }
-
-  if (options.length < 2) {
-    setPollError("Please provide at least 2 options.");
-    return;
-  }
-
-  try {
-    setSavingPoll(true);
-
-    const token = localStorage.getItem("campusTripToken");
-
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
-    const data = await createPoll(
-      id,
-      {
-        question,
-        options,
-      },
-      token
-    );
-
-    setPolls((current) => [
-      data.poll,
-      ...current,
-    ]);
-
-    setPollForm({
-      question: "",
-      options: ["", ""],
-    });
-
-    setIsPollFormOpen(false);
-  } catch (error) {
-    setPollError(error.message);
-  } finally {
-    setSavingPoll(false);
-  }
-};
-
-const handleVote = async (pollId, optionId) => {
-  try {
-    setPollError("");
-
-    const token = localStorage.getItem("campusTripToken");
-
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
-    const data = await votePoll(
-      id,
-      pollId,
-      optionId,
-      token
-    );
-
-    setPolls((current) =>
-      current.map((poll) =>
-        poll._id === pollId
-          ? data.poll
-          : poll
-      )
-    );
-  } catch (error) {
-    setPollError(error.message);
-  }
-};
-
-const handleClosePoll = async (pollId) => {
-  const confirmed = window.confirm(
-    "Close this poll? Members will no longer be able to vote."
-  );
-
-  if (!confirmed) return;
-
-  try {
-    setPollError("");
-
-    const token = localStorage.getItem("campusTripToken");
-
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
-    const data = await closePoll(
-      id,
-      pollId,
-      token
-    );
-
-    setPolls((current) =>
-      current.map((poll) =>
-        poll._id === pollId
-          ? data.poll
-          : poll
-      )
-    );
-  } catch (error) {
-    setPollError(error.message);
-  }
-};
-
-const handleSendMessage = async (event) => {
-  event.preventDefault();
-
-  const message = newMessage.trim();
-
-  if (!message) {
-    return;
-  }
-
-  try {
-    setSendingMessage(true);
-    setDiscussionError("");
-
-    const token = localStorage.getItem("campusTripToken");
-
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
-    const data = await createDiscussionMessage(
-      id,
-      message,
-      token
-    );
-
-    setMessages((current) => [
-      ...current,
-      data.message,
-    ]);
-
-    setNewMessage("");
-  } catch (error) {
-    setDiscussionError(error.message);
-  } finally {
-    setSendingMessage(false);
-  }
-};
-
-const handleDeleteMessage = async (messageId) => {
-  try {
-    setDiscussionError("");
-
-    const token = localStorage.getItem("campusTripToken");
-
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
-    await deleteDiscussionMessage(
-      id,
-      messageId,
-      token
-    );
-
-    setMessages((current) =>
-      current.filter(
-        (message) => message._id !== messageId
-      )
-    );
-  } catch (error) {
-    setDiscussionError(error.message);
-  }
-};
-
-  const handleDeleteSchedule = async (scheduleId) => {
-    const confirmed = window.confirm(
-      "Delete this schedule item?"
-    );
-
-    if (!confirmed) return;
-
-    try {
-      const token = localStorage.getItem("campusTripToken");
-
-      if (!token) {
-        navigate("/login");
-        return;
-      }
-
-      await deleteSchedule(id, scheduleId, token);
-
-      setSchedules((current) =>
-        current.filter(
-          (schedule) => schedule._id !== scheduleId
-        )
-      );
-    } catch (error) {
-      setScheduleError(error.message);
-    }
-  };
-
   const handleDeleteTrip = async () => {
-    const confirmed = window.confirm(
-      `Delete "${trip.title}"?`
-    );
-
-    if (!confirmed) return;
-
-    try {
-      const token = localStorage.getItem("campusTripToken");
-
-      if (!token) {
-        navigate("/login");
-        return;
+    if (!window.confirm(`Are you sure you want to delete "${trip?.title}"?`)) return;
+    const token = localStorage.getItem("campusTripToken");
+    if (token && id) {
+      try {
+        await deleteTrip(id, token);
+        navigate("/trips");
+      } catch (e) {
+        alert(e.message || "Failed to delete trip.");
       }
-
-      await deleteTrip(trip._id, token);
-
-      navigate("/trips");
-    } catch (error) {
-      setError(error.message);
     }
+  };
+
+  const formatCurrency = (val) => {
+    return new Intl.NumberFormat("en-TH", {
+      style: "currency",
+      currency: "THB",
+      maximumFractionDigits: 0,
+    }).format(val || 0);
+  };
+
+  const formatDateRange = (start, end) => {
+    if (!start) return "Date flexible";
+    const s = new Date(start).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+    });
+    const e = end
+      ? new Date(end).toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })
+      : "";
+    return e ? `${s} - ${e}` : s;
   };
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-slate-50">
-        <Sidebar />
-
-        <main className="flex flex-1 items-center justify-center p-8">
-          <p className="text-gray-500">
-            Loading trip...
-          </p>
-        </main>
-      </div>
+      <MobileShell showBottomNav={true} contentClassName="bg-white flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </MobileShell>
     );
   }
 
   if (error || !trip) {
     return (
-      <div className="flex min-h-screen bg-slate-50">
-        <Sidebar />
-
-        <main className="flex flex-1 flex-col items-center justify-center p-8">
-          <h1 className="text-2xl font-bold text-[#1E3A8A]">
-            Trip not found
-          </h1>
-
-          <p className="mt-2 text-gray-500">
-            {error || "This trip may have been deleted."}
-          </p>
-
-          <Link
-            to="/trips"
-            replace
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white hover:bg-blue-700"
-          >
-            <ArrowLeft size={18} />
-            Back to My Trips
-          </Link>
-        </main>
-      </div>
+      <MobileShell showBottomNav={true} contentClassName="bg-white p-6 flex flex-col items-center justify-center text-center">
+        <h2 className="text-sm font-bold text-slate-800">Trip Not Found</h2>
+        <p className="text-xs text-slate-500 mt-1">{error || "This trip does not exist or has been removed."}</p>
+        <Link
+          to="/trips"
+          className="mt-4 px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-xl"
+        >
+          Back to My Trips
+        </Link>
+      </MobileShell>
     );
   }
 
-const storedUser =
-  localStorage.getItem("campusTripCurrentUser");
-
-let currentUserId = "";
-
-try {
-  const currentUser = JSON.parse(storedUser || "{}");
-
-  currentUserId =
-    currentUser._id ||
-    currentUser.id ||
-    "";
-} catch {
-  currentUserId = storedUser || "";
-}
-
-const isTripOwner =
-  String(trip.owner?._id || trip.owner) === String(currentUserId);
-
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <Sidebar />
+    <MobileShell showBottomNav={true} contentClassName="bg-white">
+      {/* Top Banner & Header Overlay */}
+      <div className="relative">
+        {/* Hero Image */}
+        <div className="h-56 w-full relative overflow-hidden bg-gradient-to-tr from-sky-400 via-blue-500 to-cyan-400">
+          <svg viewBox="0 0 400 240" className="w-full h-full object-cover">
+            <defs>
+              <linearGradient id="skyGrad2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#38BDF8" />
+                <stop offset="60%" stopColor="#7DD3FC" />
+                <stop offset="100%" stopColor="#BAE6FD" />
+              </linearGradient>
+            </defs>
+            <rect width="400" height="240" fill="url(#skyGrad2)" />
+            <circle cx="320" cy="60" r="32" fill="#FEF08A" opacity="0.9" />
+            <path d="M 0 160 Q 150 120 400 165 L 400 240 L 0 240 Z" fill="#F59E0B" opacity="0.3" />
+            <path d="M 0 175 Q 200 155 400 178 L 400 240 L 0 240 Z" fill="#0284C7" />
+            <path d="M 0 195 Q 180 185 400 200 L 400 240 L 0 240 Z" fill="#0369A1" />
+            <path d="M 40 210 Q 50 140 35 100" stroke="#78350F" strokeWidth="6" fill="none" />
+            <path d="M 35 100 Q 10 90 0 110" stroke="#16A34A" strokeWidth="4" fill="none" />
+            <path d="M 35 100 Q 55 75 75 90" stroke="#16A34A" strokeWidth="4" fill="none" />
+          </svg>
 
-      <main className="trip-details-page flex flex-1 flex-col gap-8 p-6 pt-20 md:p-8">
-
-        {/* Back */}
-        <Link
-          to="/trips"
-          replace
-          className="inline-flex items-center gap-2 font-medium text-blue-700 hover:underline"
-        >
-          <ArrowLeft size={18} />
-          Back to My Trips
-        </Link>
-
-        {/* Trip Header */}
-        <section className="trip-details-header overflow-hidden rounded-3xl bg-white shadow-lg">
-
-          <div className="trip-details-cover flex h-52 items-center justify-center bg-[#E5F6FD] text-7xl">
-            🚌
-          </div>
-
-          <div className="p-6 md:p-8">
-
-            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-
-              <div>
-
-                <span className="inline-block rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700">
-                  {trip.status}
-                </span>
-
-                <h1 className="mt-4 text-3xl font-bold text-[#1E3A8A] md:text-4xl">
-                  {trip.title}
-                </h1>
-
-                <div className="mt-4 flex flex-col gap-2 text-gray-500 sm:flex-row sm:gap-6">
-
-                  <p className="flex items-center gap-2">
-                    <MapPin size={18} />
-                    {[trip.tambon, trip.district, trip.destination]
-                      .filter(Boolean)
-                      .join(", ")}
-                  </p>
-
-                  <p className="flex items-center gap-2">
-                    <CalendarDays size={18} />
-                    {formatDate(
-                      trip.startDate,
-                      trip.endDate
-                    )}
-                  </p>
-
-                </div>
-
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-
-                {isTripOwner && (
-                  <Link
-                    to={`/trips/${trip._id}/edit`}
-                    className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#1E3A8A] px-5 py-3 font-semibold text-[#1E3A8A] hover:bg-blue-50"
-                  >
-                    <Pencil size={18} />
-                    Edit Trip
-                  </Link>
-                )}
-
-                <Link
-                  to="/members"
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white hover:bg-blue-700"
-                >
-                  <UserPlus size={18} />
-                  Invite Members
-                </Link>
-
-              </div>
-
-            </div>
-
-          </div>
-        </section>
-
-        {/* Trip Information */}
-        <section className="trip-info-grid grid gap-6 md:grid-cols-3">
-
-          <div className="rounded-3xl bg-white p-6 shadow-lg">
-            <Bus className="text-[#1E3A8A]" size={25} />
-
-            <p className="mt-5 text-sm text-gray-500">
-              Transportation
-            </p>
-
-            <p className="mt-1 text-xl font-bold text-gray-800">
-              {trip.transportation}
-            </p>
-          </div>
-
-          <div className="rounded-3xl bg-white p-6 shadow-lg">
-            <Users className="text-[#1E3A8A]" size={25} />
-
-            <p className="mt-5 text-sm text-gray-500">
-              Maximum members
-            </p>
-
-            <p className="mt-1 text-xl font-bold text-gray-800">
-              {trip.members} students
-            </p>
-          </div>
-
-          <div className="rounded-3xl bg-white p-6 shadow-lg">
-            <Wallet className="text-[#1E3A8A]" size={25} />
-
-            <p className="mt-5 text-sm text-gray-500">
-              Trip budget
-            </p>
-
-            <p className="mt-1 text-xl font-bold text-gray-800">
-              {currency.format(trip.budget)}
-            </p>
-          </div>
-
-        </section>
-        {/* Join Trip */}
-<section className="rounded-3xl bg-white p-6 shadow-lg md:p-8">
-
-  <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-
-    <div>
-      <p className="text-sm font-semibold text-blue-700">
-        INVITE STUDENTS
-      </p>
-
-      <h2 className="mt-1 text-2xl font-bold text-[#1E3A8A]">
-        Join This Trip
-      </h2>
-
-      <p className="mt-2 max-w-xl text-gray-500">
-        Students can enter the 6-digit code or scan the QR code
-        to join this trip.
-      </p>
-
-      <div className="mt-5">
-        <p className="text-sm font-medium text-gray-500">
-          6-Digit Join Code
-        </p>
-
-        <p className="mt-2 text-4xl font-bold tracking-[0.3em] text-[#1E3A8A]">
-          {trip.joinCode || "------"}
-        </p>
-
-        <button
-  type="button"
-  onClick={async () => {
-    if (!trip.joinCode) return;
-
-    try {
-      await navigator.clipboard.writeText(trip.joinCode);
-
-      setCopied(true);
-
-      setTimeout(() => {
-        setCopied(false);
-      }, 2000);
-    } catch (error) {
-      console.error("Failed to copy join code:", error);
-    }
-  }}
-  className="mt-4 rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white transition hover:bg-blue-700"
->
-  {copied ? "✓ Copied!" : "Copy Code"}
-</button>
-      </div>
-    </div>
-
-    <div className="flex justify-center">
-      {trip.joinCode ? (
-        <div className="trip-join-qr rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-          <QRCodeSVG
-            value={`${window.location.origin}/join-trip?code=${trip.joinCode}`}
-            size={200}
-            level="H"
-          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60"></div>
         </div>
-      ) : (
-        <div className="rounded-2xl bg-slate-50 p-10 text-sm text-gray-400">
-          QR code unavailable
-        </div>
-      )}
-    </div>
 
-  </div>
-
-</section>
-        {/* About */}
-        <section className="rounded-3xl bg-white p-6 shadow-lg md:p-8">
-
-          <h2 className="text-2xl font-bold text-[#1E3A8A]">
-            About this trip
-          </h2>
-
-          <p className="mt-4 max-w-3xl leading-7 text-gray-600">
-            {trip.description}
-          </p>
-
-        </section>
-
-        {/* Schedule */}
-        <section className="rounded-3xl bg-white p-6 shadow-lg md:p-8">
-
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
-            <div>
-              <h2 className="text-2xl font-bold text-[#1E3A8A]">
-                Trip Schedule
-              </h2>
-
-              <p className="mt-1 text-gray-500">
-                Plan activities and important times for this trip.
-              </p>
-            </div>
-
-            {isTripOwner && (
-  <button
-    type="button"
-    onClick={() => setIsScheduleFormOpen(true)}
-    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white hover:bg-blue-700"
-  >
-    <Plus size={19} />
-    Add Schedule
-  </button>
-)}
-
-          </div>
-
-          {scheduleError && (
-            <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-              {scheduleError}
-            </div>
-          )}
-
-          {scheduleLoading ? (
-            <div className="mt-6 rounded-2xl bg-slate-50 p-8 text-center">
-              <p className="text-gray-500">
-                Loading schedule...
-              </p>
-            </div>
-          ) : schedules.length === 0 ? (
-            <div className="mt-6 rounded-2xl bg-[#E5F6FD] p-8 text-center">
-
-              <CalendarDays
-                className="mx-auto text-[#1E3A8A]"
-                size={38}
-              />
-
-              <h3 className="mt-4 font-semibold text-gray-800">
-                No schedule yet
-              </h3>
-
-              <p className="mt-1 text-sm text-gray-500">
-                Add your first activity to start planning.
-              </p>
-
-            </div>
-          ) : (
-            <div className="mt-6 space-y-4">
-
-              {schedules.map((schedule) => (
-
-                <div
-                  key={schedule._id}
-                  className="flex flex-col gap-4 rounded-2xl border border-gray-100 bg-slate-50 p-5 md:flex-row md:items-center"
-                >
-
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[#E5F6FD] text-[#1E3A8A]">
-                    <Clock size={25} />
-                  </div>
-
-                  <div className="flex-1">
-
-                    <div className="flex flex-wrap items-center gap-3">
-
-                      <h3 className="font-bold text-gray-800">
-                        {schedule.activity}
-                      </h3>
-
-                      <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
-                        {schedule.time}
-                      </span>
-
-                    </div>
-
-                    <p className="mt-1 text-sm font-medium text-[#1E3A8A]">
-                      {formatScheduleDate(schedule.date)}
-                    </p>
-
-                    {schedule.location && (
-                      <p className="mt-2 flex items-center gap-2 text-sm text-gray-500">
-                        <MapPin size={15} />
-                        {schedule.location}
-                      </p>
-                    )}
-
-                    {schedule.notes && (
-                      <p className="mt-2 text-sm text-gray-500">
-                        {schedule.notes}
-                      </p>
-                    )}
-
-                  </div>
-
-                  {isTripOwner && (
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteSchedule(schedule._id)}
-                      className="self-start rounded-xl border border-red-200 p-3 text-red-600 hover:bg-red-50 md:self-center"
-                      aria-label={`Delete ${schedule.activity}`}
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  )}
-
-                </div>
-
-              ))}
-
-            </div>
-          )}
-
-        </section>
-
-{/* Polls */}
-<section className="rounded-3xl bg-white p-6 shadow-lg md:p-8">
-
-  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
-    <div>
-      <p className="text-sm font-semibold text-blue-700">
-        GROUP DECISION
-      </p>
-
-      <h2 className="mt-1 text-2xl font-bold text-[#1E3A8A]">
-        Polls & Voting
-      </h2>
-
-      <p className="mt-1 text-gray-500">
-        Let trip members vote and make decisions together.
-      </p>
-    </div>
-
-    {isTripOwner && (
-  <button
-    type="button"
-    onClick={() => {
-      setPollError("");
-      setIsPollFormOpen(true);
-    }}
-    className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white hover:bg-blue-700"
-  >
-    <Plus size={19} />
-    Create Poll
-  </button>
-)}
-
-  </div>
-
-  {pollError && (
-    <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-      {pollError}
-    </div>
-  )}
-
-  {pollLoading ? (
-    <div className="mt-6 rounded-2xl bg-slate-50 p-8 text-center">
-      <p className="text-gray-500">
-        Loading polls...
-      </p>
-    </div>
-  ) : polls.length === 0 ? (
-    <div className="mt-6 rounded-2xl bg-[#E5F6FD] p-8 text-center">
-
-      <div className="text-4xl">
-        🗳️
-      </div>
-
-      <h3 className="mt-4 font-semibold text-gray-800">
-        No polls yet
-      </h3>
-
-      <p className="mt-1 text-sm text-gray-500">
-        Create a poll to let members make group decisions.
-      </p>
-
-    </div>
-  ) : (
-    <div className="mt-6 space-y-5">
-
-      {polls.map((poll) => {
-
-        const totalVotes = poll.options.reduce(
-          (total, option) => total + option.votes,
-          0
-        );
-
-        return (
-          <div
-            key={poll._id}
-            className="rounded-2xl border border-gray-100 bg-slate-50 p-5"
-          >
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-
-                  <h3 className="text-lg font-bold text-gray-800">
-                    {poll.question}
-                  </h3>
-
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      poll.status === "Open"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-200 text-gray-600"
-                    }`}
-                  >
-                    {poll.status}
-                  </span>
-
-                </div>
-
-                <p className="mt-1 text-xs text-gray-500">
-                  {totalVotes}{" "}
-                  {totalVotes === 1 ? "vote" : "votes"}
-                </p>
-              </div>
-
-              {isTripOwner && (
-                <button
-                  type="button"
-                  onClick={() =>
-                    handleClosePoll(poll._id)}
-                  disabled={poll.status === "Closed"}
-                  className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  Close Poll
-                </button>
-              )}
-
-            </div>
-
-            <div className="mt-5 space-y-3">
-
-              {poll.options.map((option) => {
-
-                const percentage =
-                  totalVotes > 0
-                    ? Math.round(
-                        (option.votes / totalVotes) * 100
-                      )
-                    : 0;
-
-                return (
-                  <div
-                    key={option._id}
-                    className="rounded-xl border border-gray-200 bg-white p-3"
-                  >
-
-                    <div className="flex items-center justify-between gap-3">
-
-                      <span className="font-medium text-gray-700">
-                        {option.text}
-                      </span>
-
-                      <span className="text-sm font-semibold text-[#1E3A8A]">
-                        {option.votes}
-                      </span>
-
-                    </div>
-
-                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-gray-100">
-
-                      <div
-                        className="h-full rounded-full bg-[#1E3A8A] transition-all"
-                        style={{
-                          width: `${percentage}%`,
-                        }}
-                      />
-
-                    </div>
-
-                    <div className="mt-1 text-right text-xs text-gray-400">
-                      {percentage}%
-                    </div>
-
-                    {poll.status === "Open" && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleVote(
-                            poll._id,
-                            option._id
-                          )
-                        }
-                        className="mt-2 w-full rounded-lg border border-[#1E3A8A] px-3 py-2 text-sm font-semibold text-[#1E3A8A] hover:bg-blue-50"
-                      >
-                        Vote
-                      </button>
-                    )}
-
-                  </div>
-                );
-              })}
-
-            </div>
-
-          </div>
-        );
-      })}
-
-    </div>
-  )}
-
-</section>
-
-{/* Discussion */}
-<section className="rounded-3xl bg-white p-6 shadow-lg md:p-8">
-
-  <div>
-    <p className="text-sm font-semibold text-blue-700">
-      GROUP DISCUSSION
-    </p>
-
-    <h2 className="mt-1 text-2xl font-bold text-[#1E3A8A]">
-      Discussion
-    </h2>
-
-    <p className="mt-1 text-gray-500">
-      Discuss plans and ideas with your trip members.
-    </p>
-  </div>
-
-  {discussionError && (
-    <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-      {discussionError}
-    </div>
-  )}
-
-  {discussionLoading ? (
-    <div className="mt-6 rounded-2xl bg-slate-50 p-8 text-center">
-      <p className="text-gray-500">
-        Loading discussion...
-      </p>
-    </div>
-  ) : (
-    <>
-      <div className="mt-6 max-h-96 space-y-4 overflow-y-auto rounded-2xl bg-slate-50 p-4">
-
-        {messages.length === 0 ? (
-          <div className="py-10 text-center">
-            <div className="text-4xl">💬</div>
-
-            <p className="mt-3 font-semibold text-gray-700">
-              No messages yet
-            </p>
-
-            <p className="mt-1 text-sm text-gray-500">
-              Start the conversation with your trip members.
-            </p>
-          </div>
-        ) : (
-          messages.map((message) => (
-            <div
-              key={message._id}
-              className="rounded-2xl bg-white p-4 shadow-sm"
-            >
-              <div className="flex items-start justify-between gap-3">
-
-                <div>
-                  <p className="font-semibold text-[#1E3A8A]">
-                    {message.user?.name || "Trip Member"}
-                  </p>
-
-                  <p className="mt-1 text-sm text-gray-700">
-                    {message.message}
-                  </p>
-
-                  <p className="mt-2 text-xs text-gray-400">
-                    {new Date(
-                      message.createdAt
-                    ).toLocaleString()}
-                  </p>
-                </div>
-
-                {String(message.user?._id) === String(currentUserId) && (
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleDeleteMessage(
-                        message._id
-                      )
-                    }
-                    className="rounded-lg p-2 text-red-500 hover:bg-red-50"
-                    aria-label="Delete message"
-                  >
-                    <Trash2 size={17} />
-                  </button>
-                )}
-
-              </div>
-            </div>
-          ))
-        )}
-
-      </div>
-
-      <form
-        onSubmit={handleSendMessage}
-        className="mt-5 flex flex-col gap-3 sm:flex-row"
-      >
-        <input
-          value={newMessage}
-          onChange={(event) =>
-            setNewMessage(event.target.value)
-          }
-          maxLength={500}
-          placeholder="Write a message..."
-          className="flex-1 rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#1E3A8A]"
-        />
-
-        <button
-          type="submit"
-          disabled={
-            sendingMessage ||
-            !newMessage.trim()
-          }
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1E3A8A] px-6 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <Send size={18} />
-
-          {sendingMessage
-            ? "Sending..."
-            : "Send"}
-        </button>
-      </form>
-    </>
-  )}
-
-</section>
-
-        {/* Weather Placeholder */}
-        <section className="rounded-3xl bg-white p-6 shadow-lg md:p-8">
-
-  <div className="flex items-center justify-between">
-
-    <div>
-      <h2 className="text-2xl font-bold text-[#1E3A8A]">
-        Weather
-      </h2>
-
-      <p className="mt-1 text-gray-500">
-        Current weather in {trip.destination}
-      </p>
-    </div>
-
-    <div className="text-4xl">
-      🌤️
-    </div>
-
-  </div>
-
-  {weatherLoading && (
-    <div className="mt-6 rounded-2xl bg-[#E5F6FD] p-8 text-center">
-      <p className="text-gray-500">
-        Loading weather...
-      </p>
-    </div>
-  )}
-
-  {!weatherLoading && weatherError && (
-    <div className="mt-6 rounded-2xl bg-red-50 p-5 text-red-600">
-      <p className="font-medium">
-        Unable to load weather
-      </p>
-
-      <p className="mt-1 text-sm">
-        {weatherError}
-      </p>
-    </div>
-  )}
-
-  {!weatherLoading && !weatherError && weather && (
-    <div className="mt-6 grid gap-5 md:grid-cols-4">
-
-      {/* Temperature */}
-      <div className="rounded-2xl bg-[#E5F6FD] p-5">
-
-        <p className="text-sm text-gray-500">
-          Temperature
-        </p>
-
-        <p className="mt-2 text-3xl font-bold text-[#1E3A8A]">
-          {Math.round(weather.temperature)}°C
-        </p>
-
-        <p className="mt-1 text-sm text-gray-500">
-          Feels like {Math.round(weather.feelsLike)}°C
-        </p>
-
-      </div>
-
-      {/* Condition */}
-      <div className="rounded-2xl bg-[#E5F6FD] p-5">
-
-        <p className="text-sm text-gray-500">
-          Condition
-        </p>
-
-        <p className="mt-2 text-xl font-bold capitalize text-[#1E3A8A]">
-          {weather.description}
-        </p>
-
-      </div>
-
-      {/* Humidity */}
-      <div className="rounded-2xl bg-[#E5F6FD] p-5">
-
-        <p className="text-sm text-gray-500">
-          Humidity
-        </p>
-
-        <p className="mt-2 text-3xl font-bold text-[#1E3A8A]">
-          {weather.humidity}%
-        </p>
-
-      </div>
-
-      {/* Wind */}
-      <div className="rounded-2xl bg-[#E5F6FD] p-5">
-
-        <p className="text-sm text-gray-500">
-          Wind
-        </p>
-
-        <p className="mt-2 text-3xl font-bold text-[#1E3A8A]">
-          {weather.windSpeed}
-        </p>
-
-        <p className="mt-1 text-sm text-gray-500">
-          m/s
-        </p>
-
-      </div>
-
-    </div>
-  )}
-
-</section>
-
-        {/* Danger Zone */}
-        <section className="rounded-3xl border border-red-100 bg-white p-6 shadow-lg md:p-8">
-
-          <h2 className="text-xl font-bold text-red-600">
-            Danger zone
-          </h2>
-
-          <p className="mt-2 text-gray-500">
-            Deleting a trip permanently removes it from your account.
-          </p>
-
+        {/* Top Floating Buttons */}
+        <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-20">
           <button
-            type="button"
-            onClick={handleDeleteTrip}
-            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-3 font-semibold text-white hover:bg-red-700"
+            onClick={() => navigate("/trips")}
+            className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition"
+            aria-label="Back"
           >
-            <Trash2 size={18} />
-            Delete Trip
+            <ArrowLeft size={18} />
           </button>
 
-        </section>
+          <div className="relative">
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-md text-white flex items-center justify-center hover:bg-black/60 transition"
+              aria-label="Options"
+            >
+              <MoreVertical size={18} />
+            </button>
 
-      </main>
-
-
-  
-      {/* Add Schedule Modal */}
-      {isScheduleFormOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-
-          <form
-            onSubmit={handleCreateSchedule}
-            className="w-full max-w-md rounded-3xl bg-white p-7 shadow-2xl"
-          >
-
-            <h2 className="text-2xl font-bold text-[#1E3A8A]">
-              Add Schedule
-            </h2>
-
-            <p className="mt-2 text-sm text-gray-500">
-              Add an activity to your trip schedule.
-            </p>
-
-            <div className="mt-6 space-y-4">
-
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Date
-                </label>
-
-                <input
-                  required
-                  type="date"
-                  name="date"
-                  min={trip.startDate.slice(0, 10)}
-                  max={trip.endDate.slice(0, 10)}
-                  value={scheduleForm.date}
-                  onChange={handleScheduleChange}
-                  className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#1E3A8A]"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Time
-                </label>
-
-                <input
-                  required
-                  type="time"
-                  name="time"
-                  value={scheduleForm.time}
-                  onChange={handleScheduleChange}
-                  className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#1E3A8A]"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Activity
-                </label>
-
-                <input
-                  required
-                  name="activity"
-                  value={scheduleForm.activity}
-                  onChange={handleScheduleChange}
-                  placeholder="e.g. Visit campus"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#1E3A8A]"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Location
-                </label>
-
-                <input
-                  name="location"
-                  value={scheduleForm.location}
-                  onChange={handleScheduleChange}
-                  placeholder="e.g. Bangkok University"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#1E3A8A]"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Notes
-                </label>
-
-                <textarea
-                  name="notes"
-                  rows="3"
-                  value={scheduleForm.notes}
-                  onChange={handleScheduleChange}
-                  placeholder="Optional notes..."
-                  className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#1E3A8A]"
-                />
-              </div>
-
-            </div>
-
-            <div className="mt-7 flex justify-end gap-3">
-
-              <button
-                type="button"
-                onClick={() => setIsScheduleFormOpen(false)}
-                className="rounded-xl border border-gray-300 px-5 py-3 font-medium hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-
-              <button
-                type="submit"
-                disabled={savingSchedule}
-                className="rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {savingSchedule
-                  ? "Saving..."
-                  : "Add Schedule"}
-              </button>
-
-            </div>
-
-          </form>
-
-        </div>
-      )}
-      {/* Create Poll Modal */}
-      {isPollFormOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-          <form
-            onSubmit={handleCreatePoll}
-            className="w-full max-w-md rounded-3xl bg-white p-7 shadow-2xl"
-          >
-            <h2 className="text-2xl font-bold text-[#1E3A8A]">
-              Create Poll
-            </h2>
-
-            <p className="mt-2 text-sm text-gray-500">
-              Ask your trip members to vote on a group decision.
-            </p>
-
-            <div className="mt-6 space-y-4">
-              {/* Question */}
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Question
-                </label>
-
-                <input
-                  required
-                  value={pollForm.question}
-                  onChange={(event) =>
-                    setPollForm((current) => ({
-                      ...current,
-                      question: event.target.value,
-                    }))
-                  }
-                  placeholder="e.g. Where should we eat?"
-                  maxLength={200}
-                  className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#1E3A8A]"
-                />
-              </div>
-
-              {/* Options */}
-              <div>
-                <label className="mb-2 block text-sm font-medium">
-                  Options
-                </label>
-
-                <div className="space-y-3">
-                  {pollForm.options.map((option, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center gap-2"
-                    >
-                      <input
-                        required
-                        value={option}
-                        onChange={(event) =>
-                          handlePollOptionChange(
-                            index,
-                            event.target.value
-                          )
-                        }
-                        placeholder={`Option ${index + 1}`}
-                        maxLength={120}
-                        className="flex-1 rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#1E3A8A]"
-                      />
-
-                      {pollForm.options.length > 2 && (
-                        <button
-                          type="button"
-                          onClick={() => removePollOption(index)}
-                          className="rounded-xl border border-red-200 p-3 text-red-600 hover:bg-red-50"
-                          aria-label={`Remove option ${index + 1}`}
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {pollForm.options.length < 6 && (
-                  <button
-                    type="button"
-                    onClick={addPollOption}
-                    className="mt-3 inline-flex items-center gap-2 rounded-xl border border-[#1E3A8A] px-4 py-2 text-sm font-semibold text-[#1E3A8A] hover:bg-blue-50"
-                  >
-                    <Plus size={17} />
-                    Add Option
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {pollError && (
-              <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-                {pollError}
+            {showMenu && (
+              <div className="absolute right-0 mt-2 w-36 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 z-30 animate-in fade-in zoom-in-95">
+                <Link
+                  to={`/trips/${trip._id}/edit`}
+                  className="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:bg-slate-50"
+                >
+                  <Pencil size={13} />
+                  <span>Edit Trip</span>
+                </Link>
+                <button
+                  onClick={() => {
+                    navigator.clipboard?.writeText(window.location.href);
+                    alert("Trip link copied to clipboard!");
+                    setShowMenu(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 text-left"
+                >
+                  <Share2 size={13} />
+                  <span>Share</span>
+                </button>
+                <button
+                  onClick={handleDeleteTrip}
+                  className="w-full flex items-center gap-2 px-3 py-2 text-xs text-red-600 hover:bg-red-50 text-left"
+                >
+                  <Trash2 size={13} />
+                  <span>Delete Trip</span>
+                </button>
               </div>
             )}
-
-            <div className="mt-7 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsPollFormOpen(false);
-                  setPollError("");
-                }}
-                className="rounded-xl border border-gray-300 px-5 py-3 font-medium hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-
-              <button
-                type="submit"
-                disabled={savingPoll}
-                className="rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {savingPoll ? "Creating..." : "Create Poll"}
-              </button>
-            </div>
-          </form>
+          </div>
         </div>
-      )}
-    </div>
+
+        {/* Hero Title and Info inside overlay bottom */}
+        <div className="absolute bottom-3 left-6 right-6 text-white z-10">
+          <h1 className="text-2xl font-bold tracking-tight drop-shadow-md">
+            {trip.title}
+          </h1>
+          <div className="flex items-center justify-between mt-1 text-xs text-slate-100">
+            <p className="flex items-center gap-1.5 drop-shadow">
+              <MapPin size={12} className="text-white" />
+              <span>{trip.destination}</span>
+            </p>
+          </div>
+          <div className="flex items-center justify-between mt-1 text-xs text-slate-100">
+            <p className="flex items-center gap-1.5 drop-shadow">
+              <CalendarDays size={12} className="text-white" />
+              <span>{formatDateRange(trip.startDate, trip.endDate)}</span>
+            </p>
+            <span className="px-2.5 py-0.5 bg-blue-600/90 backdrop-blur rounded-full text-[10px] font-semibold text-white shadow">
+              {trip.status || "Planning"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Body */}
+      <div className="px-6 py-6 space-y-6">
+        {/* 4 Action Icons Row */}
+        <div className="grid grid-cols-4 gap-3">
+          <Link
+            to="/schedule"
+            className="flex flex-col items-center justify-center p-3 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-indigo-50/50 hover:border-indigo-100 active:scale-95 transition group"
+          >
+            <div className="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
+              <Calendar size={19} strokeWidth={2.2} />
+            </div>
+            <span className="text-[11px] font-semibold text-slate-700">Schedule</span>
+          </Link>
+
+          <Link
+            to="/budget"
+            className="flex flex-col items-center justify-center p-3 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-purple-50/50 hover:border-purple-100 active:scale-95 transition group"
+          >
+            <div className="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
+              <Wallet size={19} strokeWidth={2.2} />
+            </div>
+            <span className="text-[11px] font-semibold text-slate-700">Budget</span>
+          </Link>
+
+          <Link
+            to="/checklist"
+            className="flex flex-col items-center justify-center p-3 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-teal-50/50 hover:border-teal-100 active:scale-95 transition group"
+          >
+            <div className="w-11 h-11 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
+              <CheckSquare size={19} strokeWidth={2.2} />
+            </div>
+            <span className="text-[11px] font-semibold text-slate-700">Checklist</span>
+          </Link>
+
+          <Link
+            to="/members"
+            className="flex flex-col items-center justify-center p-3 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-blue-50/50 hover:border-blue-100 active:scale-95 transition group"
+          >
+            <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
+              <Users size={19} strokeWidth={2.2} />
+            </div>
+            <span className="text-[11px] font-semibold text-slate-700">Members</span>
+          </Link>
+        </div>
+
+        {/* Trip Information Section */}
+        <div className="bg-slate-50/70 rounded-2xl p-5 border border-slate-100">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-bold text-slate-900">Trip Information</h2>
+            <Link
+              to={`/trips/${trip._id}/edit`}
+              className="flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700"
+            >
+              <Pencil size={12} />
+              <span>Edit</span>
+            </Link>
+          </div>
+
+          <div className="divide-y divide-slate-100 text-xs">
+            <div className="py-2.5 flex items-center justify-between">
+              <span className="text-slate-500">Destination</span>
+              <span className="font-semibold text-slate-800">
+                {trip.destination}
+              </span>
+            </div>
+
+            <div className="py-2.5 flex items-center justify-between">
+              <span className="text-slate-500">District (Amphoe)</span>
+              <span className="font-semibold text-slate-800">
+                {trip.district || "—"}
+              </span>
+            </div>
+
+            <div className="py-2.5 flex items-center justify-between">
+              <span className="text-slate-500">Tambon (Subdistrict)</span>
+              <span className="font-semibold text-slate-800">
+                {trip.tambon || "—"}
+              </span>
+            </div>
+
+            <div className="py-2.5 flex items-center justify-between">
+              <span className="text-slate-500">Transportation</span>
+              <span className="font-semibold text-slate-800">
+                {trip.transportation || "Bus"}
+              </span>
+            </div>
+
+            <div className="py-2.5 flex items-center justify-between">
+              <span className="text-slate-500">Trip Budget</span>
+              <span className="font-semibold text-slate-800">
+                {formatCurrency(trip.budget)}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </MobileShell>
   );
 }
-
-export default TripDetails;

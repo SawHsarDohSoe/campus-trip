@@ -1,542 +1,334 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import {
-  Mail,
-  Plus,
+  ArrowLeft,
+  Menu,
+  ChevronDown,
+  UserPlus,
+  Crown,
+  Copy,
+  Check,
+  X,
   Trash2,
   Users,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import Sidebar from "../../components/layout/Sidebar";
+import { QRCodeSVG } from "qrcode.react";
+import MobileShell from "../../components/layout/MobileShell";
 import {
+  getTrips,
+  getMembers,
   createMember,
   deleteMember,
-  getMembers,
-  getTrips,
-  updateMember,
 } from "../../api/authApi";
 
-function Members() {
+export default function Members() {
   const navigate = useNavigate();
-
   const [trips, setTrips] = useState([]);
+  const [selectedTripId, setSelectedTripId] = useState("");
   const [members, setMembers] = useState([]);
-  const [tripId, setTripId] = useState("");
-
-  const [isFormOpen, setIsFormOpen] = useState(false);
-
-  const [formData, setFormData] = useState({
-  name: "",
-  email: "",
-});
-
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [inviteName, setInviteName] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-
-  const selectedTrip = trips.find(
-    (trip) => trip._id === tripId
-  );
-
-  const maxMembers = selectedTrip?.members ?? 0;
-
-  const confirmedCount = members.filter(
-    (member) => member.status === "Confirmed"
-  ).length;
-
-  const pendingCount = members.filter(
-    (member) => member.status === "Pending"
-  ).length;
 
   useEffect(() => {
-    const loadMembers = async () => {
+    const loadTrips = async () => {
+      const token = localStorage.getItem("campusTripToken");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
       try {
-        const token =
-          localStorage.getItem("campusTripToken");
-
-        if (!token) {
-          navigate("/login");
-          return;
+        setLoading(true);
+        const data = await getTrips(token);
+        if (data?.trips?.length) {
+          setTrips(data.trips);
+          setSelectedTripId(data.trips[0]._id);
         }
-
-        const tripsData = await getTrips(token);
-
-        setTrips(tripsData.trips);
-
-        if (tripsData.trips.length > 0) {
-          const firstTrip = tripsData.trips[0];
-
-          setTripId(firstTrip._id);
-
-          const membersData = await getMembers(
-            token,
-            firstTrip._id
-          );
-
-          setMembers(membersData.members);
-        }
-      } catch (error) {
-        setError(error.message);
+      } catch (err) {
+        console.error("Error loading trips:", err);
       } finally {
         setLoading(false);
       }
     };
-
-    loadMembers();
+    loadTrips();
   }, [navigate]);
 
-  const handleTripChange = async (event) => {
-    const selectedTripId = event.target.value;
-
-    setTripId(selectedTripId);
+  const fetchMembers = async () => {
+    const token = localStorage.getItem("campusTripToken");
+    if (!token || !selectedTripId) return;
 
     try {
-      const token =
-        localStorage.getItem("campusTripToken");
-
-      const data = await getMembers(
-        token,
-        selectedTripId
-      );
-
-      setMembers(data.members);
-      setError("");
-    } catch (error) {
-      setError(error.message);
+      const data = await getMembers(token, selectedTripId);
+      if (data?.members) {
+        setMembers(data.members);
+      }
+    } catch (err) {
+      console.error("Failed to load members:", err);
     }
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    if (
-      !formData.name.trim() ||
-      !formData.email.trim() ||
-      !tripId
-    ) {
+  useEffect(() => {
+    if (!selectedTripId) {
+      setMembers([]);
       return;
     }
+    fetchMembers();
+  }, [selectedTripId]);
 
-    if (members.length >= maxMembers) {
-      setError("This trip has reached its maximum capacity.");
-      return;
-    }
+  const activeTrip = trips.find((t) => t._id === selectedTripId);
+  const joinCode = activeTrip?.joinCode || "";
 
-    try {
-      setSaving(true);
-      setError("");
-
-      const token =
-        localStorage.getItem("campusTripToken");
-
-      const data = await createMember(
-  {
-    tripId,
-    name: formData.name.trim(),
-    email: formData.email.trim(),
-    role: "Member",
-  },
-  token
-);
-
-      setMembers((current) => [
-        ...current,
-        data.member,
-      ]);
-
-      ssetFormData({
-  name: "",
-  email: "",
-});
-
-      setIsFormOpen(false);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setSaving(false);
-    }
+  const handleCopyCode = () => {
+    if (!joinCode) return;
+    navigator.clipboard?.writeText(joinCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleConfirm = async (member) => {
-    try {
-      const token =
-        localStorage.getItem("campusTripToken");
+  const handleAddMember = async (e) => {
+    e.preventDefault();
+    if (!inviteName.trim() || !selectedTripId) return;
 
-      const data = await updateMember(
-        member._id,
-        { status: "Confirmed" },
+    const token = localStorage.getItem("campusTripToken");
+    if (!token) return;
+
+    try {
+      await createMember(
+        {
+          tripId: selectedTripId,
+          name: inviteName.trim(),
+          email: inviteEmail.trim() || `${inviteName.toLowerCase().replace(/\s+/g, "")}@example.com`,
+        },
         token
       );
-
-      setMembers((current) =>
-        current.map((item) =>
-          item._id === member._id
-            ? data.member
-            : item
-        )
-      );
-    } catch (error) {
-      setError(error.message);
+      setInviteName("");
+      setInviteEmail("");
+      setShowInviteModal(false);
+      await fetchMembers();
+    } catch (err) {
+      alert(err.message || "Failed to add member.");
     }
   };
 
-  const handleDelete = async (memberId) => {
-    const confirmed = window.confirm(
-      "Remove this member from the trip?"
-    );
-
-    if (!confirmed) return;
+  const handleDeleteMember = async (id) => {
+    const token = localStorage.getItem("campusTripToken");
+    if (!token) return;
 
     try {
-      const token =
-        localStorage.getItem("campusTripToken");
-
-      await deleteMember(memberId, token);
-
-      setMembers((current) =>
-        current.filter(
-          (member) => member._id !== memberId
-        )
-      );
-    } catch (error) {
-      setError(error.message);
+      await deleteMember(id, token);
+      setMembers((prev) => prev.filter((m) => m._id !== id));
+    } catch (err) {
+      alert(err.message || "Failed to remove member.");
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen bg-slate-50">
-        <Sidebar />
-
-        <main className="flex flex-1 items-center justify-center">
-          <p className="text-gray-500">
-            Loading members...
-          </p>
-        </main>
-      </div>
-    );
-  }
+  const avatarColors = [
+    "bg-blue-600 text-white",
+    "bg-emerald-500 text-white",
+    "bg-amber-500 text-white",
+    "bg-purple-500 text-white",
+    "bg-rose-500 text-white",
+  ];
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <Sidebar />
-
-      <main className="flex flex-1 flex-col gap-8 p-6 pt-20 md:p-8">
-
-        {/* Header */}
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-
-          <div>
-            <p className="text-sm font-semibold text-blue-700">
-              {selectedTrip?.title || "CampusTrip"}
-            </p>
-
-            <h1 className="mt-1 text-3xl font-bold text-[#1E3A8A] md:text-4xl">
-              Trip Members
-            </h1>
-
-            <p className="mt-2 text-gray-500">
-              Manage the students joining this campus trip.
-            </p>
-          </div>
-
+    <MobileShell showBottomNav={true} contentClassName="bg-slate-50/50">
+      {/* Top Header */}
+      <div className="bg-white px-5 pt-3 pb-3 flex items-center justify-between border-b border-slate-100 sticky top-0 z-20">
+        <div className="flex items-center gap-3">
           <button
-            type="button"
-            onClick={() => setIsFormOpen(true)}
-            disabled={
-              !tripId || members.length >= maxMembers
-            }
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white shadow-lg transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => navigate(-1)}
+            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-700 transition"
+            aria-label="Back"
           >
-            <Plus size={20} />
-            Invite Member
+            <ArrowLeft size={19} />
           </button>
-
+          <h1 className="text-lg font-bold text-slate-900">Members</h1>
         </div>
 
-        {/* Error */}
-        {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-600">
-            {error}
-          </div>
-        )}
+        <button className="text-slate-500 hover:text-slate-800 p-1.5">
+          <Menu size={18} />
+        </button>
+      </div>
 
-        {/* Trip Selector */}
-        {trips.length > 0 && (
-          <section className="rounded-3xl bg-white p-6 shadow-lg">
-
-            <label className="mb-2 block font-medium text-gray-700">
-              Select Trip
-            </label>
-
+      <div className="px-5 py-4 space-y-4">
+        {/* Trip Switcher Dropdown */}
+        {trips.length > 0 ? (
+          <div className="relative">
             <select
-              value={tripId}
-              onChange={handleTripChange}
-              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-[#1E3A8A] md:max-w-lg"
+              value={selectedTripId}
+              onChange={(e) => setSelectedTripId(e.target.value)}
+              className="w-full bg-white border border-slate-200 text-xs font-bold text-slate-800 rounded-xl py-2.5 px-3.5 appearance-none focus:outline-none focus:border-blue-600 shadow-sm"
             >
-              {trips.map((trip) => (
-                <option
-                  key={trip._id}
-                  value={trip._id}
-                >
-                  {trip.title} — {trip.destination}
+              {trips.map((t) => (
+                <option key={t._id} value={t._id}>
+                  {t.title}
                 </option>
               ))}
             </select>
-
-          </section>
+            <ChevronDown
+              size={16}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+            />
+          </div>
+        ) : (
+          <div className="p-6 bg-white rounded-2xl border border-slate-100 text-center">
+            <Users size={28} className="mx-auto text-slate-300 mb-2" />
+            <p className="text-xs font-bold text-slate-700">No Trips Created</p>
+            <p className="text-[11px] text-slate-400 mt-1">Create a trip to collaborate with members.</p>
+            <Link
+              to="/trips/create"
+              className="mt-3 inline-block px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-xl"
+            >
+              Create Trip
+            </Link>
+          </div>
         )}
 
-        {/* Summary */}
-        <section className="mobile-summary-grid grid grid-cols-2 gap-6 lg:grid-cols-3">
+        {/* Invite Members Full-Width Button */}
+        {selectedTripId && (
+          <button
+            onClick={() => setShowInviteModal(true)}
+            className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 active:scale-[0.99] transition"
+          >
+            <UserPlus size={16} />
+            <span>+ Invite Members</span>
+          </button>
+        )}
 
-          <div className="rounded-3xl bg-[#E5F6FD] p-7 shadow-lg lg:col-span-2">
-
-            <div className="flex items-center justify-between">
-
-              <div>
-                <p className="font-medium text-gray-600">
-                  Total members
-                </p>
-
-               <p className="mt-2 text-4xl font-bold text-[#1E3A8A]">
-  {members.length} / {maxMembers}
-</p>
+        {/* Members List */}
+        {selectedTripId && (
+          <div className="space-y-2.5 pt-1">
+            {members.length === 0 ? (
+              <div className="text-center py-8 bg-white rounded-2xl border border-slate-100">
+                <p className="text-xs text-slate-400">No members added to this trip yet.</p>
               </div>
-
-              <Users
-                className="text-[#1E3A8A]"
-                size={42}
-              />
-
-            </div>
-
-            <p className="mt-5 text-sm text-gray-600">
-  {confirmedCount} confirmed
-  {pendingCount > 0 && ` • ${pendingCount} pending`}
-</p>
-
-          </div>
-
-          <div className="rounded-3xl bg-white p-7 shadow-lg">
-
-            <p className="text-sm font-medium text-gray-500">
-              Maximum capacity
-            </p>
-
-            <p className="mt-2 text-4xl font-bold text-[#1E3A8A]">
-              {maxMembers}
-            </p>
-
-            <p className="mt-3 text-sm text-gray-500">
-              {Math.max(
-                maxMembers - members.length,
-                0
-              )}{" "}
-              spaces still available.
-            </p>
-
-          </div>
-
-        </section>
-
-        {/* Member list */}
-        <section className="rounded-3xl bg-white p-6 shadow-lg md:p-8">
-
-          <div className="flex items-center gap-3">
-
-            <Users
-              className="text-[#1E3A8A]"
-              size={28}
-            />
-
-            <div>
-              <h2 className="text-2xl font-bold text-[#1E3A8A]">
-                Member list
-              </h2>
-
-              <p className="mt-1 text-gray-500">
-                Members are stored in your CampusTrip account.
-              </p>
-            </div>
-
-          </div>
-
-          <div className="mt-6 divide-y divide-gray-100">
-
-            {members.length > 0 ? (
-              members.map((member) => (
+            ) : (
+              members.map((member, idx) => (
                 <div
                   key={member._id}
-                  className="flex flex-col gap-4 py-5 sm:flex-row sm:items-center sm:justify-between"
+                  className="p-3 bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between hover:shadow-md transition group"
                 >
-
-                  <div className="flex items-center gap-4">
-
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#E5F6FD] font-bold text-[#1E3A8A]">
-                      {member.name.charAt(0).toUpperCase()}
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`w-11 h-11 rounded-full flex items-center justify-center font-bold text-sm shadow-sm shrink-0 ${
+                        avatarColors[idx % avatarColors.length]
+                      }`}
+                    >
+                      {(member.name || "U")[0].toUpperCase()}
                     </div>
 
                     <div>
-
-                      <h3 className="font-semibold text-gray-800">
-                        {member.name}
-                      </h3>
-
-                      <p className="mt-1 flex items-center gap-2 text-sm text-gray-500">
-                        <Mail size={15} />
-                        {member.email}
-                      </p>
-
+                      <div className="flex items-center gap-1.5">
+                        <h2 className="text-xs font-bold text-slate-900">
+                          {member.name}
+                        </h2>
+                        {member.role === "Trip Creator" || idx === 0 ? (
+                          <Crown
+                            size={14}
+                            className="text-amber-500 fill-amber-500 shrink-0"
+                          />
+                        ) : null}
+                      </div>
+                      <span className="text-[11px] text-slate-400 block mt-0.5">
+                        {member.role || "Member"}
+                      </span>
                     </div>
-
                   </div>
 
-                  <div className="flex flex-wrap items-center gap-3">
-
-                    <span className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600">
-                      {member.role}
-                    </span>
-
+                  {idx !== 0 && (
                     <button
-                      type="button"
-                      onClick={() =>
-                        handleConfirm(member)
-                      }
-                      disabled={
-                        member.status === "Confirmed"
-                      }
-                      className={`rounded-full px-3 py-1 text-sm font-medium ${
-                        member.status === "Confirmed"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-yellow-100 text-yellow-700 hover:bg-green-100 hover:text-green-700"
-                      }`}
+                      onClick={() => handleDeleteMember(member._id)}
+                      className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500 transition p-1.5"
+                      aria-label="Remove member"
                     >
-                      {member.status}
+                      <Trash2 size={13} />
                     </button>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        handleDelete(member._id)
-                      }
-                      className="rounded-xl border border-red-200 p-2 text-red-600 hover:bg-red-50"
-                      aria-label={`Remove ${member.name}`}
-                    >
-                      <Trash2 size={17} />
-                    </button>
-
-                  </div>
-
+                  )}
                 </div>
               ))
-            ) : (
-              <div className="py-10 text-center">
+            )}
+          </div>
+        )}
+      </div>
 
-                <Users
-                  className="mx-auto text-gray-300"
-                  size={40}
-                />
+      {/* Invite Modal with Join Code & QR */}
+      {showInviteModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-sm p-5 animate-in fade-in zoom-in-95 flex flex-col items-center text-center">
+            <div className="w-full flex items-center justify-between pb-2 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900">Invite Members</h3>
+              <button
+                onClick={() => setShowInviteModal(false)}
+                className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500"
+              >
+                <X size={16} />
+              </button>
+            </div>
 
-                <p className="mt-4 font-semibold text-gray-800">
-                  No members yet
-                </p>
-
-                <p className="mt-1 text-sm text-gray-500">
-                  Invite students to join this trip.
-                </p>
-
+            {/* 6 Digit Join Code Display */}
+            {joinCode && (
+              <div className="mt-4 w-full">
+                <span className="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">
+                  Trip Join Code
+                </span>
+                <div className="flex items-center justify-center gap-2 mt-2 bg-slate-50 border border-slate-200 rounded-2xl py-3 px-4">
+                  <span className="text-2xl font-mono font-extrabold tracking-widest text-blue-600">
+                    {joinCode}
+                  </span>
+                  <button
+                    onClick={handleCopyCode}
+                    className="ml-3 p-1.5 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition"
+                    title="Copy code"
+                  >
+                    {copied ? <Check size={16} /> : <Copy size={16} />}
+                  </button>
+                </div>
               </div>
             )}
 
-          </div>
+            {/* QR Code */}
+            {joinCode && (
+              <div className="my-4 p-3 bg-white border border-slate-100 rounded-2xl shadow-sm">
+                <QRCodeSVG
+                  value={`https://campustrip.app/join?code=${joinCode}`}
+                  size={130}
+                />
+              </div>
+            )}
 
-        </section>
-
-      </main>
-
-      {/* Invite Modal */}
-      {isFormOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-
-          <form
-            onSubmit={handleSubmit}
-            className="w-full max-w-md rounded-3xl bg-white p-7 shadow-2xl"
-          >
-
-            <h2 className="text-2xl font-bold text-[#1E3A8A]">
-              Invite a member
-            </h2>
-
-            <p className="mt-2 text-sm text-gray-500">
-              The invitation will be saved to this trip.
-            </p>
-
-            <div className="mt-6 space-y-4">
-
+            {/* Direct Add form */}
+            <form onSubmit={handleAddMember} className="w-full space-y-2.5 mt-1 text-left">
+              <span className="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">
+                Or add member directly
+              </span>
               <input
+                type="text"
                 required
-                value={formData.name}
-                onChange={(event) =>
-                  setFormData({
-                    ...formData,
-                    name: event.target.value,
-                  })
-                }
-                placeholder="Student name"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#1E3A8A]"
+                placeholder="Full Name (e.g. Alex Tan)"
+                value={inviteName}
+                onChange={(e) => setInviteName(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-900 focus:outline-none focus:border-blue-600"
               />
-
               <input
-                required
                 type="email"
-                value={formData.email}
-                onChange={(event) =>
-                  setFormData({
-                    ...formData,
-                    email: event.target.value,
-                  })
-                }
-                placeholder="Student email"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#1E3A8A]"
+                placeholder="Email address (optional)"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-900 focus:outline-none focus:border-blue-600"
               />
-
-              <div className="rounded-xl bg-blue-50 px-4 py-3 text-sm text-[#1E3A8A]">
-  New invitations will be added as <strong>Members</strong>.
-</div>
-
-            </div>
-
-            <div className="mt-7 flex justify-end gap-3">
-
-              <button
-                type="button"
-                onClick={() =>
-                  setIsFormOpen(false)
-                }
-                className="rounded-xl border border-gray-300 px-5 py-3 font-medium hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-
               <button
                 type="submit"
-                disabled={saving}
-                className="rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-md transition"
               >
-                {saving
-                  ? "Sending..."
-                  : "Send invitation"}
+                Add Member
               </button>
-
-            </div>
-
-          </form>
-
+            </form>
+          </div>
         </div>
       )}
-
-    </div>
+    </MobileShell>
   );
 }
-
-export default Members;

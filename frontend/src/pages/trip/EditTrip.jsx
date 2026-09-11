@@ -1,401 +1,267 @@
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import Sidebar from "../../components/layout/Sidebar";
+import MobileShell from "../../components/layout/MobileShell";
 import { getTrip, updateTrip } from "../../api/authApi";
 
-function EditTrip() {
-  const { id } = useParams();
+export default function EditTrip() {
   const navigate = useNavigate();
+  const { id } = useParams();
 
-  const [formData, setFormData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [formData, setFormData] = useState({
+    title: "",
+    destination: "",
+    district: "",
+    tambon: "",
+    startDate: "",
+    endDate: "",
+    transportation: "Bus",
+    budget: "",
+  });
+
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
-    const loadTrip = async () => {
-      try {
-        const token = localStorage.getItem("campusTripToken");
-
-        if (!token) {
-          navigate("/login");
-          return;
-        }
-
-        const data = await getTrip(id, token);
-
-        const trip = data.trip;
-
-        setFormData({
-          title: trip.title,
-          destination: trip.destination,
-          district: trip.district || "",
-          tambon: trip.tambon || "",
-          startDate: trip.startDate.slice(0, 10),
-          endDate: trip.endDate.slice(0, 10),
-          transportation: trip.transportation,
-          status: trip.status,
-          budget: trip.budget,
-          members: trip.members,
-          description: trip.description,
-        });
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadTrip();
-  }, [id, navigate]);
-
-  const handleChange = (event) => {
-    setFormData({
-      ...formData,
-      [event.target.name]: event.target.value,
-    });
-
-    setError("");
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    setError("");
-    setSaving(true);
-
-    try {
+    const loadTripData = async () => {
       const token = localStorage.getItem("campusTripToken");
-
       if (!token) {
         navigate("/login");
         return;
       }
 
+      if (!id) {
+        navigate("/trips");
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const data = await getTrip(id, token);
+        if (data?.trip) {
+          setFormData({
+            title: data.trip.title || "",
+            destination: data.trip.destination || "",
+            district: data.trip.district || "",
+            tambon: data.trip.tambon || "",
+            startDate: data.trip.startDate ? data.trip.startDate.split("T")[0] : "",
+            endDate: data.trip.endDate ? data.trip.endDate.split("T")[0] : "",
+            transportation: data.trip.transportation || "Bus",
+            budget: data.trip.budget || "",
+          });
+        }
+      } catch (err) {
+        setError(err.message || "Unable to load trip.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTripData();
+  }, [id, navigate]);
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+    setError("");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    const token = localStorage.getItem("campusTripToken");
+    if (!token || !id) return;
+
+    try {
+      setUpdating(true);
       await updateTrip(
         id,
         {
-          title: formData.title,
-          destination: formData.destination,
-          district: formData.district,
-          tambon: formData.tambon,
-          startDate: formData.startDate,
-          endDate: formData.endDate,
-          transportation: formData.transportation,
-          status: formData.status,
+          ...formData,
           budget: Number(formData.budget),
-          members: Number(formData.members),
-          description: formData.description,
         },
         token
       );
-
       navigate(`/trips/${id}`);
-    } catch (error) {
-      setError(error.message);
+    } catch (err) {
+      setError(err.message || "Failed to update trip.");
     } finally {
-      setSaving(false);
+      setUpdating(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-slate-50">
-        <Sidebar />
-
-        <main className="flex flex-1 items-center justify-center p-8">
-          <p className="text-gray-500">
-            Loading trip...
-          </p>
-        </main>
-      </div>
-    );
-  }
-
-  if (!formData) {
-    return (
-      <div className="flex min-h-screen bg-slate-50">
-        <Sidebar />
-
-        <main className="flex flex-1 flex-col items-center justify-center p-8">
-          <h1 className="text-2xl font-bold text-[#1E3A8A]">
-            Trip not found
-          </h1>
-
-          <p className="mt-2 text-gray-500">
-            {error || "This trip may have been deleted."}
-          </p>
-
-          <Link
-            to="/trips"
-            replace
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white hover:bg-blue-700"
-          >
-            <ArrowLeft size={18} />
-            Back to My Trips
-          </Link>
-        </main>
-      </div>
+      <MobileShell showBottomNav={false} contentClassName="bg-white flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </MobileShell>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <Sidebar />
+    <MobileShell showBottomNav={false} contentClassName="bg-white">
+      {/* Top Header */}
+      <div className="bg-white px-5 pt-3 pb-3 flex items-center gap-3 border-b border-slate-100 sticky top-0 z-20">
+        <button
+          onClick={() => navigate(-1)}
+          className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-700 transition"
+          aria-label="Back"
+        >
+          <ArrowLeft size={19} />
+        </button>
+        <h1 className="text-lg font-bold text-slate-900">Edit Trip</h1>
+      </div>
 
-      <main className="flex flex-1 flex-col gap-8 p-6 pt-20 md:p-8">
+      <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+        {error && (
+          <div className="rounded-xl bg-red-50 border border-red-200 p-3 text-xs text-red-600">
+            {error}
+          </div>
+        )}
 
-        {/* Header */}
+        {/* Trip Name */}
         <div>
-          <Link
-            to={`/trips/${id}`}
-            replace
-            className="inline-flex items-center gap-2 font-medium text-blue-700 hover:underline"
-          >
-            <ArrowLeft size={18} />
-            Back to Trip Details
-          </Link>
-
-          <h1 className="mt-4 text-3xl font-bold text-[#1E3A8A] md:text-4xl">
-            Edit Trip
-          </h1>
-
-          <p className="mt-2 text-gray-500">
-            Update the details of your campus trip.
-          </p>
+          <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            Trip Name
+          </label>
+          <input
+            type="text"
+            name="title"
+            required
+            value={formData.title}
+            onChange={handleChange}
+            placeholder="e.g. Pattaya Trip"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-3.5 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
+          />
         </div>
 
-        {/* Form */}
-        <div className="max-w-4xl rounded-3xl bg-white p-6 shadow-lg md:p-8">
-
-          {error && (
-            <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
-              {error}
-            </div>
-          )}
-
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-6"
-          >
-
-            {/* Trip Name */}
-            <div>
-              <label className="mb-2 block font-medium">
-                Trip Name
-              </label>
-
-              <input
-                required
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                className="w-full rounded-xl border px-4 py-3 outline-none focus:border-[#1E3A8A]"
-              />
-            </div>
-
-            {/* Destination */}
-            <div>
-              <label className="mb-2 block font-medium">
-                Destination
-              </label>
-
-              <input
-                required
-                name="destination"
-                value={formData.destination}
-                onChange={handleChange}
-                className="w-full rounded-xl border px-4 py-3 outline-none focus:border-[#1E3A8A]"
-              />
-            </div>
-
-            {/* Dates */}
-            <div className="grid gap-6 md:grid-cols-2">
-
-              <div>
-                <label className="mb-2 block font-medium">
-                  District (Amphoe)
-                </label>
-
-                <input
-                  name="district"
-                  value={formData.district}
-                  onChange={handleChange}
-                  placeholder="e.g. Khlong Luang"
-                  className="w-full rounded-xl border px-4 py-3 outline-none focus:border-[#1E3A8A]"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block font-medium">
-                  Tambon (Subdistrict)
-                </label>
-
-                <input
-                  name="tambon"
-                  value={formData.tambon}
-                  onChange={handleChange}
-                  placeholder="e.g. Khlong Nueng"
-                  className="w-full rounded-xl border px-4 py-3 outline-none focus:border-[#1E3A8A]"
-                />
-              </div>
-
-            </div>
-
-            {/* Dates */}
-            <div className="grid gap-6 md:grid-cols-2">
-
-              <div>
-                <label className="mb-2 block font-medium">
-                  Start Date
-                </label>
-
-                <input
-                  required
-                  name="startDate"
-                  type="date"
-                  value={formData.startDate}
-                  onChange={handleChange}
-                  className="w-full rounded-xl border px-4 py-3"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block font-medium">
-                  End Date
-                </label>
-
-                <input
-                  required
-                  name="endDate"
-                  type="date"
-                  min={formData.startDate}
-                  value={formData.endDate}
-                  onChange={handleChange}
-                  className="w-full rounded-xl border px-4 py-3"
-                />
-              </div>
-
-            </div>
-
-            {/* Transportation */}
-            <div>
-              <label className="mb-2 block font-medium">
-                Transportation
-              </label>
-
-              <select
-                name="transportation"
-                value={formData.transportation}
-                onChange={handleChange}
-                className="w-full rounded-xl border px-4 py-3"
-              >
-                <option>Bus</option>
-                <option>Van</option>
-                <option>Train</option>
-                <option>Airplane</option>
-              </select>
-            </div>
-
-            {/* Status */}
-            <div>
-              <label className="mb-2 block font-medium">
-                Status
-              </label>
-
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className="w-full rounded-xl border px-4 py-3"
-              >
-                <option value="Planning">Planning</option>
-                <option value="Upcoming">Upcoming</option>
-                <option value="Completed">Completed</option>
-                <option value="Cancelled">Cancelled</option>
-              </select>
-            </div>
-
-            {/* Budget + Members */}
-            <div className="grid gap-6 md:grid-cols-2">
-
-              <div>
-                <label className="mb-2 block font-medium">
-                  Budget (THB)
-                </label>
-
-                <input
-                  required
-                  min="0"
-                  name="budget"
-                  type="number"
-                  value={formData.budget}
-                  onChange={handleChange}
-                  className="w-full rounded-xl border px-4 py-3"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block font-medium">
-                  Maximum Members
-                </label>
-
-                <input
-                  required
-                  min="1"
-                  name="members"
-                  type="number"
-                  value={formData.members}
-                  onChange={handleChange}
-                  className="w-full rounded-xl border px-4 py-3"
-                />
-              </div>
-
-            </div>
-
-            {/* Description */}
-            <div>
-              <label className="mb-2 block font-medium">
-                Trip Description
-              </label>
-
-              <textarea
-                required
-                name="description"
-                rows="5"
-                value={formData.description}
-                onChange={handleChange}
-                className="w-full rounded-xl border px-4 py-3"
-              />
-            </div>
-
-            {/* Buttons */}
-            <div className="flex justify-end gap-4 pt-3">
-
-              <Link
-                to={`/trips/${id}`}
-                className="rounded-xl border border-gray-300 px-6 py-3 hover:bg-gray-100"
-              >
-                Cancel
-              </Link>
-
-              <button
-                type="submit"
-                disabled={saving}
-                className="rounded-xl bg-[#1E3A8A] px-6 py-3 font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {saving ? "Saving..." : "Save Changes"}
-              </button>
-
-            </div>
-
-          </form>
-
+        {/* Destination */}
+        <div>
+          <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            Destination
+          </label>
+          <input
+            type="text"
+            name="destination"
+            required
+            value={formData.destination}
+            onChange={handleChange}
+            placeholder="e.g. Chon Buri, Thailand"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-3.5 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
+          />
         </div>
-      </main>
-    </div>
+
+        {/* District & Tambon (2 columns) */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              District (Amphoe)
+            </label>
+            <input
+              type="text"
+              name="district"
+              value={formData.district}
+              onChange={handleChange}
+              placeholder="e.g. Pattaya"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-3.5 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              Tambon (Subdistrict)
+            </label>
+            <input
+              type="text"
+              name="tambon"
+              value={formData.tambon}
+              onChange={handleChange}
+              placeholder="e.g. Pattaya"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-3.5 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
+            />
+          </div>
+        </div>
+
+        {/* Dates (2 columns) */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              Start Date
+            </label>
+            <input
+              type="date"
+              name="startDate"
+              required
+              value={formData.startDate}
+              onChange={handleChange}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1.5">
+              End Date
+            </label>
+            <input
+              type="date"
+              name="endDate"
+              required
+              value={formData.endDate}
+              onChange={handleChange}
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
+            />
+          </div>
+        </div>
+
+        {/* Transportation Dropdown */}
+        <div>
+          <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            Transportation
+          </label>
+          <select
+            name="transportation"
+            value={formData.transportation}
+            onChange={handleChange}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-3.5 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
+          >
+            <option value="Bus">Bus</option>
+            <option value="Van">Van</option>
+            <option value="Train">Train</option>
+            <option value="Airplane">Airplane</option>
+          </select>
+        </div>
+
+        {/* Trip Budget */}
+        <div>
+          <label className="block text-xs font-medium text-slate-700 mb-1.5">
+            Trip Budget (THB)
+          </label>
+          <input
+            type="number"
+            name="budget"
+            required
+            value={formData.budget}
+            onChange={handleChange}
+            placeholder="e.g. 10000"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-3.5 text-xs text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition"
+          />
+        </div>
+
+        {/* Update Button */}
+        <div className="pt-4 pb-6">
+          <button
+            type="submit"
+            disabled={updating}
+            className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-lg shadow-blue-500/25 active:scale-[0.99] transition disabled:opacity-70"
+          >
+            {updating ? "Updating..." : "Update Trip"}
+          </button>
+        </div>
+      </form>
+    </MobileShell>
   );
 }
-
-export default EditTrip;

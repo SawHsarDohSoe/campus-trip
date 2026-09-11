@@ -1,640 +1,320 @@
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import {
-  CalendarDays,
-  Clock3,
-  MapPin,
-  Pencil,
+  ArrowLeft,
+  Menu,
+  ChevronDown,
   Plus,
   Trash2,
+  Calendar,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import Sidebar from "../../components/layout/Sidebar";
+import MobileShell from "../../components/layout/MobileShell";
 import {
   getTrips,
   getSchedules,
   createSchedule,
-   updateSchedule,
   deleteSchedule,
 } from "../../api/authApi";
 
-const emptyForm = {
-  date: "",
-  time: "",
-  activity: "",
-  location: "",
-  notes: "",
-};
-
-function formatDate(date) {
-  if (!date) return "Date unavailable";
-
-  const parsedDate =
-    typeof date === "string" && date.includes("T")
-      ? new Date(date)
-      : new Date(`${date}T00:00:00`);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return "Date unavailable";
-  }
-
-  return parsedDate.toLocaleDateString(
-    "en-GB",
-    {
-      weekday: "short",
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    }
-  );
-}
-
-function Schedule() {
+export default function Schedule() {
   const navigate = useNavigate();
-
   const [trips, setTrips] = useState([]);
   const [selectedTripId, setSelectedTripId] = useState("");
-
   const [schedules, setSchedules] = useState([]);
-
-  const [formData, setFormData] =
-    useState(emptyForm);
-
-  const [isFormOpen, setIsFormOpen] =
-    useState(false);
-
+  const [isDayOpen, setIsDayOpen] = useState(true);
+  const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-  const [editingSchedule, setEditingSchedule] = useState(null);
+  const [newActivity, setNewActivity] = useState({
+    time: "09:00",
+    activity: "",
+  });
 
   useEffect(() => {
     const loadTrips = async () => {
+      const token = localStorage.getItem("campusTripToken");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
       try {
-        const token =
-          localStorage.getItem("campusTripToken");
-
-        if (!token) {
-          navigate("/login");
-          return;
-        }
-
+        setLoading(true);
         const data = await getTrips(token);
-
-        setTrips(data.trips);
-
-        if (data.trips.length > 0) {
+        if (data?.trips?.length) {
+          setTrips(data.trips);
           setSelectedTripId(data.trips[0]._id);
         }
-      } catch (error) {
-        setError(error.message);
+      } catch (err) {
+        console.error("Error loading trips:", err);
       } finally {
         setLoading(false);
       }
     };
-
     loadTrips();
   }, [navigate]);
 
-  useEffect(() => {
-    if (!selectedTripId) return;
-
-    const loadSchedules = async () => {
-      try {
-        const token =
-          localStorage.getItem("campusTripToken");
-
-        const data = await getSchedules(
-          selectedTripId,
-          token
-        );
-
-        setSchedules(data.schedules);
-      } catch (error) {
-        setError(error.message);
-      }
-    };
-
-    loadSchedules();
-  }, [selectedTripId]);
-
-  const selectedTrip = useMemo(
-    () =>
-      trips.find(
-        (trip) => trip._id === selectedTripId
-      ),
-    [trips, selectedTripId]
-  );
-
-  const sortedSchedules = useMemo(
-    () =>
-      [...schedules].sort((a, b) => {
-        const first = new Date(
-          `${a.date}T${a.time}`
-        );
-
-        const second = new Date(
-          `${b.date}T${b.time}`
-        );
-
-        return first - second;
-      }),
-    [schedules]
-  );
-
-  const handleTripChange = (event) => {
-    setSelectedTripId(event.target.value);
-    setIsFormOpen(false);
-    setError("");
-  };
-
-  const handleEdit = (schedule) => {
-  setEditingSchedule(schedule);
-
-  setFormData({
-    date: schedule.date
-      ? new Date(schedule.date).toISOString().split("T")[0]
-      : "",
-    time: schedule.time || "",
-    activity: schedule.activity || "",
-    location: schedule.location || "",
-    notes: schedule.notes || "",
-  });
-
-  setError("");
-  setIsFormOpen(true);
-};
-
-  const handleChange = (event) => {
-    setFormData({
-      ...formData,
-      [event.target.name]: event.target.value,
-    });
-  };
-
-  const handleSubmit = async (event) => {
-  event.preventDefault();
-
-  if (!selectedTripId) return;
-
-  try {
-    setSaving(true);
-    setError("");
-
+  const fetchSchedules = async () => {
     const token = localStorage.getItem("campusTripToken");
-
-    if (!token) {
-      navigate("/login");
-      return;
-    }
-
-    if (editingSchedule) {
-      const data = await updateSchedule(
-        selectedTripId,
-        editingSchedule._id,
-        formData,
-        token
-      );
-
-      setSchedules((current) =>
-        current.map((item) =>
-          item._id === editingSchedule._id
-            ? data.schedule
-            : item
-        )
-      );
-    } else {
-      const data = await createSchedule(
-        selectedTripId,
-        formData,
-        token
-      );
-
-      setSchedules((current) => [
-        ...current,
-        data.schedule,
-      ]);
-    }
-
-    setFormData(emptyForm);
-    setEditingSchedule(null);
-    setIsFormOpen(false);
-  } catch (error) {
-    setError(error.message);
-  } finally {
-    setSaving(false);
-  }
-};
-
-  const handleDelete = async (scheduleId) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this schedule item?"
-    );
-
-    if (!confirmed) return;
+    if (!token || !selectedTripId) return;
 
     try {
-      const token =
-        localStorage.getItem("campusTripToken");
-
-      await deleteSchedule(
-        selectedTripId,
-        scheduleId,
-        token
-      );
-
-      setSchedules(
-        schedules.filter(
-          (item) => item._id !== scheduleId
-        )
-      );
-    } catch (error) {
-      setError(error.message);
+      const data = await getSchedules(selectedTripId, token);
+      if (data?.schedules) {
+        setSchedules(data.schedules);
+      }
+    } catch (err) {
+      console.error("Failed to load schedules:", err);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen bg-slate-50">
-        <Sidebar />
+  useEffect(() => {
+    if (!selectedTripId) {
+      setSchedules([]);
+      return;
+    }
+    fetchSchedules();
+  }, [selectedTripId]);
 
-        <main className="flex flex-1 items-center justify-center">
-          <p className="text-gray-500">
-            Loading schedule...
-          </p>
-        </main>
-      </div>
-    );
-  }
+  const handleAddActivity = async (e) => {
+    e.preventDefault();
+    if (!newActivity.activity || !selectedTripId) return;
+
+    const token = localStorage.getItem("campusTripToken");
+    if (!token) return;
+
+    try {
+      const activeTrip = trips.find((t) => t._id === selectedTripId);
+      const tripDate = activeTrip?.startDate
+        ? new Date(activeTrip.startDate).toISOString().split("T")[0]
+        : new Date().toISOString().split("T")[0];
+
+      await createSchedule(
+        selectedTripId,
+        {
+          date: tripDate,
+          time: newActivity.time,
+          activity: newActivity.activity,
+        },
+        token
+      );
+      setNewActivity({ time: "09:00", activity: "" });
+      setShowModal(false);
+      await fetchSchedules();
+    } catch (err) {
+      alert(err.message || "Failed to create activity.");
+    }
+  };
+
+  const handleDeleteActivity = async (scheduleId) => {
+    const token = localStorage.getItem("campusTripToken");
+    if (!token || !selectedTripId) return;
+
+    try {
+      await deleteSchedule(selectedTripId, scheduleId, token);
+      setSchedules((prev) => prev.filter((s) => s._id !== scheduleId));
+    } catch (err) {
+      alert(err.message || "Failed to delete activity.");
+    }
+  };
+
+  const activeTrip = trips.find((t) => t._id === selectedTripId);
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <Sidebar />
-
-      <main className="flex flex-1 flex-col gap-8 p-6 pt-20 md:p-8">
-
-        {/* Header */}
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-
-          <div>
-            <p className="text-sm font-semibold text-blue-700">
-              CampusTrip
-            </p>
-
-            <h1 className="mt-1 text-3xl font-bold text-[#1E3A8A] md:text-4xl">
-              Trip Schedule
-            </h1>
-
-            <p className="mt-2 text-gray-500">
-              Organize every activity before and during your trip.
-            </p>
-          </div>
-
+    <MobileShell showBottomNav={true} contentClassName="bg-slate-50/50">
+      {/* Top Header */}
+      <div className="bg-white px-5 pt-3 pb-3 flex items-center justify-between border-b border-slate-100 sticky top-0 z-20">
+        <div className="flex items-center gap-3">
           <button
-            type="button"
-            disabled={!selectedTripId}
-            onClick={() => setIsFormOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white shadow-lg transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-400"
+            onClick={() => navigate(-1)}
+            className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-700 transition"
+            aria-label="Back"
           >
-            <Plus size={20} />
-            Add Schedule
+            <ArrowLeft size={19} />
           </button>
-
+          <h1 className="text-lg font-bold text-slate-900">Schedule</h1>
         </div>
 
-        {/* Error */}
-        {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-            {error}
-          </div>
-        )}
+        <button className="text-slate-500 hover:text-slate-800 p-1.5">
+          <Menu size={18} />
+        </button>
+      </div>
 
-        {/* Trip selector */}
-        <section className="rounded-3xl bg-white p-6 shadow-lg">
-
-          <label className="block font-semibold text-gray-700">
-            Select Trip
-          </label>
-
-          <select
-            value={selectedTripId}
-            onChange={handleTripChange}
-            className="mt-3 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#1E3A8A]"
-          >
-            {trips.map((trip) => (
-              <option
-                key={trip._id}
-                value={trip._id}
-              >
-                {trip.title} — {trip.destination}
-              </option>
-            ))}
-          </select>
-
-        </section>
-
-        {/* Trip information */}
-        {selectedTrip && (
-          <section className="rounded-3xl bg-[#E5F6FD] p-7 shadow-lg">
-
-            <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-
-              <div>
-                <p className="text-sm font-semibold text-blue-700">
-                  CURRENT TRIP
-                </p>
-
-                <h2 className="mt-1 text-2xl font-bold text-[#1E3A8A]">
-                  {selectedTrip.title}
-                </h2>
-
-                <p className="mt-2 flex items-center gap-2 text-gray-600">
-                  <MapPin size={17} />
-                  {selectedTrip.destination}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2 text-gray-600">
-                <CalendarDays size={18} />
-
-                {formatDate(
-                  selectedTrip.startDate
-                )}
-
-                {" – "}
-
-                {formatDate(
-                  selectedTrip.endDate
-                )}
-              </div>
-
-            </div>
-
-          </section>
-        )}
-
-        {/* Schedule */}
-        <section className="rounded-3xl bg-white p-6 shadow-lg md:p-8">
-
-          <div className="flex items-center justify-between">
-
-            <div>
-              <h2 className="text-2xl font-bold text-[#1E3A8A]">
-                Itinerary
-              </h2>
-
-              <p className="mt-1 text-gray-500">
-                {sortedSchedules.length}{" "}
-                {sortedSchedules.length === 1
-                  ? "activity"
-                  : "activities"}{" "}
-                planned.
-              </p>
-            </div>
-
-            <CalendarDays
-              size={28}
-              className="text-[#1E3A8A]"
+      <div className="px-5 py-4 space-y-4">
+        {/* Trip Switcher Dropdown */}
+        {trips.length > 0 ? (
+          <div className="relative">
+            <select
+              value={selectedTripId}
+              onChange={(e) => setSelectedTripId(e.target.value)}
+              className="w-full bg-white border border-slate-200 text-xs font-bold text-slate-800 rounded-xl py-2.5 px-3.5 appearance-none focus:outline-none focus:border-blue-600 shadow-sm"
+            >
+              {trips.map((t) => (
+                <option key={t._id} value={t._id}>
+                  {t.title}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              size={16}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
             />
-
           </div>
+        ) : (
+          <div className="p-6 bg-white rounded-2xl border border-slate-100 text-center">
+            <Calendar size={28} className="mx-auto text-slate-300 mb-2" />
+            <p className="text-xs font-bold text-slate-700">No Trips Created</p>
+            <p className="text-[11px] text-slate-400 mt-1">Create a trip first to add schedules.</p>
+            <Link
+              to="/trips/create"
+              className="mt-3 inline-block px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-xl"
+            >
+              Create Trip
+            </Link>
+          </div>
+        )}
 
-          {sortedSchedules.length === 0 ? (
-            <div className="mt-8 rounded-2xl border-2 border-dashed border-gray-200 p-10 text-center">
-
-              <CalendarDays
-                size={40}
-                className="mx-auto text-gray-300"
+        {/* Day Accordion Card */}
+        {selectedTripId && (
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <button
+              onClick={() => setIsDayOpen(!isDayOpen)}
+              className="w-full px-4 py-3 flex items-center justify-between text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 transition"
+            >
+              <span>
+                {activeTrip?.startDate
+                  ? `${new Date(activeTrip.startDate).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })} (Day 1)`
+                  : "Trip Schedule"}
+              </span>
+              <ChevronDown
+                size={16}
+                className={`text-slate-400 transition-transform duration-200 ${
+                  isDayOpen ? "transform rotate-180" : ""
+                }`}
               />
+            </button>
 
-              <h3 className="mt-4 text-lg font-semibold text-gray-700">
-                No schedule yet
-              </h3>
+            {isDayOpen && (
+              <div className="p-4 pt-1 border-t border-slate-50">
+                {schedules.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-xs text-slate-400">No activities scheduled yet</p>
+                  </div>
+                ) : (
+                  <div className="relative pl-6 space-y-5 my-2">
+                    <div className="absolute left-[7px] top-2 bottom-3 w-[2px] bg-slate-200"></div>
 
-              <p className="mt-2 text-sm text-gray-500">
-                Add your first activity to build the trip itinerary.
-              </p>
+                    {schedules.map((item, idx) => {
+                      const isFirst = idx === 0;
+                      return (
+                        <div key={item._id} className="relative flex items-center justify-between group">
+                          <div
+                            className={`absolute -left-[23px] w-4 h-4 rounded-full border-2 border-white ring-2 ${
+                              isFirst
+                                ? "bg-emerald-500 ring-emerald-100"
+                                : "bg-blue-600 ring-blue-100"
+                            } flex items-center justify-center`}
+                          ></div>
 
-              <button
-                type="button"
-                onClick={() =>
-                  setIsFormOpen(true)
-                }
-                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white hover:bg-blue-700"
-              >
-                <Plus size={18} />
-                Add Activity
-              </button>
-
-            </div>
-          ) : (
-            <div className="mt-6 space-y-4">
-
-              {sortedSchedules.map(
-                (schedule) => (
-                  <div
-                    key={schedule._id}
-                    className="rounded-2xl border border-gray-100 bg-slate-50 p-5"
-                  >
-
-                    <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-
-                      <div className="flex gap-4">
-
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#E5F6FD] text-[#1E3A8A]">
-                          <Clock3 size={22} />
-                        </div>
-
-                        <div>
-
-                          <h3 className="text-lg font-bold text-gray-800">
-                            {schedule.activity}
-                          </h3>
-
-                          <div className="mt-2 flex flex-col gap-1 text-sm text-gray-500 sm:flex-row sm:gap-5">
-
-                            <span className="flex items-center gap-2">
-                              <CalendarDays size={15} />
-                              {formatDate(
-                                schedule.date
-                              )}
+                          <div className="flex items-center gap-3">
+                            <span className="text-xs font-bold text-slate-900 w-12 shrink-0">
+                              {item.time || "10:00"}
                             </span>
-
-                            <span className="flex items-center gap-2">
-                              <Clock3 size={15} />
-                              {schedule.time}
+                            <span className="text-xs text-slate-700 font-medium">
+                              {item.activity}
                             </span>
-
                           </div>
 
-                          {schedule.location && (
-                            <p className="mt-2 flex items-center gap-2 text-sm text-gray-500">
-                              <MapPin size={15} />
-                              {schedule.location}
-                            </p>
-                          )}
-
-                          {schedule.notes && (
-                            <p className="mt-3 text-sm text-gray-600">
-                              {schedule.notes}
-                            </p>
-                          )}
-
+                          <button
+                            onClick={() => handleDeleteActivity(item._id)}
+                            className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500 transition p-1"
+                            aria-label="Delete activity"
+                          >
+                            <Trash2 size={13} />
+                          </button>
                         </div>
-
-                      </div>
-
-                      <div className="flex gap-2 self-start">
-                      <button
-                        type="button"
-                        onClick={() => handleEdit(schedule)}
-                        className="rounded-xl border border-blue-200 p-3 text-[#1E3A8A] transition hover:bg-blue-50"
-                        aria-label="Edit schedule"
-                      >
-                        <Pencil size={18} />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(schedule._id)}
-                        className="rounded-xl border border-red-200 p-3 text-red-500 transition hover:bg-red-50"
-                        aria-label="Delete schedule"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-
-                    </div>
-
+                      );
+                    })}
                   </div>
-                )
-              )}
+                )}
 
+                {/* Add Activity Button */}
+                <div className="mt-5 pt-3 border-t border-slate-100">
+                  <button
+                    onClick={() => setShowModal(true)}
+                    className="w-full py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-600 font-semibold text-xs rounded-xl flex items-center justify-center gap-1.5 transition active:scale-98"
+                  >
+                    <Plus size={15} strokeWidth={2.5} />
+                    <span>Add Activity</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Add Activity Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-sm p-5 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900">Add Activity</h3>
+              <button
+                onClick={() => setShowModal(false)}
+                className="w-8 h-8 rounded-full hover:bg-slate-100 flex items-center justify-center text-slate-500"
+              >
+                ✕
+              </button>
             </div>
-          )}
 
-        </section>
-
-      </main>
-
-      {/* Add Schedule Modal */}
-      {isFormOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
-
-          <form
-            onSubmit={handleSubmit}
-            className="w-full max-w-lg rounded-3xl bg-white p-7 shadow-2xl"
-          >
-
-           <h2 className="text-2xl font-bold text-[#1E3A8A]">
-            {editingSchedule ? "Edit Schedule" : "Add Schedule"}
-          </h2>
-
-            <p className="mt-2 text-sm text-gray-500">
-              {editingSchedule
-                ? "Update this activity in your trip itinerary."
-                : "Add an activity to your trip itinerary."}
-            </p>
-
-            <div className="mt-6 space-y-4">
-
-              <input
-                required
-                name="activity"
-                value={formData.activity}
-                onChange={handleChange}
-                placeholder="Activity name"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#1E3A8A]"
-              />
-
-              <div className="grid gap-4 sm:grid-cols-2">
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    Date
-                  </label>
-
-                  <input
-                    required
-                    type="date"
-                    name="date"
-                    value={formData.date}
-                    onChange={handleChange}
-                    className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#1E3A8A]"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    Time
-                  </label>
-
-                  <input
-                    required
-                    type="time"
-                    name="time"
-                    value={formData.time}
-                    onChange={handleChange}
-                    className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#1E3A8A]"
-                  />
-                </div>
-
+            <form onSubmit={handleAddActivity} className="space-y-3.5 mt-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Time
+                </label>
+                <input
+                  type="time"
+                  required
+                  value={newActivity.time}
+                  onChange={(e) =>
+                    setNewActivity({ ...newActivity, time: e.target.value })
+                  }
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-xs text-slate-900 focus:outline-none focus:border-blue-600"
+                />
               </div>
 
-              <input
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                placeholder="Location"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#1E3A8A]"
-              />
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Activity
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Depart from campus"
+                  value={newActivity.activity}
+                  onChange={(e) =>
+                    setNewActivity({ ...newActivity, activity: e.target.value })
+                  }
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3 text-xs text-slate-900 focus:outline-none focus:border-blue-600"
+                />
+              </div>
 
-              <textarea
-                name="notes"
-                value={formData.notes}
-                onChange={handleChange}
-                placeholder="Notes (optional)"
-                rows="3"
-                className="w-full resize-none rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-[#1E3A8A]"
-              />
-
-            </div>
-
-            <div className="mt-7 flex justify-end gap-3">
-
-              <button
-                type="button"
-               onClick={() => {
-                setIsFormOpen(false);
-                setFormData(emptyForm);
-                setEditingSchedule(null);
-                setError("");
-              }}
-                className="rounded-xl border border-gray-300 px-5 py-3 font-medium hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-
-              <button
-                type="submit"
-                disabled={saving}
-                className="rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
-              >
-               {saving
-                ? "Saving..."
-                : editingSchedule
-                  ? "Save Changes"
-                  : "Save Activity"}
-              </button>
-
-            </div>
-
-          </form>
-
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs rounded-xl shadow-md transition"
+                >
+                  Save Activity
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
-
-    </div>
+    </MobileShell>
   );
 }
-
-export default Schedule;

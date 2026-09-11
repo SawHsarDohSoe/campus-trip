@@ -50,27 +50,34 @@ function Navbar() {
         </Link>
 
         {/* Center Menu */}
-        <div className="hidden lg:flex items-center gap-10">
+        <div className="hidden lg:flex items-center gap-8">
+
+          <button
+            onClick={() => scrollToSection("team")}
+            className="font-medium text-gray-600 hover:text-[#1E3A8A] transition cursor-pointer"
+          >
+            Team
+          </button>
+
+          <button
+            onClick={() => scrollToSection("how-it-works")}
+            className="font-medium text-gray-600 hover:text-[#1E3A8A] transition cursor-pointer"
+          >
+            How It Works
+          </button>
 
           <button
             onClick={() => scrollToSection("features")}
-            className="font-medium text-gray-600 hover:text-[#1E3A8A] transition"
+            className="font-medium text-gray-600 hover:text-[#1E3A8A] transition cursor-pointer"
           >
             Features
           </button>
 
           <button
             onClick={() => scrollToSection("about")}
-            className="font-medium text-gray-600 hover:text-[#1E3A8A] transition"
+            className="font-medium text-gray-600 hover:text-[#1E3A8A] transition cursor-pointer"
           >
             About
-          </button>
-
-          <button
-            onClick={() => scrollToSection("how-it-works")}
-            className="font-medium text-gray-600 hover:text-[#1E3A8A] transition"
-          >
-            How It Works
           </button>
 
         </div>

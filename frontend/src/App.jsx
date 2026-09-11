@@ -1,169 +1,68 @@
-import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
-import Landing from "./pages/Landing";
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
+// 18 Main Screens
+import SplashScreen from "./pages/splash/SplashScreen";
+import Onboarding from "./pages/onboarding/Onboarding";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
-import StudentDashboard from "./pages/dashboard/Dashboard";
-
+import Dashboard from "./pages/dashboard/Dashboard";
+import Notifications from "./pages/notifications/Notifications";
 import MyTrips from "./pages/trip/MyTrips";
-import CreateTrip from "./pages/trip/CreateTrip";
 import TripDetails from "./pages/trip/TripDetails";
+import CreateTrip from "./pages/trip/CreateTrip";
 import EditTrip from "./pages/trip/EditTrip";
+import JoinTrip from "./pages/join-trip/JoinTrip";
 import TripHistory from "./pages/trip/TripHistory";
-
+import Schedule from "./pages/schedule/Schedule";
 import Budget from "./pages/budget/Budget";
 import Checklist from "./pages/checklist/Checklist";
 import Members from "./pages/members/Members";
+import Chat from "./pages/chat/Chat";
+import Profile from "./pages/profile/Profile";
 import Settings from "./pages/settings/Settings";
-import Schedule from "./pages/schedule/Schedule";
-import JoinTrip from "./pages/join-trip/JoinTrip";
 
-import ProtectedRoute from "./components/auth/ProtectedRoute";
+import Landing from "./pages/Landing";
 
-function App() {
-  const isAuthenticated = Boolean(
-    localStorage.getItem("campusTripToken")
-  );
-
+export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Desktop / Web Landing Page with Team Members */}
+        <Route path="/" element={<Landing />} />
+        <Route path="/splash" element={<SplashScreen />} />
+        <Route path="/onboarding" element={<Onboarding />} />
 
-        {/* =========================
-            PUBLIC ROUTES
-        ========================== */}
+        {/* Auth */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
-        <Route
-          path="/"
-          element={<Landing />}
-        />
+        {/* Core App Screens */}
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/notifications" element={<Notifications />} />
 
-        <Route
-          path="/login"
-          element={<Login />}
-        />
+        {/* Trips */}
+        <Route path="/trips" element={<MyTrips />} />
+        <Route path="/trips/create" element={<CreateTrip />} />
+        <Route path="/trips/:id" element={<TripDetails />} />
+        <Route path="/trips/:id/edit" element={<EditTrip />} />
+        <Route path="/trip-history" element={<TripHistory />} />
+        <Route path="/join-trip" element={<JoinTrip />} />
 
-        <Route
-          path="/register"
-          element={<Register />}
-        />
+        {/* Modules */}
+        <Route path="/schedule" element={<Schedule />} />
+        <Route path="/budget" element={<Budget />} />
+        <Route path="/checklist" element={<Checklist />} />
+        <Route path="/members" element={<Members />} />
 
+        {/* Communication & Account */}
+        <Route path="/chat" element={<Chat />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/settings" element={<Settings />} />
 
-        {/* =========================
-            PROTECTED ROUTES
-        ========================== */}
-
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <StudentDashboard />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/trips"
-          element={
-            <ProtectedRoute>
-              <MyTrips />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/trips/create"
-          element={
-            <ProtectedRoute>
-              <CreateTrip />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/trips/:id"
-          element={
-            <ProtectedRoute>
-              <TripDetails />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/trips/:id/edit"
-          element={
-            <ProtectedRoute>
-              <EditTrip />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/trip-history"
-          element={
-            <ProtectedRoute>
-              <TripHistory />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/join-trip"
-          element={
-            <ProtectedRoute>
-              <JoinTrip />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/schedule"
-          element={
-            <ProtectedRoute>
-              <Schedule />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/budget"
-          element={
-            <ProtectedRoute>
-              <Budget />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/checklist"
-          element={
-            <ProtectedRoute>
-              <Checklist />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/members"
-          element={
-            <ProtectedRoute>
-              <Members />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/settings"
-          element={
-            <ProtectedRoute>
-              <Settings />
-            </ProtectedRoute>
-          }
-        />
-
+        {/* Catch-all fallback */}
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   );
 }
-
-export default App;

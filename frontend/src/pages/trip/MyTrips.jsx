@@ -1,307 +1,184 @@
-import { useEffect, useMemo, useState } from "react";
-import {
-  CalendarDays,
-  MapPin,
-  Pencil,
-  Plus,
-  Search,
-  Trash2,
-  Users,
-} from "lucide-react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Sidebar from "../../components/layout/Sidebar";
-import { getTrips, deleteTrip } from "../../api/authApi";
+import { Bell, Plus, MapPin, CalendarDays, ChevronRight } from "lucide-react";
+import MobileShell from "../../components/layout/MobileShell";
+import { TripThumbnail } from "../../components/common/Illustrations";
+import { getTrips } from "../../api/authApi";
 
-const currency = new Intl.NumberFormat("en-TH", {
-  style: "currency",
-  currency: "THB",
-  maximumFractionDigits: 0,
-});
-
-function formatDate(startDate, endDate) {
-  const options = {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  };
-
-  return `${new Date(startDate).toLocaleDateString(
-    "en-GB",
-    options
-  )} – ${new Date(endDate).toLocaleDateString("en-GB", options)}`;
-}
-
-function MyTrips() {
+export default function MyTrips() {
   const navigate = useNavigate();
-
   const [trips, setTrips] = useState([]);
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("All Trips");
+  const [activeFilter, setActiveFilter] = useState("All");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
-    const loadTrips = async () => {
-      try {
-        const token = localStorage.getItem("campusTripToken");
-
-        if (!token) {
-          navigate("/login");
-          return;
-        }
-
-        const data = await getTrips(token);
-
-        setTrips(data.trips);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadTrips();
-  }, [navigate]);
-
-  const displayedTrips = useMemo(() => {
-    return trips.filter((trip) => {
-      const matchesSearch = `${trip.title} ${trip.destination}`
-        .toLowerCase()
-        .includes(search.toLowerCase());
-
-      const matchesStatus =
-        status === "All Trips" || trip.status === status;
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [trips, search, status]);
-
-  const handleDelete = async (trip) => {
-    const confirmed = window.confirm(
-      `Delete "${trip.title}"?`
-    );
-
-    if (!confirmed) return;
-
-    try {
+    const loadUserTrips = async () => {
       const token = localStorage.getItem("campusTripToken");
-
       if (!token) {
         navigate("/login");
         return;
       }
 
-      await deleteTrip(trip._id, token);
+      try {
+        setLoading(true);
+        const data = await getTrips(token);
+        if (data?.trips) {
+          setTrips(data.trips);
+        }
+      } catch (err) {
+        console.error("Failed to load trips:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      setTrips((currentTrips) =>
-        currentTrips.filter((item) => item._id !== trip._id)
-      );
-    } catch (error) {
-      setError(error.message);
+    loadUserTrips();
+  }, [navigate]);
+
+  const filteredTrips = useMemo(() => {
+    if (activeFilter === "All") return trips;
+    return trips.filter((t) => t.status === activeFilter);
+  }, [trips, activeFilter]);
+
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case "Planning":
+        return "bg-blue-50 text-blue-600 border border-blue-100";
+      case "Ongoing":
+      case "Upcoming":
+        return "bg-emerald-50 text-emerald-600 border border-emerald-100";
+      case "Completed":
+      default:
+        return "bg-slate-100 text-slate-500 border border-slate-200";
     }
   };
 
+  const formatDateRange = (start, end) => {
+    if (!start) return "Date flexible";
+    const s = new Date(start).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+    });
+    const e = end
+      ? new Date(end).toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })
+      : "";
+    return e ? `${s} - ${e}` : s;
+  };
+
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <Sidebar />
+    <MobileShell showBottomNav={true} contentClassName="bg-slate-50/50">
+      {/* Top Header */}
+      <div className="bg-white px-5 pt-4 pb-3 flex items-center justify-between border-b border-slate-100 sticky top-0 z-20">
+        <h1 className="text-xl font-bold text-slate-900">My Trips</h1>
 
-      <main className="flex flex-1 flex-col gap-8 p-6 pt-20 md:p-8">
-
-        {/* Header */}
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
-
-          <div>
-            <p className="text-sm font-semibold text-blue-700">
-              CampusTrip
-            </p>
-
-            <h1 className="mt-1 text-3xl font-bold text-[#1E3A8A] md:text-4xl">
-              My Trips
-            </h1>
-
-            <p className="mt-2 text-gray-500">
-              Manage all your campus trips in one place.
-            </p>
-          </div>
+        <div className="flex items-center gap-2.5">
+          <Link
+            to="/notifications"
+            className="w-9 h-9 rounded-full bg-slate-50 flex items-center justify-center text-slate-700 hover:bg-slate-100 transition"
+            aria-label="Notifications"
+          >
+            <Bell size={17} />
+          </Link>
 
           <Link
             to="/trips/create"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white shadow-lg transition hover:bg-blue-700"
+            className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-full shadow-sm shadow-blue-500/30 transition active:scale-95"
           >
-            <Plus size={20} />
-            New Trip
+            <Plus size={14} strokeWidth={2.5} />
+            <span>New Trip</span>
           </Link>
-
         </div>
+      </div>
 
-        {/* Error */}
-        {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
-            {error}
-          </div>
-        )}
-
-        {/* Search and Filter */}
-        <div className="flex flex-col gap-4 md:flex-row">
-
-          <label className="my-trips-search relative flex-1">
-
-            <Search
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
-              size={20}
-            />
-
-            <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              type="search"
-              placeholder="Search trips..."
-              className="w-full rounded-xl border bg-white py-3 pl-11 pr-4 outline-none focus:border-[#1E3A8A]"
-            />
-
-          </label>
-
-          <select
-            value={status}
-            onChange={(event) => setStatus(event.target.value)}
-            className="rounded-xl border bg-white px-4 py-3 outline-none focus:border-[#1E3A8A]"
+      {/* Filter Tabs */}
+      <div className="px-5 pt-4 pb-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
+        {["All", "Planning", "Ongoing", "Completed"].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveFilter(tab)}
+            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition ${
+              activeFilter === tab
+                ? "bg-blue-600 text-white shadow-sm"
+                : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100"
+            }`}
           >
-            <option>All Trips</option>
-            <option>Upcoming</option>
-            <option>Planning</option>
-            <option>Completed</option>
-          </select>
+            {tab}
+          </button>
+        ))}
+      </div>
 
-        </div>
-
-        {/* Loading */}
-        {loading && (
-          <div className="rounded-3xl bg-white p-10 text-center shadow-lg">
-            <p className="text-gray-500">
-              Loading your trips...
-            </p>
+      {/* Trips List */}
+      <div className="px-5 py-3 space-y-3">
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-7 h-7 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
           </div>
-        )}
+        ) : filteredTrips.length === 0 ? (
+          <div className="text-center py-16 px-6">
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 mx-auto flex items-center justify-center mb-3">
+              <MapPin size={22} />
+            </div>
+            <p className="text-xs font-bold text-slate-800">No trips found</p>
+            <p className="text-[11px] text-slate-400 mt-1 max-w-xs mx-auto">
+              You don't have any trips matching this filter.
+            </p>
+            <Link
+              to="/trips/create"
+              className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-xl shadow-md"
+            >
+              <Plus size={13} strokeWidth={2.5} />
+              <span>Create New Trip</span>
+            </Link>
+          </div>
+        ) : (
+          filteredTrips.map((trip) => (
+            <Link
+              key={trip._id}
+              to={`/trips/${trip._id}`}
+              className="p-3 bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3.5 hover:shadow-md hover:border-slate-200 transition group"
+            >
+              {/* Thumbnail */}
+              <TripThumbnail
+                destination={trip.destination || trip.title}
+                className="w-20 h-20 rounded-xl"
+              />
 
-        {/* Trips */}
-        {!loading && displayedTrips.length > 0 && (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              {/* Details */}
+              <div className="flex-1 min-w-0">
+                <h2 className="text-sm font-bold text-slate-900 truncate group-hover:text-blue-600 transition">
+                  {trip.title}
+                </h2>
 
-            {displayedTrips.map((trip) => (
+                <p className="flex items-center gap-1 text-[11px] text-slate-500 mt-1 truncate">
+                  <MapPin size={12} className="text-slate-400 shrink-0" />
+                  <span>{trip.destination}</span>
+                </p>
 
-              <article
-                key={trip._id}
-                className="my-trip-card overflow-hidden rounded-3xl bg-white shadow-lg"
-              >
+                <p className="flex items-center gap-1 text-[11px] text-slate-500 mt-0.5 truncate">
+                  <CalendarDays size={12} className="text-slate-400 shrink-0" />
+                  <span>{formatDateRange(trip.startDate, trip.endDate)}</span>
+                </p>
 
-                {/* Image placeholder */}
-                <div className="my-trip-card-image flex h-40 items-center justify-center bg-[#E5F6FD] text-5xl">
-                  🚌
-                </div>
-
-                <div className="p-6">
-
-                  <h2 className="text-xl font-bold text-gray-800">
-                    {trip.title}
-                  </h2>
-
-                  <div className="mt-4 space-y-2 text-sm text-gray-500">
-
-                    <p className="flex items-center gap-2">
-                      <MapPin size={16} />
-                      {trip.destination}
-                    </p>
-
-                    <p className="flex items-center gap-2">
-                      <CalendarDays size={16} />
-                      {formatDate(
-                        trip.startDate,
-                        trip.endDate
-                      )}
-                    </p>
-
-                    <p className="flex items-center gap-2">
-                      <Users size={16} />
-                      Up to {trip.members} members
-                    </p>
-
-                  </div>
-
-                  <p className="mt-4 font-semibold text-[#1E3A8A]">
-                    {currency.format(trip.budget)}
-                  </p>
-
-                  <span className="mt-4 inline-block rounded-full bg-blue-100 px-3 py-1 text-sm text-blue-700">
+                <div className="mt-2">
+                  <span
+                    className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${getStatusBadge(
+                      trip.status
+                    )}`}
+                  >
                     {trip.status}
                   </span>
-
-                  <div className="mt-6 flex gap-3">
-
-                    <Link
-                      to={`/trips/${trip._id}`}
-                      className="flex-1 rounded-xl bg-[#1E3A8A] py-2 text-center text-white hover:bg-blue-700"
-                    >
-                      View
-                    </Link>
-
-                    <Link
-                      to={`/trips/${trip._id}/edit`}
-                      aria-label={`Edit ${trip.title}`}
-                      className="rounded-xl border border-gray-200 px-3 py-2 text-[#1E3A8A] hover:bg-blue-50"
-                    >
-                      <Pencil size={18} />
-                    </Link>
-
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(trip)}
-                      aria-label={`Delete ${trip.title}`}
-                      className="rounded-xl border border-red-200 px-3 text-red-600 hover:bg-red-50"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-
-                  </div>
-
                 </div>
+              </div>
 
-              </article>
-
-            ))}
-
-          </div>
+              <ChevronRight size={17} className="text-slate-300 group-hover:text-blue-600 transition shrink-0" />
+            </Link>
+          ))
         )}
-
-        {/* No trips */}
-        {!loading && displayedTrips.length === 0 && (
-          <div className="rounded-3xl bg-white p-10 text-center shadow-lg">
-
-            <h2 className="text-xl font-bold text-[#1E3A8A]">
-              No trips found
-            </h2>
-
-            <p className="mt-2 text-gray-500">
-              {search
-                ? "Try a different search."
-                : "Create your first campus trip."}
-            </p>
-
-            {!search && (
-              <Link
-                to="/trips/create"
-                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white hover:bg-blue-700"
-              >
-                <Plus size={18} />
-                Create Trip
-              </Link>
-            )}
-
-          </div>
-        )}
-
-      </main>
-    </div>
+      </div>
+    </MobileShell>
   );
 }
-
-export default MyTrips;

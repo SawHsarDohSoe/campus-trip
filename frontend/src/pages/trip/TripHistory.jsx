@@ -1,30 +1,31 @@
-import { useEffect, useState } from "react";
-import { History, MapPin, CalendarDays, Trash2 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import Sidebar from "../../components/layout/Sidebar";
-import { deleteTrip, getTripHistory } from "../../api/authApi";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, ChevronRight, CalendarDays, History } from "lucide-react";
+import MobileShell from "../../components/layout/MobileShell";
+import { TripThumbnail } from "../../components/common/Illustrations";
+import { getTripHistory } from "../../api/authApi";
 
-function TripHistory() {
+export default function TripHistory() {
   const navigate = useNavigate();
-
-  const [trips, setTrips] = useState([]);
+  const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     const loadHistory = async () => {
+      const token = localStorage.getItem("campusTripToken");
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
       try {
-        const token = localStorage.getItem("campusTripToken");
-
-        if (!token) {
-          navigate("/login");
-          return;
-        }
-
+        setLoading(true);
         const data = await getTripHistory(token);
-        setTrips(data.trips || []);
-      } catch (error) {
-        setError(error.message);
+        if (data?.trips) {
+          setHistory(data.trips);
+        }
+      } catch (err) {
+        console.error("Error loading trip history:", err);
       } finally {
         setLoading(false);
       }
@@ -33,164 +34,94 @@ function TripHistory() {
     loadHistory();
   }, [navigate]);
 
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString("en-US", {
-      month: "short",
+  const formatDateRange = (start, end) => {
+    if (!start) return "Date flexible";
+    const s = new Date(start).toLocaleDateString("en-GB", {
       day: "numeric",
-      year: "numeric",
+      month: "short",
     });
-  };
-
-  const handleDeleteHistoryItem = async (trip) => {
-    const confirmed = window.confirm(
-      `Delete "${trip.title}" from Trip History? This cannot be undone.`
-    );
-
-    if (!confirmed) return;
-
-    try {
-      const token = localStorage.getItem("campusTripToken");
-      if (!token) return;
-
-      await deleteTrip(trip._id, token);
-      setTrips((current) =>
-        current.filter((item) => item._id !== trip._id)
-      );
-    } catch (deleteError) {
-      setError(deleteError.message);
-    }
+    const e = end
+      ? new Date(end).toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })
+      : "";
+    return e ? `${s} - ${e}` : s;
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <Sidebar />
+    <MobileShell showBottomNav={true} contentClassName="bg-slate-50/50">
+      {/* Top Header */}
+      <div className="bg-white px-5 pt-3 pb-3 flex items-center gap-3 border-b border-slate-100 sticky top-0 z-20">
+        <button
+          onClick={() => navigate(-1)}
+          className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-700 transition"
+          aria-label="Back"
+        >
+          <ArrowLeft size={19} />
+        </button>
+        <h1 className="text-lg font-bold text-slate-900">Trip History</h1>
+      </div>
 
-      <main className="flex-1 p-6 pt-20 md:p-10">
-        <section className="mx-auto max-w-5xl">
-          <div className="trip-history-header mb-8">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-[#1E3A8A]">
-                <History size={25} />
-              </div>
-
-              <div>
-                <p className="text-sm font-semibold text-blue-700">
-                  CAMPUS TRIP
-                </p>
-
-                <h1 className="text-3xl font-bold text-[#1E3A8A]">
-                  Trip History
-                </h1>
-              </div>
-            </div>
-
-            <p className="mt-3 text-gray-500">
-              View your completed trips and past travel records.
-            </p>
+      {/* History List */}
+      <div className="px-5 py-4 space-y-3">
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="w-7 h-7 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
           </div>
-
-          {loading && (
-            <div className="trip-history-empty rounded-3xl bg-white p-10 text-center shadow-lg">
-              Loading trip history...
+        ) : history.length === 0 ? (
+          <div className="text-center py-20 px-6">
+            <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 mx-auto flex items-center justify-center mb-2">
+              <History size={24} />
             </div>
-          )}
-
-          {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-600">
-              {error}
-            </div>
-          )}
-
-          {!loading && !error && trips.length === 0 && (
-            <div className="trip-history-empty rounded-3xl bg-white p-10 text-center shadow-lg">
-              <History
-                size={45}
-                className="mx-auto text-gray-300"
+            <p className="text-xs font-bold text-slate-700">No Trip History</p>
+            <p className="text-[11px] text-slate-400 mt-1 max-w-xs mx-auto">
+              Completed and past trips will appear here automatically.
+            </p>
+            <Link
+              to="/trips"
+              className="mt-4 inline-block px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-xl"
+            >
+              View Active Trips
+            </Link>
+          </div>
+        ) : (
+          history.map((trip) => (
+            <Link
+              key={trip._id}
+              to={`/trips/${trip._id}`}
+              className="p-3 bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center gap-3.5 hover:shadow-md hover:border-slate-200 transition group"
+            >
+              {/* Thumbnail */}
+              <TripThumbnail
+                destination={trip.destination || trip.title}
+                className="w-18 h-18 rounded-xl"
               />
 
-              <h2 className="mt-4 text-xl font-bold text-gray-700">
-                No completed trips yet
-              </h2>
+              {/* Details */}
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xs font-bold text-slate-900 truncate group-hover:text-blue-600 transition">
+                  {trip.title}
+                </h2>
 
-              <p className="mt-2 text-gray-500">
-                Your finished trips will appear here.
-              </p>
-            </div>
-          )}
+                <p className="flex items-center gap-1 text-[11px] text-slate-500 mt-1 truncate">
+                  <CalendarDays size={12} className="text-slate-400 shrink-0" />
+                  <span>{formatDateRange(trip.startDate, trip.endDate)}</span>
+                </p>
 
-          {!loading && !error && trips.length > 0 && (
-            <div className="grid gap-5 md:grid-cols-2">
-              {trips.map((trip) => (
-                <div
-                  key={trip._id}
-                  className="rounded-3xl bg-white p-6 shadow-lg"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <h2 className="text-xl font-bold text-[#1E3A8A]">
-                        {trip.title}
-                      </h2>
-
-                      <p className="mt-2 flex items-center gap-2 text-gray-600">
-                        <MapPin size={17} />
-                        {trip.destination}
-                      </p>
-                    </div>
-
-                    <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        trip.status === "Cancelled"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-green-100 text-green-700"
-                    }`}
-                    >
-                    {trip.status === "Cancelled" ? "Cancelled" : "Completed"}
-                    </span>
-                  </div>
-
-                  <div className="mt-5 flex items-center gap-2 text-sm text-gray-500">
-                    <CalendarDays size={17} />
-
-                    {formatDate(trip.startDate)} –{" "}
-                    {formatDate(trip.endDate)}
-                  </div>
-
-                  <div className="mt-5 border-t pt-5">
-                    <p className="text-sm text-gray-500">
-                      Budget
-                    </p>
-
-                    <p className="mt-1 text-lg font-bold text-gray-800">
-                      THB {Number(trip.budget).toLocaleString()}
-                    </p>
-                  </div>
-
-                  <div className="mt-5 flex gap-3">
-                    <button
-                      type="button"
-                      onClick={() => navigate(`/trips/${trip._id}`)}
-                      className="flex-1 rounded-xl bg-[#1E3A8A] px-5 py-3 font-semibold text-white hover:bg-blue-700"
-                    >
-                      View Trip
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteHistoryItem(trip)}
-                      className="rounded-xl border border-red-200 px-4 text-red-600 hover:bg-red-50"
-                      aria-label={`Delete ${trip.title} from Trip History`}
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
+                <div className="mt-2">
+                  <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-500 border border-slate-200">
+                    {trip.status || "Completed"}
+                  </span>
                 </div>
-              ))}
-            </div>
-          )}
-        </section>
-      </main>
-    </div>
+              </div>
+
+              <ChevronRight size={17} className="text-slate-300 group-hover:text-blue-600 transition shrink-0" />
+            </Link>
+          ))
+        )}
+      </div>
+    </MobileShell>
   );
 }
-
-export default TripHistory;
