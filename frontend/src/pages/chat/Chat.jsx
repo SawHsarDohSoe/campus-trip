@@ -140,42 +140,32 @@ export default function Chat() {
   return (
     <MobileShell showBottomNav={true} contentClassName="bg-slate-50 flex flex-col h-full">
       {/* Real App Header */}
-      <div className="bg-white px-4 py-3 flex items-center justify-between border-b border-slate-100 sticky top-0 z-20 shadow-xs">
-        <div className="flex items-center gap-2.5 flex-1 min-w-0">
-          <button
-            onClick={() => navigate(-1)}
-            className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-700 transition shrink-0"
-            aria-label="Back"
-          >
-            <ArrowLeft size={18} />
-          </button>
-
-          <div className="flex-1 min-w-0">
-            <h1 className="text-sm font-bold text-slate-900 leading-tight">
-              Group Chat
-            </h1>
-            {trips.length > 0 ? (
-              <div className="relative inline-block max-w-full">
-                <select
-                  value={selectedTripId}
-                  onChange={(e) => setSelectedTripId(e.target.value)}
-                  className="text-[11px] font-medium text-blue-600 bg-transparent pr-4 truncate border-none outline-none appearance-none cursor-pointer"
-                >
-                  {trips.map((t) => (
-                    <option key={t._id} value={t._id}>
-                      {t.title}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown
-                  size={11}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 text-blue-600 pointer-events-none"
-                />
-              </div>
-            ) : (
-              <p className="text-[11px] text-slate-400">No active trips</p>
-            )}
-          </div>
+      <div className="bg-white px-4 sm:px-6 py-3 flex items-center justify-between border-b border-slate-100 sticky top-0 z-20 shadow-xs">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-base font-bold text-slate-900 leading-tight">
+            Group Chat
+          </h1>
+          {trips.length > 0 ? (
+            <div className="relative inline-block max-w-full">
+              <select
+                value={selectedTripId}
+                onChange={(e) => setSelectedTripId(e.target.value)}
+                className="text-[11px] font-medium text-blue-600 bg-transparent pr-4 truncate border-none outline-none appearance-none cursor-pointer"
+              >
+                {trips.map((t) => (
+                  <option key={t._id} value={t._id}>
+                    {t.title}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown
+                size={11}
+                className="absolute right-0 top-1/2 -translate-y-1/2 text-blue-600 pointer-events-none"
+              />
+            </div>
+          ) : (
+            <p className="text-[11px] text-slate-400">No active trips</p>
+          )}
         </div>
 
         {selectedTripId && (

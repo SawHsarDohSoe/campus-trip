@@ -109,7 +109,7 @@ export default function Dashboard() {
   return (
     <MobileShell showBottomNav={true} contentClassName="bg-slate-50/50">
       {/* Top Bar: Logo + Notification Bell */}
-      <div className="bg-white px-6 pt-4 pb-3 flex items-center justify-between border-b border-slate-100">
+      <div className="bg-white px-4 sm:px-6 pt-3.5 pb-3 flex items-center justify-between border-b border-slate-100">
         <BrandLogo size="sm" />
         <Link
           to="/notifications"
@@ -123,13 +123,13 @@ export default function Dashboard() {
         </Link>
       </div>
 
-      <div className="px-6 py-5 space-y-6">
+      <div className="px-4 sm:px-6 py-4 sm:py-6 space-y-5 sm:space-y-6">
         {/* Welcome Greeting */}
         <div>
-          <h1 className="text-xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
             Good to see you, {user?.name || "Francis"}! 👋
           </h1>
-          <p className="text-xs text-slate-500 mt-1">Plan your next adventure</p>
+          <p className="text-xs text-slate-500 mt-0.5 sm:mt-1">Plan your next adventure</p>
         </div>
 
         {/* Upcoming Trip Card */}
@@ -211,49 +211,57 @@ export default function Dashboard() {
 
         {/* 4 Quick Action Buttons Grid */}
         <div>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-4 gap-2 sm:gap-4">
             {/* Schedule */}
             <Link
               to="/schedule"
-              className="flex flex-col items-center justify-center p-3 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-indigo-100 active:scale-95 transition group"
+              className="flex flex-col items-center justify-center p-2 sm:p-3.5 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-indigo-100 active:scale-95 transition group"
             >
-              <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                <Calendar size={20} strokeWidth={2.2} />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-1.5 sm:mb-2 group-hover:scale-110 transition-transform">
+                <Calendar size={18} strokeWidth={2.2} className="sm:w-5 sm:h-5" />
               </div>
-              <span className="text-[11px] font-semibold text-slate-700">Schedule</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-700 truncate w-full text-center">
+                Schedule
+              </span>
             </Link>
 
             {/* Budget */}
             <Link
               to="/budget"
-              className="flex flex-col items-center justify-center p-3 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-purple-100 active:scale-95 transition group"
+              className="flex flex-col items-center justify-center p-2 sm:p-3.5 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-purple-100 active:scale-95 transition group"
             >
-              <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                <Wallet size={20} strokeWidth={2.2} />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-1.5 sm:mb-2 group-hover:scale-110 transition-transform">
+                <Wallet size={18} strokeWidth={2.2} className="sm:w-5 sm:h-5" />
               </div>
-              <span className="text-[11px] font-semibold text-slate-700">Budget</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-700 truncate w-full text-center">
+                Budget
+              </span>
             </Link>
 
             {/* Checklist */}
             <Link
               to="/checklist"
-              className="flex flex-col items-center justify-center p-3 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-teal-100 active:scale-95 transition group"
+              className="flex flex-col items-center justify-center p-2 sm:p-3.5 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-teal-100 active:scale-95 transition group"
             >
-              <div className="w-12 h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                <CheckSquare size={20} strokeWidth={2.2} />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center mb-1.5 sm:mb-2 group-hover:scale-110 transition-transform">
+                <CheckSquare size={18} strokeWidth={2.2} className="sm:w-5 sm:h-5" />
               </div>
-              <span className="text-[11px] font-semibold text-slate-700">Checklist</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-700 truncate w-full text-center">
+                Checklist
+              </span>
             </Link>
 
             {/* Members */}
             <Link
               to="/members"
-              className="flex flex-col items-center justify-center p-3 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-100 active:scale-95 transition group"
+              className="flex flex-col items-center justify-center p-2 sm:p-3.5 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-100 active:scale-95 transition group"
             >
-              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                <Users size={20} strokeWidth={2.2} />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-1.5 sm:mb-2 group-hover:scale-110 transition-transform">
+                <Users size={18} strokeWidth={2.2} className="sm:w-5 sm:h-5" />
               </div>
-              <span className="text-[11px] font-semibold text-slate-700">Members</span>
+              <span className="text-[10px] sm:text-xs font-semibold text-slate-700 truncate w-full text-center">
+                Members
+              </span>
             </Link>
           </div>
         </div>

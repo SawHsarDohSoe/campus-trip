@@ -141,18 +141,17 @@ export default function Profile() {
   return (
     <MobileShell showBottomNav={true} contentClassName="bg-slate-50/50">
       {/* Top Header */}
-      <div className="bg-white px-5 pt-3 pb-3 flex items-center gap-3 border-b border-slate-100 sticky top-0 z-20">
+      <div className="bg-white px-4 sm:px-6 pt-4 pb-3 flex items-center justify-between border-b border-slate-100 sticky top-0 z-20">
+        <h1 className="text-xl font-bold text-slate-900">Profile</h1>
         <button
-          onClick={() => navigate(-1)}
-          className="w-9 h-9 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-700 transition"
-          aria-label="Back"
+          onClick={handleLogout}
+          className="text-xs font-semibold text-red-500 hover:text-red-700 transition cursor-pointer"
         >
-          <ArrowLeft size={19} />
+          Log Out
         </button>
-        <h1 className="text-lg font-bold text-slate-900">Profile</h1>
       </div>
 
-      <div className="px-6 py-6 space-y-6">
+      <div className="px-4 sm:px-6 py-5 space-y-6">
         {/* User Card */}
         <div className="flex flex-col items-center text-center">
           <div className="w-20 h-20 rounded-full bg-blue-600 text-white font-bold text-3xl flex items-center justify-center shadow-lg shadow-blue-500/25 mb-3">

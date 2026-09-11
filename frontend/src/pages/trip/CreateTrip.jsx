@@ -73,7 +73,7 @@ export default function CreateTrip() {
         <h1 className="text-lg font-bold text-slate-900">Create Trip</h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+      <form onSubmit={handleSubmit} className="px-4 sm:px-6 py-5 space-y-4">
         <h2 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
           Basic Information
         </h2>

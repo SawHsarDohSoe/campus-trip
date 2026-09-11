@@ -217,17 +217,17 @@ export default function TripDetails() {
       </div>
 
       {/* Main Body */}
-      <div className="px-6 py-6 space-y-6">
+      <div className="px-4 sm:px-6 py-5 space-y-5 sm:space-y-6">
         {/* 4 Action Icons Row */}
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-4 gap-2 sm:gap-4">
           <Link
             to="/schedule"
-            className="flex flex-col items-center justify-center p-3 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-indigo-50/50 hover:border-indigo-100 active:scale-95 transition group"
+            className="flex flex-col items-center justify-center p-2 sm:p-3 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-indigo-50/50 hover:border-indigo-100 active:scale-95 transition group"
           >
-            <div className="w-11 h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-1.5 group-hover:scale-105 transition-transform">
-              <Calendar size={19} strokeWidth={2.2} />
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-1 sm:mb-1.5 group-hover:scale-105 transition-transform">
+              <Calendar size={18} strokeWidth={2.2} className="sm:w-5 sm:h-5" />
             </div>
-            <span className="text-[11px] font-semibold text-slate-700">Schedule</span>
+            <span className="text-[10px] sm:text-xs font-semibold text-slate-700 truncate w-full text-center">Schedule</span>
           </Link>
 
           <Link
