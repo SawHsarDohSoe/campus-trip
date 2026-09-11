@@ -69,7 +69,7 @@ function Landing() {
   );
 
   return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-gradient-to-b from-[#fffeef] via-[#eff8ff] to-[#ddefff]">
+    <div className="min-h-screen w-full overflow-x-hidden bg-gradient-to-b from-white via-slate-50 to-blue-50">
       <BackgroundShapes />
 
       <Navbar />
@@ -91,10 +91,10 @@ function Landing() {
               </span>
             </div>
 
-            <h1 className="text-4xl font-extrabold leading-tight text-[#1E3A8A] sm:text-5xl xl:text-6xl">
+            <h1 className="text-4xl font-extrabold leading-tight text-slate-900 sm:text-5xl xl:text-6xl">
               Plan Your
               <br />
-              <span className="bg-gradient-to-r from-blue-700 to-indigo-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-blue-600 to-sky-500 bg-clip-text text-transparent">
                 Campus Trip
               </span>
               <br />

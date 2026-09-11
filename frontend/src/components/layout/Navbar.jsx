@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import BrandLogo from "../common/BrandLogo";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -34,19 +35,7 @@ function Navbar() {
           to="/"
           className="flex items-center gap-3 transition-transform duration-300 hover:scale-105"
         >
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-[#1E3A8A] flex items-center justify-center shadow-md">
-            <span className="text-2xl text-white">🧳</span>
-          </div>
-
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#1E3A8A]">
-              CampusTrip
-            </h1>
-
-            <p className="hidden sm:block text-xs text-gray-500">
-              Plan smarter. Travel together.
-            </p>
-          </div>
+          <BrandLogo size="md" showTagline />
         </Link>
 
         {/* Center Menu */}
