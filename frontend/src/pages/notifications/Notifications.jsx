@@ -5,13 +5,17 @@ import {
   Calendar,
   Wallet,
   MessageSquare,
-  ChevronRight,
   CheckCheck,
   Bell,
+  Trash2,
 } from "lucide-react";
 import MobileShell from "../../components/layout/MobileShell";
 import MobileHeader from "../../components/layout/MobileHeader";
-import { getNotifications, markAllNotificationsRead } from "../../api/authApi";
+import {
+  deleteNotification,
+  getNotifications,
+  markAllNotificationsRead,
+} from "../../api/authApi";
 
 export default function Notifications() {
   const navigate = useNavigate();
@@ -19,6 +23,8 @@ export default function Notifications() {
   const [filter, setFilter] = useState("All");
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState("");
+  const [error, setError] = useState("");
 
   const fetchNotifs = async () => {
     const token = localStorage.getItem("campusTripToken");
@@ -53,6 +59,24 @@ export default function Notifications() {
       await markAllNotificationsRead(token);
     } catch (err) {
       console.error("Error marking all read:", err);
+    }
+  };
+
+  const handleDelete = async (notificationId) => {
+    const token = localStorage.getItem("campusTripToken");
+    if (!token || deletingId) return;
+
+    try {
+      setError("");
+      setDeletingId(notificationId);
+      await deleteNotification(notificationId, token);
+      setNotifications((current) =>
+        current.filter((notification) => notification._id !== notificationId)
+      );
+    } catch (err) {
+      setError(err.message || "Unable to delete notification.");
+    } finally {
+      setDeletingId("");
     }
   };
 
@@ -125,6 +149,11 @@ export default function Notifications() {
 
       {/* Notifications List */}
       <div className="px-5 py-3 space-y-2.5">
+        {error && (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-[11px] text-red-700">
+            {error}
+          </div>
+        )}
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <div className="w-7 h-7 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -178,7 +207,16 @@ export default function Notifications() {
                   </span>
                 </div>
 
-                <ChevronRight size={15} className="text-slate-300 shrink-0" />
+                <button
+                  type="button"
+                  onClick={() => handleDelete(item._id)}
+                  disabled={deletingId === item._id}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                  aria-label={`Delete ${item.title} notification`}
+                  title="Delete notification"
+                >
+                  <Trash2 size={16} />
+                </button>
               </div>
             );
           })

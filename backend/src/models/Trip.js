@@ -35,7 +35,7 @@ const tripSchema = new mongoose.Schema(
     endDate: { type: Date, required: [true, "End date is required."] },
     transportation: {
       type: String,
-      enum: ["Bus", "Van", "Train", "Airplane"],
+      enum: ["Bus", "Van", "Train", "Car", "Flight", "Boat", "Airplane"],
       default: "Bus",
     },
     budget: { type: Number, required: [true, "Budget is required."], min: 0 },
@@ -43,7 +43,7 @@ const tripSchema = new mongoose.Schema(
     description: { type: String, required: [true, "Description is required."], trim: true },
     status: {
       type: String,
-      enum: ["Planning", "Upcoming", "Completed", "Cancelled"],
+      enum: ["Planning", "Upcoming", "Ongoing", "Completed", "Cancelled"],
       default: "Planning",
     },
     joinCode: {

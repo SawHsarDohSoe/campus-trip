@@ -112,7 +112,7 @@ export default function Checklist() {
       await createChecklistItem(
         {
           tripId: selectedTripId,
-          task,
+          label: task,
         },
         token
       );

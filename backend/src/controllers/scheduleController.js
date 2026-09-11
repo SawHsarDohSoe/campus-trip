@@ -2,6 +2,7 @@ import Schedule from "../models/Schedule.js";
 import Trip from "../models/Trip.js";
 import Member from "../models/Member.js";
 import Notification from "../models/Notification.js";
+import { getTripAccess } from "../utils/tripAccess.js";
 
 export async function listSchedules(request, response, next) {
   try {
@@ -45,16 +46,14 @@ export async function listSchedules(request, response, next) {
 
 export async function createSchedule(request, response, next) {
   try {
-    const trip = await Trip.findOne({
-      _id: request.params.tripId,
-      owner: request.user._id,
-    });
+    const { trip, isMember } = await getTripAccess(request.user, request.params.tripId);
 
     if (!trip) {
       return response.status(404).json({
         message: "Trip not found.",
       });
     }
+    if (!isMember) return response.status(403).json({ message: "You are not a member of this trip." });
 
     const {
       date,

@@ -1,16 +1,18 @@
 import ChecklistItem from "../models/ChecklistItem.js";
-import Trip from "../models/Trip.js";
+import { getTripAccess } from "../utils/tripAccess.js";
 
 export async function listChecklistItems(request, response, next) {
   try {
     const { tripId } = request.query;
 
-    const filter = {
-      owner: request.user._id,
-    };
+    const filter = { owner: request.user._id };
 
     if (tripId) {
+      const { trip, isMember } = await getTripAccess(request.user, tripId);
+      if (!trip) return response.status(404).json({ message: "Trip not found." });
+      if (!isMember) return response.status(403).json({ message: "You are not a member of this trip." });
       filter.trip = tripId;
+      delete filter.owner;
     }
 
     const items = await ChecklistItem.find(filter).sort({
@@ -27,16 +29,14 @@ export async function createChecklistItem(request, response, next) {
   try {
     const { tripId, label } = request.body;
 
-    const trip = await Trip.findOne({
-      _id: tripId,
-      owner: request.user._id,
-    });
+    const { trip, isMember } = await getTripAccess(request.user, tripId);
 
     if (!trip) {
       return response.status(404).json({
         message: "Trip not found.",
       });
     }
+    if (!isMember) return response.status(403).json({ message: "You are not a member of this trip." });
 
     const item = await ChecklistItem.create({
       owner: request.user._id,

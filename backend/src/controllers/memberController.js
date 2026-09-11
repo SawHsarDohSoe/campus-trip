@@ -1,16 +1,18 @@
 import Member from "../models/Member.js";
-import Trip from "../models/Trip.js";
+import { getTripAccess } from "../utils/tripAccess.js";
 
 export async function listMembers(request, response, next) {
   try {
     const { tripId } = request.query;
 
-    const filter = {
-      owner: request.user._id,
-    };
+    const filter = { owner: request.user._id };
 
     if (tripId) {
+      const { trip, isMember } = await getTripAccess(request.user, tripId);
+      if (!trip) return response.status(404).json({ message: "Trip not found." });
+      if (!isMember) return response.status(403).json({ message: "You are not a member of this trip." });
       filter.trip = tripId;
+      delete filter.owner;
     }
 
     const members = await Member.find(filter)
@@ -31,16 +33,14 @@ export async function createMember(request, response, next) {
       role,
     } = request.body;
 
-    const trip = await Trip.findOne({
-      _id: tripId,
-      owner: request.user._id,
-    });
+    const { trip, isMember } = await getTripAccess(request.user, tripId);
 
     if (!trip) {
       return response.status(404).json({
         message: "Trip not found.",
       });
     }
+    if (!isMember) return response.status(403).json({ message: "You are not a member of this trip." });
 
     const existingMember = await Member.findOne({
       trip: trip._id,
