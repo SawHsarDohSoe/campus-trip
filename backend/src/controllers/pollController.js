@@ -51,7 +51,20 @@ export async function listPolls(request, response, next) {
       createdAt: -1,
     });
 
-    return response.json({ polls });
+    const userVotes = await PollVote.find({
+      poll: { $in: polls.map((poll) => poll._id) },
+      user: request.user._id,
+    }).select("poll option");
+    const selectedOptions = new Map(
+      userVotes.map((vote) => [String(vote.poll), String(vote.option)])
+    );
+
+    return response.json({
+      polls: polls.map((poll) => ({
+        ...poll.toObject(),
+        selectedOptionId: selectedOptions.get(String(poll._id)) || null,
+      })),
+    });
   } catch (error) {
     return next(error);
   }
@@ -245,26 +258,37 @@ export async function votePoll(request, response, next) {
       user: request.user._id,
     });
 
+    let message = "Your vote has been recorded.";
     if (existingVote) {
-      return response.status(409).json({
-        message:
-          "You have already voted on this poll.",
+      if (String(existingVote.option) === String(option._id)) {
+        return response.json({
+          message: "This option is already selected.",
+          poll: { ...poll.toObject(), selectedOptionId: String(option._id) },
+        });
+      }
+
+      const previousOption = poll.options.id(existingVote.option);
+      if (previousOption) {
+        previousOption.votes = Math.max(0, previousOption.votes - 1);
+      }
+      existingVote.option = option._id;
+      await existingVote.save();
+      message = "Your vote has been changed.";
+    } else {
+      await PollVote.create({
+        poll: poll._id,
+        user: request.user._id,
+        option: option._id,
       });
     }
-
-    await PollVote.create({
-      poll: poll._id,
-      user: request.user._id,
-      option: option._id,
-    });
 
     option.votes += 1;
 
     await poll.save();
 
-    return response.status(201).json({
-      message: "Your vote has been recorded.",
-      poll,
+    return response.status(existingVote ? 200 : 201).json({
+      message,
+      poll: { ...poll.toObject(), selectedOptionId: String(option._id) },
     });
   } catch (error) {
     if (error.code === 11000) {
@@ -300,6 +324,71 @@ export async function closePoll(request, response, next) {
       message: "Poll closed successfully.",
       poll,
     });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function updatePoll(request, response, next) {
+  try {
+    const poll = await Poll.findOne({
+      _id: request.params.pollId,
+      trip: request.params.tripId,
+      owner: request.user._id,
+    });
+
+    if (!poll) {
+      return response.status(404).json({ message: "Poll not found." });
+    }
+    if (poll.status === "Closed" || (poll.expiresAt && poll.expiresAt <= new Date())) {
+      return response.status(400).json({ message: "A closed or expired poll cannot be edited." });
+    }
+
+    const { question, options, expiresAt } = request.body;
+    if (question !== undefined) {
+      if (!String(question).trim()) {
+        return response.status(400).json({ message: "Poll question is required." });
+      }
+      poll.question = String(question).trim();
+    }
+
+    if (options !== undefined) {
+      const cleanedOptions = Array.isArray(options)
+        ? options.map((option) => String(option).trim()).filter(Boolean)
+        : [];
+      if (cleanedOptions.length < 2 || cleanedOptions.length > 6) {
+        return response.status(400).json({ message: "A poll must have between 2 and 6 options." });
+      }
+      poll.options = cleanedOptions.map((text) => ({ text, votes: 0 }));
+      await PollVote.deleteMany({ poll: poll._id });
+    }
+
+    if (expiresAt !== undefined) {
+      poll.expiresAt = expiresAt || null;
+    }
+
+    await poll.save();
+    return response.json({ message: "Poll updated successfully.", poll });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function deletePoll(request, response, next) {
+  try {
+    const poll = await Poll.findOne({
+      _id: request.params.pollId,
+      trip: request.params.tripId,
+      owner: request.user._id,
+    });
+
+    if (!poll) {
+      return response.status(404).json({ message: "Poll not found." });
+    }
+
+    await PollVote.deleteMany({ poll: poll._id });
+    await poll.deleteOne();
+    return response.status(204).send();
   } catch (error) {
     return next(error);
   }

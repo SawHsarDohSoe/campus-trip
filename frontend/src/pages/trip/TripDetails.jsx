@@ -11,6 +11,7 @@ import {
   Pencil,
   Trash2,
   Share2,
+  BarChart3,
 } from "lucide-react";
 import MobileShell from "../../components/layout/MobileShell";
 import MobileHeader from "../../components/layout/MobileHeader";
@@ -325,9 +326,9 @@ export default function TripDetails() {
 
       {/* Main Body */}
       <div className="px-4 sm:px-6 py-5 space-y-5">
-        {/* Quick Action Grid (4 Actions) */}
+        {/* Trip module shortcut grid */}
         <div>
-          <div className="grid grid-cols-4 gap-2 sm:gap-3">
+          <div className="grid grid-cols-4 gap-2 sm:grid-cols-5 sm:gap-3">
             <Link
               to="/schedule"
               state={{ from: `/trips/${trip._id}`, tripId: trip._id }}
@@ -370,6 +371,17 @@ export default function TripDetails() {
                 <Users size={18} strokeWidth={2.2} />
               </div>
               <span className="text-[11px] font-semibold text-slate-700 truncate w-full text-center">Members</span>
+            </Link>
+
+            <Link
+              to="/polls"
+              state={{ from: `/trips/${trip._id}`, tripId: trip._id }}
+              className="flex flex-col items-center justify-center p-2.5 bg-slate-50 rounded-2xl border border-slate-100 hover:bg-amber-50/50 hover:border-amber-100 active:scale-95 transition group"
+            >
+              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-1 group-hover:scale-105 transition-transform">
+                <BarChart3 size={18} strokeWidth={2.2} />
+              </div>
+              <span className="text-[11px] font-semibold text-slate-700 truncate w-full text-center">Polls</span>
             </Link>
           </div>
         </div>

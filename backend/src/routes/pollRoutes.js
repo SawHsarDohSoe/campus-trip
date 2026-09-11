@@ -3,7 +3,9 @@ import { Router } from "express";
 import {
   closePoll,
   createPoll,
+  deletePoll,
   listPolls,
+  updatePoll,
   votePoll,
 } from "../controllers/pollController.js";
 
@@ -24,6 +26,11 @@ router.post(
   "/:tripId/:pollId/vote",
   votePoll
 );
+
+router
+  .route("/:tripId/:pollId")
+  .patch(updatePoll)
+  .delete(deletePoll);
 
 // Close a poll
 router.patch(

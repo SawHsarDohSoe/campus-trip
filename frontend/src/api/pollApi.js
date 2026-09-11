@@ -79,3 +79,27 @@ export async function closePoll(
     }
   );
 }
+
+export async function updatePoll(token, tripId, pollId, pollData) {
+  return request(`/polls/${tripId}/${pollId}`, {
+    method: "PATCH",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(pollData),
+  });
+}
+
+export async function deletePoll(token, tripId, pollId) {
+  const response = await fetch(`${API_URL}/polls/${tripId}/${pollId}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok && response.status !== 204) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data.message || "Unable to delete poll.");
+  }
+}

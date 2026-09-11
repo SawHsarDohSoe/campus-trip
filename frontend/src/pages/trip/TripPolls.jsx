@@ -3,12 +3,16 @@ import {
   BarChart3,
   Check,
   Clock,
+  Pencil,
   Plus,
+  Trash2,
   X,
 } from "lucide-react";
 import {
   getPolls,
   createPoll,
+  deletePoll,
+  updatePoll,
   votePoll,
   closePoll,
 } from "../../api/pollApi";
@@ -24,6 +28,10 @@ function TripPolls({ tripId, isOwner, tripStatus }) {
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]);
   const [expiresAt, setExpiresAt] = useState("");
+  const [editingPollId, setEditingPollId] = useState("");
+  const [editQuestion, setEditQuestion] = useState("");
+  const [editOptions, setEditOptions] = useState([]);
+  const [editExpiresAt, setEditExpiresAt] = useState("");
 
   const token = localStorage.getItem("campusTripToken");
 
@@ -141,9 +149,56 @@ function TripPolls({ tripId, isOwner, tripStatus }) {
         )
       );
 
-      setMessage("Your vote has been recorded.");
+      setMessage(data.message || "Your vote has been recorded.");
     } catch (err) {
       setError(err.message || "Unable to vote.");
+    }
+  };
+
+  const startEditing = (poll) => {
+    setEditingPollId(poll._id);
+    setEditQuestion(poll.question);
+    setEditOptions(poll.options.map((option) => option.text));
+    setEditExpiresAt(
+      poll.expiresAt ? new Date(poll.expiresAt).toISOString().slice(0, 16) : ""
+    );
+    setError("");
+    setMessage("");
+  };
+
+  const handleUpdatePoll = async (event, pollId) => {
+    event.preventDefault();
+    const cleanedOptions = editOptions.map((option) => option.trim()).filter(Boolean);
+    if (!editQuestion.trim() || cleanedOptions.length < 2) {
+      setError("Enter a question and at least 2 options.");
+      return;
+    }
+
+    try {
+      const data = await updatePoll(token, tripId, pollId, {
+        question: editQuestion.trim(),
+        options: cleanedOptions,
+        expiresAt: editExpiresAt || null,
+      });
+      setPolls((current) =>
+        current.map((poll) => (poll._id === pollId ? data.poll : poll))
+      );
+      setEditingPollId("");
+      setMessage(data.message || "Poll updated successfully.");
+    } catch (err) {
+      setError(err.message || "Unable to update poll.");
+    }
+  };
+
+  const handleDeletePoll = async (pollId) => {
+    if (!window.confirm("Delete this poll and all of its votes?")) return;
+    try {
+      await deletePoll(token, tripId, pollId);
+      setPolls((current) => current.filter((poll) => poll._id !== pollId));
+      if (editingPollId === pollId) setEditingPollId("");
+      setMessage("Poll deleted successfully.");
+    } catch (err) {
+      setError(err.message || "Unable to delete poll.");
     }
   };
 
@@ -279,7 +334,7 @@ function TripPolls({ tripId, isOwner, tripStatus }) {
                 {options.map((option, index) => (
                   <div
                     key={index}
-                    className="flex gap-2"
+                    className="flex w-full min-w-0 gap-2"
                   >
                     <input
                       type="text"
@@ -292,7 +347,7 @@ function TripPolls({ tripId, isOwner, tripStatus }) {
                       }
                       placeholder={`Option ${index + 1}`}
                       maxLength={120}
-                      className="flex-1 rounded-xl border bg-white px-4 py-3 outline-none focus:border-blue-500"
+                      className="min-w-0 flex-1 rounded-xl border bg-white px-4 py-3 outline-none focus:border-blue-500"
                     />
 
                     {options.length > 2 && (
@@ -301,7 +356,8 @@ function TripPolls({ tripId, isOwner, tripStatus }) {
                         onClick={() =>
                           removeOption(index)
                         }
-                        className="rounded-xl bg-white px-3 text-red-500 hover:bg-red-50"
+                        className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-red-100 bg-white text-red-500 hover:bg-red-50"
+                        aria-label={`Remove option ${index + 1}`}
                       >
                         <X size={18} />
                       </button>
@@ -424,16 +480,111 @@ function TripPolls({ tripId, isOwner, tripStatus }) {
                     </div>
                   </div>
 
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      isClosed
-                        ? "bg-gray-100 text-gray-600"
-                        : "bg-green-100 text-green-700"
-                    }`}
-                  >
-                    {isClosed ? "Closed" : "Open"}
-                  </span>
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        isClosed
+                          ? "bg-gray-100 text-gray-600"
+                          : "bg-green-100 text-green-700"
+                      }`}
+                    >
+                      {isClosed ? "Closed" : "Open"}
+                    </span>
+                    {isOwner && !isClosed && (
+                      <button
+                        type="button"
+                        onClick={() => startEditing(poll)}
+                        className="rounded-lg p-2 text-blue-600 hover:bg-blue-50"
+                        aria-label="Edit poll"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                    )}
+                    {isOwner && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeletePoll(poll._id)}
+                        className="rounded-lg p-2 text-red-500 hover:bg-red-50"
+                        aria-label="Delete poll"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </div>
                 </div>
+
+                {editingPollId === poll._id && (
+                  <form
+                    onSubmit={(event) => handleUpdatePoll(event, poll._id)}
+                    className="mt-4 space-y-3 rounded-2xl border border-blue-100 bg-blue-50 p-3 sm:p-4"
+                  >
+                    <input
+                      value={editQuestion}
+                      onChange={(event) => setEditQuestion(event.target.value)}
+                      maxLength={200}
+                      className="w-full rounded-xl border bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                      aria-label="Poll question"
+                    />
+                    <div className="space-y-2">
+                      {editOptions.map((option, index) => (
+                        <div key={index} className="flex w-full min-w-0 gap-2">
+                          <input
+                            value={option}
+                            onChange={(event) =>
+                              setEditOptions((current) =>
+                                current.map((value, optionIndex) =>
+                                  optionIndex === index ? event.target.value : value
+                                )
+                              )
+                            }
+                            maxLength={120}
+                            className="min-w-0 flex-1 rounded-xl border bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                            aria-label={`Poll option ${index + 1}`}
+                          />
+                          {editOptions.length > 2 && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setEditOptions((current) =>
+                                  current.filter((_, optionIndex) => optionIndex !== index)
+                                )
+                              }
+                              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-red-100 bg-white text-red-500"
+                              aria-label={`Remove poll option ${index + 1}`}
+                            >
+                              <X size={17} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {editOptions.length < 6 && (
+                      <button
+                        type="button"
+                        onClick={() => setEditOptions((current) => [...current, ""])}
+                        className="text-xs font-semibold text-blue-600"
+                      >
+                        + Add option
+                      </button>
+                    )}
+                    <input
+                      type="datetime-local"
+                      value={editExpiresAt}
+                      onChange={(event) => setEditExpiresAt(event.target.value)}
+                      className="w-full rounded-xl border bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500"
+                      aria-label="Poll expiration"
+                    />
+                    <div className="flex gap-2">
+                      <button type="submit" className="rounded-xl bg-blue-700 px-4 py-2 text-xs font-semibold text-white">
+                        Save changes
+                      </button>
+                      <button type="button" onClick={() => setEditingPollId("")} className="rounded-xl bg-white px-4 py-2 text-xs font-semibold text-slate-600">
+                        Cancel
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-amber-700">Editing options resets existing votes.</p>
+                  </form>
+                )}
 
                 {/* Options */}
                 <div className="mt-5 space-y-3">
@@ -446,6 +597,7 @@ function TripPolls({ tripId, isOwner, tripStatus }) {
                               100
                           )
                         : 0;
+                    const isSelected = poll.selectedOptionId === option._id;
 
                     return (
                       <div key={option._id}>
@@ -460,11 +612,14 @@ function TripPolls({ tripId, isOwner, tripStatus }) {
                               option._id
                             )
                           }
+                          aria-pressed={isSelected}
                           className={`relative w-full overflow-hidden rounded-xl border p-3 text-left transition ${
                             isClosed ||
                             isTripClosed
                               ? "cursor-not-allowed opacity-70"
-                              : "hover:border-blue-400 hover:bg-blue-50"
+                              : isSelected
+                                ? "border-blue-500 bg-blue-50 ring-2 ring-blue-100"
+                                : "hover:border-blue-400 hover:bg-blue-50"
                           }`}
                         >
                           <div
@@ -475,7 +630,8 @@ function TripPolls({ tripId, isOwner, tripStatus }) {
                           />
 
                           <div className="relative flex items-center justify-between gap-3">
-                            <span className="font-medium text-gray-700">
+                            <span className="flex items-center gap-2 font-medium text-gray-700">
+                              {isSelected && <Check size={15} className="text-blue-600" />}
                               {option.text}
                             </span>
 
