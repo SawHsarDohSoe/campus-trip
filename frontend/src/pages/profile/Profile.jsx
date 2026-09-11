@@ -6,6 +6,7 @@ import {
   Bell,
   Info,
   HelpCircle,
+  History,
   ChevronRight,
   LogOut,
   Settings as SettingsIcon,
@@ -30,6 +31,7 @@ export default function Profile() {
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "" });
   const [passwordError, setPasswordError] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
+  const [infoPanel, setInfoPanel] = useState("");
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -188,6 +190,20 @@ export default function Profile() {
             <ChevronRight size={16} className="text-slate-300" />
           </button>
 
+          <button
+            type="button"
+            onClick={() => navigate("/trip-history", { state: { from: "/profile" } })}
+            className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 active:bg-slate-100 transition text-left cursor-pointer"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <History size={17} />
+              </div>
+              <span className="text-xs font-semibold text-slate-800">Trip History</span>
+            </div>
+            <ChevronRight size={16} className="text-slate-300" />
+          </button>
+
           {/* Change Password */}
           <button
             type="button"
@@ -233,7 +249,7 @@ export default function Profile() {
           {/* About */}
           <button
             type="button"
-            onClick={() => setNotice("CampusTrip v1.0.0 — Plan smarter. Travel together. Student trip planning made simple.")}
+            onClick={() => setInfoPanel("about")}
             className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 active:bg-slate-100 transition text-left cursor-pointer"
           >
             <div className="flex items-center gap-3.5">
@@ -248,7 +264,7 @@ export default function Profile() {
           {/* Help & Support */}
           <button
             type="button"
-            onClick={() => setNotice("For support or inquiries, contact support@campustrip.app.")}
+            onClick={() => setInfoPanel("help")}
             className="w-full px-5 py-4 flex items-center justify-between hover:bg-slate-50 active:bg-slate-100 transition text-left cursor-pointer"
           >
             <div className="flex items-center gap-3.5">
@@ -286,6 +302,37 @@ export default function Profile() {
                 {savingPassword ? "Updating password..." : "Update Password"}
               </button>
             </form>
+          </div>
+        )}
+
+        {infoPanel && (
+          <div className="fixed inset-0 z-50 flex items-end bg-slate-900/40 p-4 sm:items-center sm:justify-center">
+            <div className="w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-base font-bold text-slate-900">
+                    {infoPanel === "about" ? "About CampusTrip" : "Help & Support"}
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    {infoPanel === "about"
+                      ? "CampusTrip v1.0.0 helps students plan trips, manage budgets, build shared checklists, and coordinate with their group."
+                      : "Need help with your account or a trip? Contact the CampusTrip support team and include the email address on your profile."}
+                  </p>
+                </div>
+                <button type="button" onClick={() => setInfoPanel("")} className="rounded-full p-2 text-slate-500 hover:bg-slate-100" aria-label="Close">
+                  <X size={18} />
+                </button>
+              </div>
+              {infoPanel === "help" ? (
+                <a href="mailto:support@campustrip.app?subject=CampusTrip%20Support" className="mt-5 flex w-full items-center justify-center rounded-xl bg-blue-600 py-3 text-xs font-semibold text-white transition hover:bg-blue-700">
+                  Email Support
+                </a>
+              ) : (
+                <button type="button" onClick={() => setInfoPanel("")} className="mt-5 w-full rounded-xl bg-blue-600 py-3 text-xs font-semibold text-white transition hover:bg-blue-700">
+                  Close
+                </button>
+              )}
+            </div>
           </div>
         )}
 
