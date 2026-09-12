@@ -284,7 +284,7 @@ function Sidebar() {
           type="button"
           onClick={() => {
             setIsOpen(false);
-            navigate("/");
+            navigate("/dashboard");
           }}
           className="mb-6 hidden items-center gap-3 rounded-xl bg-blue-50 p-3 font-semibold text-blue-700 transition hover:bg-blue-100 md:flex"
         >
