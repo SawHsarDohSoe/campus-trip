@@ -6,8 +6,6 @@ import BrandLogo from "../common/BrandLogo";
 export default function MobileHeader({
   title,
   showBack = false,
-  backTo,
-  onBack,
   rightAction,
   unreadCount = 0,
   className = "",
@@ -16,32 +14,9 @@ export default function MobileHeader({
   const location = useLocation();
 
   const handleBack = () => {
-    if (onBack) {
-      onBack();
-      return;
+    if (location.pathname !== "/dashboard") {
+      navigate("/dashboard");
     }
-
-    // A child opened by the app has an explicit parent in location state. Pop it
-    // normally so the parent is not duplicated in Android/browser history.
-    if (location.state?.from && window.history.state?.idx > 0) {
-      navigate(-1);
-      return;
-    }
-
-    // Deep links may not have an in-app parent. Use the declared fallback without
-    // creating another entry, rather than sending the user to an unrelated page.
-    if (backTo) {
-      navigate(backTo, { replace: true });
-      return;
-    }
-
-    // Keep platform Back behavior when no logical parent was supplied.
-    if (window.history.state && window.history.state.idx > 0) {
-      navigate(-1);
-      return;
-    }
-
-    navigate("/dashboard", { replace: true });
   };
 
   return (
@@ -71,14 +46,14 @@ export default function MobileHeader({
           </h1>
         </div>
       ) : (
-        <Link
-          to="/dashboard"
-          replace
+        <button
+          type="button"
+          onClick={handleBack}
           className="flex items-center"
           aria-label="Home dashboard"
         >
           <BrandLogo size="sm" />
-        </Link>
+        </button>
       )}
 
       {/* Right Action */}

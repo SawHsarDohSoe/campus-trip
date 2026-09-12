@@ -91,11 +91,7 @@ export default function EditTrip() {
         },
         token
       );
-      if (location.state?.from && window.history.state?.idx > 0) {
-        navigate(-1);
-      } else {
-        navigate(`/trips/${id}`, { replace: true });
-      }
+      navigate(`/trips/${id}`, { replace: true });
     } catch (err) {
       setError(err.message || "Failed to update trip.");
     } finally {

@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   CalendarDays,
   CheckSquare,
@@ -26,6 +26,7 @@ import BrandLogo from "../common/BrandLogo";
 
 function Sidebar() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -302,7 +303,10 @@ function Sidebar() {
             <NavLink
               key={to}
               to={to}
-              replace={["/dashboard", "/trips", "/chat", "/profile"].includes(to)}
+              replace={
+                ["/dashboard", "/trips", "/chat", "/profile"].includes(to) &&
+                (to === "/dashboard" || location.pathname !== "/dashboard")
+              }
               onClick={() => setIsOpen(false)}
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-xl p-3 transition ${

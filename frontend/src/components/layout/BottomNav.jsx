@@ -21,10 +21,13 @@ export default function BottomNav() {
   const isChat = path === "/chat" || path.includes("/discussion");
   const isProfile = path === "/profile" || path === "/settings";
 
-  // Tab navigation with replace: true to prevent endless back-history loops
+  // Keep Dashboard directly behind the active root tab. Switching between root
+  // tabs replaces the current tab so Android/browser Back returns to Dashboard
+  // without walking through every previously selected tab.
   const handleTabClick = (targetPath) => {
     if (currentPath === targetPath) return;
-    navigate(targetPath, { replace: true, state: null });
+    const replace = targetPath === "/dashboard" || path !== "/dashboard";
+    navigate(targetPath, { replace, state: null });
   };
 
   const getChatTarget = () => {

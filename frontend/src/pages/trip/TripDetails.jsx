@@ -196,7 +196,7 @@ export default function TripDetails() {
         <h2 className="text-sm font-bold text-slate-800">Trip Not Found</h2>
         <p className="text-xs text-slate-500 mt-1">{error || "This trip does not exist or has been removed."}</p>
         <Link
-          to="/trips"
+          to="/dashboard"
           className="mt-4 px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-xl shadow-sm"
         >
           Back to My Trips
