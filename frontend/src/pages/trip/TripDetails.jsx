@@ -117,7 +117,10 @@ export default function TripDetails() {
   };
 
   const handleShareTrip = async () => {
-    const shareUrl = new URL("/join-trip", window.location.origin);
+    const shareUrl = new URL(
+      `${import.meta.env.BASE_URL}join-trip`,
+      window.location.origin,
+    );
     if (trip.joinCode) shareUrl.searchParams.set("code", trip.joinCode);
     const shareText = trip.joinCode
       ? `Join my trip "${trip.title}" in CampusTrip with code ${trip.joinCode}.`

@@ -29,7 +29,7 @@ import Landing from "./pages/Landing";
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <PwaPrompt />
       <Routes>
         {/* Desktop / Web Landing Page with Team Members */}
