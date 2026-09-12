@@ -16,7 +16,7 @@ export default defineConfig({
       registerType: "autoUpdate",
       injectRegister: "auto",
       includeAssets: [
-        "favicon.svg",
+        "campustrip-rocket.svg",
         "icons.svg",
         "campustrip-rocket-192.png",
         "campustrip-rocket-512.png",
