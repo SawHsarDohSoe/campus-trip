@@ -162,7 +162,11 @@ function Sidebar() {
       >
         {/* Logo */}
         <div className="mb-8 flex items-center justify-between">
-          <NavLink to="/dashboard" className="transition-transform hover:scale-[1.02]">
+          <NavLink
+            to="/dashboard"
+            replace
+            className="transition-transform hover:scale-[1.02]"
+          >
             <BrandLogo size="sm" />
           </NavLink>
 
@@ -284,7 +288,7 @@ function Sidebar() {
           type="button"
           onClick={() => {
             setIsOpen(false);
-            navigate("/dashboard");
+            navigate("/dashboard", { replace: true });
           }}
           className="mb-6 hidden items-center gap-3 rounded-xl bg-blue-50 p-3 font-semibold text-blue-700 transition hover:bg-blue-100 md:flex"
         >

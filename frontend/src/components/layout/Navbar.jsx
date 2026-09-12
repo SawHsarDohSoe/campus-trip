@@ -32,7 +32,8 @@ function Navbar() {
 
         {/* Logo */}
         <Link
-          to="/"
+          to={isAuthenticated ? "/dashboard" : "/"}
+          replace={isAuthenticated}
           className="flex items-center gap-3 transition-transform duration-300 hover:scale-105"
         >
           <BrandLogo size="md" showTagline />
