@@ -15,7 +15,13 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: "auto",
-      includeAssets: ["favicon.svg", "icons.svg", "pwa-192.png", "pwa-512.png"],
+      includeAssets: [
+        "favicon.svg",
+        "icons.svg",
+        "campustrip-rocket-192.png",
+        "campustrip-rocket-512.png",
+        "campustrip-rocket-maskable-512.png",
+      ],
       workbox: {
         clientsClaim: true,
         skipWaiting: true,
@@ -64,19 +70,19 @@ export default defineConfig({
 
         icons: [
           {
-            src: "/pwa-192.png",
+            src: "/campustrip-rocket-192.png",
             sizes: "192x192",
             type: "image/png",
             purpose: "any",
           },
           {
-            src: "/pwa-512.png",
+            src: "/campustrip-rocket-512.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "any",
           },
           {
-            src: "/pwa-512.png",
+            src: "/campustrip-rocket-maskable-512.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "maskable",
@@ -88,21 +94,21 @@ export default defineConfig({
             short_name: "Home",
             description: "Open your CampusTrip dashboard",
             url: "/dashboard",
-            icons: [{ src: "/pwa-192.png", sizes: "192x192" }],
+            icons: [{ src: "/campustrip-rocket-192.png", sizes: "192x192" }],
           },
           {
             name: "My Trips",
             short_name: "Trips",
             description: "View your trips",
             url: "/trips",
-            icons: [{ src: "/pwa-192.png", sizes: "192x192" }],
+            icons: [{ src: "/campustrip-rocket-192.png", sizes: "192x192" }],
           },
           {
             name: "Join Trip",
             short_name: "Join",
             description: "Join a trip with a six-digit code",
             url: "/join-trip",
-            icons: [{ src: "/pwa-192.png", sizes: "192x192" }],
+            icons: [{ src: "/campustrip-rocket-192.png", sizes: "192x192" }],
           },
         ],
       },
