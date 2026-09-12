@@ -23,12 +23,14 @@ import Chat from "./pages/chat/Chat";
 import Profile from "./pages/profile/Profile";
 import EditProfile from "./pages/profile/EditProfile";
 import Settings from "./pages/settings/Settings";
+import PwaPrompt from "./components/pwa/PwaPrompt";
 
 import Landing from "./pages/Landing";
 
 export default function App() {
   return (
     <BrowserRouter>
+      <PwaPrompt />
       <Routes>
         {/* Desktop / Web Landing Page with Team Members */}
         <Route path="/" element={<Landing />} />
