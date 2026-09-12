@@ -71,9 +71,14 @@ export default function MobileHeader({
           </h1>
         </div>
       ) : (
-        <div className="flex items-center">
+        <Link
+          to="/dashboard"
+          replace
+          className="flex items-center"
+          aria-label="Home dashboard"
+        >
           <BrandLogo size="sm" />
-        </div>
+        </Link>
       )}
 
       {/* Right Action */}
